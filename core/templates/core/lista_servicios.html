@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestros Servicios</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 20px; }
+        .servicio { border: 1px solid #ddd; margin-bottom: 20px; padding: 15px; border-radius: 5px; background-color: #fff; }
+        .servicio img { max-width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 4px; }
+        .servicio h2 { color: #555; margin-top: 0; }
+        .no-servicios { text-align: center; color: #777; }
+        /* Estilos para el botón de cotizar */
+        .servicio a.boton-cotizar, a.boton-cotizar-general { /* Aplicado también al general */
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white !important; /* Importante para asegurar color de texto */
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: none; /* Para que parezca más un botón */
+            cursor: pointer; /* Cursor de botón */
+        }
+        .servicio a.boton-cotizar:hover, a.boton-cotizar-general:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Nuestros Servicios para Bodas</h1>
+
+        {% if servicios %}
+            {% for servicio_actual in servicios %}
+                <div class="servicio">
+                    <h2>{{ servicio_actual.nombre }}</h2>
+                    {% if servicio_actual.imagen %}
+                        <img src="{{ servicio_actual.imagen.url }}" alt="{{ servicio_actual.nombre }}">
+                    {% else %}
+                        <p><small>No hay imagen disponible para este servicio.</small></p>
+                    {% endif %}
+                    <p>{{ servicio_actual.descripcion|linebreaks }}</p>
+
+                    <a href="{% url 'core:solicitar_cotizacion_especifica' servicio_id=servicio_actual.id %}" class="boton-cotizar">
+                        Solicitar Cotización para este Servicio
+                    </a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-servicios">Actualmente no hay servicios disponibles. Por favor, crea algunos en el panel de administración.</p>
+        {% endif %}
+
+        <hr style="margin: 30px 0;">
+        <p style="text-align: center;">
+            <a href="{% url 'core:solicitar_cotizacion_general' %}" class="boton-cotizar-general" style="background-color: #6c757d;">
+                Solicitar Cotización General
+            </a>
+        </p>
+    </div>
+</body>
+</html>
