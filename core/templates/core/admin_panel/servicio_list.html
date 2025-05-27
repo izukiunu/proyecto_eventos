@@ -1,0 +1,365 @@
+{% comment %} core/templates/core/admin_panel/servicio_list.html {% endcomment %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo_pagina_panel|default:"Administrar Servicios" }}</title>
+    {% comment %} INCLUYE JQUERY AQUÍ {% endcomment %}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f0f0f0; }
+        .container { max-width: 900px; margin: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: middle; }
+        th { background-color: #e9ecef; }
+        .button, button { display: inline-block; padding: 10px 15px; background-color: #007bff; color: white !important; text-decoration: none; border-radius: 5px; margin-bottom:20px; border: none; cursor: pointer; font-size: 1em; }
+        .button:hover, button:hover { background-color: #0056b3;}
+        .actions a, .actions button { margin-right: 5px; font-size: 0.9em; padding: 6px 10px;}
+        .button-danger { background-color: #dc3545; }
+        .button-danger:hover { background-color: #c82333; }
+        .button-warning { background-color: #ffc107; color: black !important; }
+        .button-warning:hover { background-color: #e0a800; }
+        .button-success { background-color: #28a745; }
+        .button-success:hover { background-color: #218838; }
+
+        #formServicioContainer {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .form-group { margin-bottom: 15px; } /* Para usar con {{ form.as_p }} o estructura manual */
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-control, .form-control-file {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        /* Ajustes si usas form.as_p y quieres estilizar los <p> y <label> que genera */
+        #servicioForm p { margin-bottom: 15px; }
+        #servicioForm p label { display: block; margin-bottom: 5px; font-weight: bold; }
+        #servicioForm p input[type="text"],
+        #servicioForm p textarea,
+        #servicioForm p input[type="file"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        #formServicioContainer h3 { margin-top: 0; }
+        .hidden { display: none; }
+        #messageArea div { padding: 12px; margin-bottom: 15px; border-radius: 4px; font-size: 0.95em; }
+        .success-message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
+        .error-message { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;}
+        #loadingSpinner {
+            border: 4px solid #f3f3f3; border-top: 4px solid #3498db;
+            border-radius: 50%; width: 30px; height: 30px;
+            animation: spin 1s linear infinite; margin: 10px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ titulo_pagina_panel|default:"Administrar Servicios" }}</h1>
+
+        <button id="btnMostrarFormularioCrear" class="button button-success">Agregar Nuevo Servicio</button>
+
+        <div id="messageArea" class="hidden"></div>
+        <div id="loadingSpinner" class="hidden"></div>
+
+        <div id="formServicioContainer" class="hidden">
+            <h3 id="formTitulo">Agregar Nuevo Servicio</h3>
+            <form id="servicioForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% comment %} Campo oculto para guardar el ID del servicio cuando se edita {% endcomment %}
+                <input type="hidden" id="currentServicioIdInput">
+                
+                {{ servicio_form.as_p }} 
+
+                <button type="submit" id="btnSubmitForm" class="button">Guardar</button>
+                <button type="button" id="btnCancelarForm" class="button" style="background-color: #6c757d;">Cancelar</button>
+            </form>
+        </div>
+
+        <h2>Lista de Servicios</h2>
+        <table id="tablaServicios">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Descripción (resumen)</th>
+                    <th>Imagen</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="listaServiciosBody">
+                {% for servicio in servicios %}
+                <tr data-id="{{ servicio.id }}">
+                    <td class="nombre">{{ servicio.nombre }}</td>
+                    <td class="descripcion">{{ servicio.descripcion|truncatewords:10 }}</td>
+                    <td class="imagen">
+                        {% if servicio.imagen %}
+                            <img src="{{ servicio.imagen.url }}" alt="{{ servicio.nombre }}" style="max-width: 100px; max-height: 70px;">
+                        {% else %}
+                            Sin imagen
+                        {% endif %}
+                    </td>
+                    <td class="actions">
+                        <button class="button-warning btnEditar" data-id="{{ servicio.id }}">Editar</button>
+                        <button class="button-danger btnEliminar" data-id="{{ servicio.id }}">Eliminar</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if not servicios %}
+            <p id="noServiciosMensaje">No hay servicios registrados.</p>
+        {% else %}
+            <p id="noServiciosMensaje" class="hidden">No hay servicios registrados.</p>
+        {% endif %}
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        const formContainer = $('#formServicioContainer');
+        const servicioForm = $('#servicioForm');
+        const formTitulo = $('#formTitulo');
+        const btnSubmitForm = $('#btnSubmitForm');
+        const currentServicioIdInput = $('#currentServicioIdInput'); // Input oculto para el ID
+        const listaServiciosBody = $('#listaServiciosBody');
+        const noServiciosMensaje = $('#noServiciosMensaje');
+        const messageArea = $('#messageArea');
+        const loadingSpinner = $('#loadingSpinner');
+        let editMode = false; // No necesitamos currentEditServicioId global si usamos el input oculto
+
+        function showMessage(type, text, duration = 5000) {
+            const messageDiv = $('<div>').addClass(type === 'success' ? 'success-message' : 'error-message').html(text);
+            messageArea.empty().append(messageDiv).removeClass('hidden');
+            setTimeout(() => messageArea.addClass('hidden').empty(), duration);
+        }
+
+        function showLoading(show) {
+            loadingSpinner.toggleClass('hidden', !show);
+        }
+        
+        function resetForm() {
+            servicioForm[0].reset(); 
+            currentServicioIdInput.val(''); // Limpia el ID oculto
+            formTitulo.text('Agregar Nuevo Servicio');
+            btnSubmitForm.text('Guardar');
+            editMode = false;
+            
+            // Limpieza específica para el campo de imagen si es ClearableFileInput
+            var imagenField = servicioForm.find('input[type="file"][name="imagen"]');
+            if (imagenField.length) {
+                var parentP = imagenField.closest('p'); 
+                if (parentP.length) {
+                    parentP.find('a').remove(); // Elimina enlaces de "Currently: ..."
+                    parentP.find('br').remove(); // Elimina <br> si los hay
+                    var clearCheckbox = parentP.find('input[type="checkbox"]');
+                    if (clearCheckbox.length) {
+                        clearCheckbox.prop('checked', false);
+                        // Ocultar el checkbox y su label si no hay imagen actual (manejo de Django)
+                        // Esto es complejo de manejar solo con JS sin conocer la salida exacta del widget
+                    }
+                }
+            }
+             // Quitar la clase de error de todos los campos
+            servicioForm.find('.form-control, .form-control-file').removeClass('is-invalid');
+            servicioForm.find('.invalid-feedback').remove();
+        }
+
+        $('#btnMostrarFormularioCrear').click(function() {
+            resetForm();
+            formContainer.slideDown();
+        });
+
+        $('#btnCancelarForm').click(function() {
+            formContainer.slideUp(function() {
+                resetForm();
+            });
+        });
+
+        servicioForm.submit(function(event) {
+            event.preventDefault();
+            showLoading(true);
+            messageArea.addClass('hidden').empty();
+
+            const formData = new FormData(this);
+            let url;
+            const servicioId = currentServicioIdInput.val();
+            
+            if (editMode && servicioId) {
+                url = `/ajax/servicios/${servicioId}/actualizar/`;
+            } else {
+                url = "{% url 'core:ajax_servicio_create' %}";
+            }
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                processData: false, 
+                contentType: false, 
+                headers: {'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()},
+                success: function(response) {
+                    if (response.status === 'success') {
+                        showMessage('success', response.message);
+                        formContainer.slideUp();
+                        resetForm();
+                        if (editMode) {
+                            updateServicioEnLista(response.servicio);
+                        } else {
+                            addServicioALista(response.servicio);
+                        }
+                        noServiciosMensaje.addClass('hidden'); 
+                    } else if (response.errors) {
+                        let errorText = 'Por favor corrige los siguientes errores:<br><ul>';
+                        for (const field in response.errors) {
+                            errorText += `<li>${response.errors[field].join(', ')}</li>`;
+                        }
+                        errorText += '</ul>';
+                        showMessage('error', errorText);
+                    } else {
+                        showMessage('error', response.message || 'Ocurrió un error desconocido.');
+                    }
+                },
+                error: function(xhr) {
+                    let errorMsg = 'Error de conexión o del servidor.';
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.message) {
+                           errorMsg = xhr.responseJSON.message;
+                        } else if (xhr.responseJSON.errors) {
+                            let errorText = 'Por favor corrige los siguientes errores:<br><ul>';
+                            for (const field in xhr.responseJSON.errors) {
+                                errorText += `<li>${field}: ${xhr.responseJSON.errors[field].join(', ')}</li>`;
+                            }
+                            errorText += '</ul>';
+                            errorMsg = errorText;
+                        }
+                    } else {
+                        errorMsg = `Error: ${xhr.status} ${xhr.statusText}`;
+                    }
+                    showMessage('error', errorMsg);
+                },
+                complete: function() {
+                    showLoading(false);
+                }
+            });
+        });
+
+        listaServiciosBody.on('click', '.btnEditar', function() {
+            const servicioId = $(this).data('id');
+            showLoading(true);
+            messageArea.addClass('hidden').empty();
+            resetForm(); 
+
+            $.ajax({
+                url: `/ajax/servicios/${servicioId}/detalle/`,
+                type: 'GET',
+                success: function(response) {
+                    if (response.status === 'success') {
+                        const servicio = response.servicio;
+                        formTitulo.text('Editar Servicio: ' + servicio.nombre);
+                        btnSubmitForm.text('Actualizar');
+                        currentServicioIdInput.val(servicio.id); // Poner ID en el campo oculto
+                        
+                        servicioForm.find('input[name="nombre"]').val(servicio.nombre);
+                        servicioForm.find('textarea[name="descripcion"]').val(servicio.descripcion);
+                        // El campo de imagen 'ClearableFileInput' mostrará la imagen actual y la opción "Clear"
+                        // No necesitamos (ni podemos) pre-llenar el input[type=file] directamente.
+                        // Si hay una imagen_url en la respuesta de detalle y quieres mostrar un preview,
+                        // tendrías que añadir un <img> y ponerle el src.
+                        // ej: if (servicio.imagen_url) { $('#imagenPreview').attr('src', servicio.imagen_url).show(); }
+
+                        editMode = true;
+                        formContainer.slideDown();
+                    } else {
+                        showMessage('error', response.message || 'No se pudieron cargar los datos del servicio.');
+                    }
+                },
+                error: function(xhr) {
+                    showMessage('error', 'Error al cargar datos para editar: ' + xhr.statusText);
+                },
+                complete: function() {
+                    showLoading(false);
+                }
+            });
+        });
+
+        listaServiciosBody.on('click', '.btnEliminar', function() {
+            const servicioId = $(this).data('id');
+            const servicioRow = $(this).closest('tr');
+            const servicioNombre = servicioRow.find('td.nombre').text();
+            
+            if (confirm(`¿Estás seguro de que quieres eliminar el servicio "${servicioNombre}"?`)) {
+                showLoading(true);
+                messageArea.addClass('hidden').empty();
+                $.ajax({
+                    url: `/ajax/servicios/${servicioId}/eliminar/`,
+                    type: 'POST',
+                    headers: {'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()},
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            showMessage('success', response.message);
+                            servicioRow.fadeOut(function() { 
+                                $(this).remove();
+                                if (listaServiciosBody.find('tr').length === 0) {
+                                    noServiciosMensaje.removeClass('hidden');
+                                }
+                            });
+                        } else {
+                            showMessage('error', response.message || 'No se pudo eliminar el servicio.');
+                        }
+                    },
+                    error: function(xhr) {
+                        showMessage('error', 'Error al eliminar: ' + xhr.statusText);
+                    },
+                    complete: function() {
+                        showLoading(false);
+                    }
+                });
+            }
+        });
+
+        function addServicioALista(servicio) {
+            let imagenHtml = 'Sin imagen';
+            if (servicio.imagen_url) {
+                imagenHtml = `<img src="${servicio.imagen_url}" alt="${servicio.nombre}" style="max-width: 100px; max-height: 70px;">`;
+            }
+            const newRow = `
+                <tr data-id="${servicio.id}">
+                    <td class="nombre">${servicio.nombre}</td>
+                    <td class="descripcion">${servicio.descripcion_corta}</td>
+                    <td class="imagen">${imagenHtml}</td>
+                    <td class="actions">
+                        <button class="button-warning btnEditar" data-id="${servicio.id}">Editar</button>
+                        <button class="button-danger btnEliminar" data-id="${servicio.id}">Eliminar</button>
+                    </td>
+                </tr>`;
+            listaServiciosBody.prepend(newRow); // Añade al principio para ver el nuevo inmediatamente
+            noServiciosMensaje.addClass('hidden');
+        }
+
+        function updateServicioEnLista(servicio) {
+            const row = listaServiciosBody.find(`tr[data-id="${servicio.id}"]`);
+            if (row.length) {
+                row.find('.nombre').text(servicio.nombre);
+                row.find('.descripcion').text(servicio.descripcion_corta);
+                let imagenHtml = 'Sin imagen';
+                if (servicio.imagen_url) {
+                    imagenHtml = `<img src="${servicio.imagen_url}" alt="${servicio.nombre}" style="max-width: 100px; max-height: 70px;">`;
+                }
+                row.find('.imagen').html(imagenHtml);
+            }
+        }
+    });
+    </script>
+</body>
+</html>
