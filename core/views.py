@@ -12,6 +12,10 @@ class ListaServiciosView(ListView):
     template_name = 'core/lista_servicios.html'
     context_object_name = 'servicios'
 
+# --- vista de index   ) ---
+def index(request):
+    return render(request, 'core/index.html')
+
 def solicitar_cotizacion_view(request, servicio_id=None):
     initial_data = {}
     servicio_seleccionado = None

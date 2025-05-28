@@ -1,6 +1,8 @@
 # core/urls.py
 from django.urls import path
+from . import views
 from .views import (
+    index,
     ListaServiciosView,
     solicitar_cotizacion_view,
     # contacto_view, # Si la tienes
@@ -15,6 +17,10 @@ from .views import (
 app_name = 'core'
 
 urlpatterns = [
+
+    # --- index ---
+
+    path('', views.index, name='index'),
     # URLs Públicas
     path('servicios/', ListaServiciosView.as_view(), name='lista_servicios'),
     path('solicitar-cotizacion/<int:servicio_id>/', solicitar_cotizacion_view, name='solicitar_cotizacion_especifica'),
