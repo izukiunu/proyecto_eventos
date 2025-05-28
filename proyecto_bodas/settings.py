@@ -1,3 +1,4 @@
+# proyecto_bodas/settings.py
 """
 Django settings for proyecto_bodas project.
 
@@ -12,6 +13,13 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv  # <-- AÑADIDO PARA CARGAR VARIABLES DE ENTORNO
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Ejecutar carga de variables del .env
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -108,9 +116,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-cl' # Cambiado a español de Chile como ejemplo
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Santiago' # Cambiado a zona horaria de Chile como ejemplo
 
 USE_I18N = True
 
@@ -131,5 +139,27 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Configuración de archivos multimedia (subidos por el usuario)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# --- CONFIGURACIÓN DE CORREO ELECTRÓNICO USANDO GMAIL (LEYENDO DE .ENV) ---
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Para Gmail
+EMAIL_PORT = 587               # Puerto para TLS con Gmail
+EMAIL_USE_TLS = True           # Gmail usa TLS
+# EMAIL_USE_SSL = False        # No necesario si EMAIL_USE_TLS es True
+
+# Lee las credenciales desde el archivo .env
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER_GMAIL')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD_GMAIL') # Tu contraseña de aplicación de 16 caracteres
+
+# El correo que aparecerá como remitente en los correos.
+# Es buena práctica que sea el mismo que EMAIL_HOST_USER o un alias configurado.
+# Usamos un fallback al EMAIL_HOST_USER si DEFAULT_FROM_EMAIL_GMAIL no está en .env
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL_GMAIL', EMAIL_HOST_USER)
+
+# Opcional: Para que los errores de Django se envíen a estos correos si DEBUG = False
+# ADMINS = [('Tu Nombre Admin', EMAIL_HOST_USER)] # Ejemplo usando la variable leída
+
+# --- FIN CONFIGURACIÓN DE CORREO ---

@@ -1,4 +1,5 @@
 # core/models.py
+# import uuid # Ya no es necesario para SolicitudCotizacion
 from django.db import models
 
 class Servicio(models.Model):
@@ -10,6 +11,7 @@ class Servicio(models.Model):
         return self.nombre
 
 class SolicitudCotizacion(models.Model):
+    # EL CAMPO ticket_id (UUIDField) HA SIDO ELIMINADO. Usaremos el 'id' automático.
     nombre_cliente = models.CharField(max_length=150)
     email_cliente = models.EmailField()
     telefono_cliente = models.CharField(max_length=20, blank=True, null=True)
@@ -26,16 +28,19 @@ class SolicitudCotizacion(models.Model):
     atendida = models.BooleanField(default=False)
 
     def __str__(self):
+        # Ahora usamos self.id para el número de ticket.
+        # self.id no estará disponible hasta que el objeto se guarde por primera vez.
+        # Si se llama a __str__ antes de guardar, self.id podría ser None.
+        ticket_num = self.id if self.id else "Nuevo"
         if self.servicio_interesado:
-            return f"Solicitud de {self.nombre_cliente} para '{self.servicio_interesado.nombre}' - {self.fecha_solicitud.strftime('%Y-%m-%d')}"
-        return f"Solicitud de {self.nombre_cliente} (general) - {self.fecha_solicitud.strftime('%Y-%m-%d')}"
+            return f"Ticket #{ticket_num} - {self.nombre_cliente} para '{self.servicio_interesado.nombre}'"
+        return f"Ticket #{ticket_num} - {self.nombre_cliente} (general)"
 
     class Meta:
         verbose_name = "Solicitud de Cotización"
         verbose_name_plural = "Solicitudes de Cotización"
         ordering = ['-fecha_solicitud']
 
-# --- MODELO AÑADIDO/CORREGIDO ---
 class MensajeContacto(models.Model):
     nombre_remitente = models.CharField(max_length=150)
     email_remitente = models.EmailField()
@@ -45,9 +50,30 @@ class MensajeContacto(models.Model):
     leido = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Mensaje de {self.nombre_remitente} ({self.email_remitente}) - {self.fecha_envio.strftime('%Y-%m-%d')}"
+        # Usamos self.id para el número de mensaje.
+        mensaje_num = self.id if self.id else "Nuevo"
+        return f"Mensaje #{mensaje_num} de {self.nombre_remitente} ({self.email_remitente})"
 
     class Meta:
         verbose_name = "Mensaje de Contacto"
         verbose_name_plural = "Mensajes de Contacto"
         ordering = ['-fecha_envio']
+
+class ConfiguracionSitio(models.Model):
+    email_notificaciones_admin = models.EmailField(
+        verbose_name="Email para Notificaciones del Administrador",
+        help_text="Correo donde se recibirán las notificaciones de nuevas solicitudes de cotización, mensajes de contacto, etc."
+    )
+    # Aquí podrías añadir más campos de configuración global en el futuro si los necesitas.
+    # Por ejemplo:
+    # nombre_visible_sitio = models.CharField(max_length=100, default="El Nombre de Tu Página", blank=True)
+    # telefono_principal_contacto = models.CharField(max_length=20, blank=True, null=True)
+
+    def __str__(self):
+        # Esto ayuda a identificar la única instancia en el admin.
+        return "Configuración General del Sitio (Editar Única Entrada)"
+
+    class Meta:
+        verbose_name = "Configuración del Sitio"
+        # Usamos el mismo nombre en singular y plural para enfatizar que solo debe haber una.
+        verbose_name_plural = "Configuración del Sitio"
