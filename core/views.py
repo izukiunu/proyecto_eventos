@@ -1,49 +1,47 @@
 # core/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView
-from .models import Servicio, SolicitudCotizacion, MensajeContacto, ConfiguracionSitio # Importa ConfiguracionSitio
+from .models import Servicio, SolicitudCotizacion, MensajeContacto, ConfiguracionSitio
 from .forms import SolicitudCotizacionForm, MensajeContactoForm, ServicioForm
 from django.contrib import messages
 from django.http import JsonResponse
-from django.core.mail import send_mail # Para enviar correos
-from django.conf import settings # Para usar DEFAULT_FROM_EMAIL
+from django.core.mail import send_mail
+from django.conf import settings
 
 # --- Vistas Públicas ---
-class ListaServiciosView(ListView): # [cite: 2]
-    model = Servicio # [cite: 2]
-    template_name = 'core/lista_servicios.html' # [cite: 2]
-    context_object_name = 'servicios' # [cite: 2]
+class ListaServiciosView(ListView):
+    model = Servicio
+    template_name = 'core/lista_servicios.html'
+    context_object_name = 'servicios'
 
-def solicitar_cotizacion_view(request, servicio_id=None): # [cite: 2]
-    initial_data = {} # [cite: 2]
-    servicio_seleccionado = None # [cite: 2]
-    if servicio_id: # [cite: 2]
+def solicitar_cotizacion_view(request, servicio_id=None):
+    initial_data = {}
+    servicio_seleccionado = None
+    if servicio_id:
         servicio_seleccionado = get_object_or_404(Servicio, id=servicio_id) # [cite: 2]
         initial_data['servicio_interesado'] = servicio_seleccionado # [cite: 2]
     
-    if request.method == 'POST': # [cite: 2]
+    if request.method == 'POST':
         form = SolicitudCotizacionForm(request.POST, initial=initial_data if not servicio_id else None) # [cite: 2]
-        if form.is_valid(): # [cite: 2]
+        if form.is_valid():
             solicitud = form.save(commit=False) # [cite: 2]
             if servicio_seleccionado and not form.cleaned_data.get('servicio_interesado'): # [cite: 2]
                  solicitud.servicio_interesado = servicio_seleccionado # [cite: 2]
-            solicitud.save() # Guarda para que se genere solicitud.id y solicitud.ticket_id
+            solicitud.save() # Guarda para que se genere solicitud.id
 
-            # Preparar ID de ticket para mostrar y usar en correos
-            ticket_display_id = str(solicitud.ticket_id).split('-')[-1].upper()
+            # --- MODIFICACIÓN IMPORTANTE AQUÍ: Usar solicitud.id ---
+            ticket_display_id = f"#{solicitud.id}" # Usamos el ID autoincremental
+            # ----------------------------------------------------
 
             # --- LÓGICA DE ENVÍO DE CORREO ---
-            # 1. Obtener email del administrador desde la configuración
-            admin_email_destino = settings.DEFAULT_FROM_EMAIL # Fallback por si no hay configuración
+            admin_email_destino = settings.DEFAULT_FROM_EMAIL # Fallback
             try:
                 config = ConfiguracionSitio.objects.first()
                 if config and config.email_notificaciones_admin:
                     admin_email_destino = config.email_notificaciones_admin
             except Exception as e:
                 print(f"Error al obtener la configuración del sitio para el email del admin: {e}")
-                # Considerar loggear este error o notificar de alguna manera si la config no existe
 
-            # 2. Correo al Propietario/Administrador
             if admin_email_destino:
                 asunto_admin = f"Nueva Solicitud de Cotización - Ticket: {ticket_display_id}"
                 mensaje_admin_partes = [
@@ -64,8 +62,8 @@ def solicitar_cotizacion_view(request, servicio_id=None): # [cite: 2]
                     send_mail(
                         asunto_admin,
                         mensaje_admin_completo,
-                        settings.DEFAULT_FROM_EMAIL, # Remitente
-                        [admin_email_destino], # Destinatario(s)
+                        settings.DEFAULT_FROM_EMAIL,
+                        [admin_email_destino],
                         fail_silently=False,
                     )
                 except Exception as e:
@@ -73,7 +71,6 @@ def solicitar_cotizacion_view(request, servicio_id=None): # [cite: 2]
             else:
                 print(f"Advertencia: No se ha configurado un email de administrador para notificaciones de cotización. Ticket: {ticket_display_id}")
 
-            # 3. Correo de Confirmación al Cliente
             asunto_cliente = f"Confirmación de Solicitud de Cotización - Ticket: {ticket_display_id}"
             mensaje_cliente = (
                 f"Hola {solicitud.nombre_cliente},\n\n"
@@ -89,13 +86,12 @@ def solicitar_cotizacion_view(request, servicio_id=None): # [cite: 2]
                 send_mail(
                     asunto_cliente,
                     mensaje_cliente,
-                    settings.DEFAULT_FROM_EMAIL, # Remitente
-                    [solicitud.email_cliente], # Email del cliente
+                    settings.DEFAULT_FROM_EMAIL,
+                    [solicitud.email_cliente],
                     fail_silently=False,
                 )
             except Exception as e:
                 print(f"Error enviando correo de confirmación al cliente ({solicitud.email_cliente}): {e}")
-            # ------------------------------------
 
             success_message = (
                 f"¡Tu solicitud de cotización (Ticket: {ticket_display_id}) ha sido enviada con éxito! "
@@ -113,28 +109,24 @@ def solicitar_cotizacion_view(request, servicio_id=None): # [cite: 2]
     }
     return render(request, 'core/solicitud_cotizacion.html', context) # [cite: 2]
 
-# (Aquí podría ir tu vista para MensajeContactoForm si la tienes,
-# aplicando lógica similar para enviar correos si es necesario)
+# (Aquí tu vista contacto_view si la tienes)
 # def contacto_view(request):
-#     # ...
-#     pass
-
+# # ...
 
 # --- Vistas para el Panel de Administración Personalizado de Servicios (SPA-like) ---
-class AdminServicioListView(ListView): # [cite: 2]
+class AdminServicioListView(ListView):
     model = Servicio # [cite: 2]
     template_name = 'core/admin_panel/servicio_list.html' # [cite: 2]
     context_object_name = 'servicios' # [cite: 2]
 
-    def get_context_data(self, **kwargs): # [cite: 2]
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs) # [cite: 2]
         context['servicio_form'] = ServicioForm() # [cite: 2]
         context['titulo_pagina_panel'] = 'Administrar Servicios y Configuración' # [cite: 2]
         
-        # Obtener o crear la configuración del sitio
         configuracion, created = ConfiguracionSitio.objects.get_or_create(
-            id=1, # Usamos un ID fijo para asegurar que solo haya una
-            defaults={'email_notificaciones_admin': settings.DEFAULT_FROM_EMAIL} # Email por defecto si se crea
+            id=1,
+            defaults={'email_notificaciones_admin': settings.DEFAULT_FROM_EMAIL}
         )
         if created:
             print(f"Se creó una instancia de ConfiguracionSitio por defecto con email: {settings.DEFAULT_FROM_EMAIL}")
@@ -142,8 +134,8 @@ class AdminServicioListView(ListView): # [cite: 2]
         context['configuracion_sitio'] = configuracion
         return context
 
-# --- VISTAS/ENDPOINTS AJAX para Servicios (como estaban antes) ---
-def servicio_create_ajax(request): # [cite: 2]
+# --- VISTAS/ENDPOINTS AJAX para Servicios ---
+def servicio_create_ajax(request):
     if request.method == 'POST': # [cite: 2]
         form = ServicioForm(request.POST, request.FILES) # [cite: 2]
         if form.is_valid(): # [cite: 2]
@@ -162,7 +154,7 @@ def servicio_create_ajax(request): # [cite: 2]
             return JsonResponse({'status': 'error', 'errors': form.errors}, status=400) # [cite: 2]
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405) # [cite: 2]
 
-def servicio_update_ajax(request, servicio_id): # [cite: 2]
+def servicio_update_ajax(request, servicio_id):
     try:
         servicio = Servicio.objects.get(pk=servicio_id) # [cite: 2]
     except Servicio.DoesNotExist: # [cite: 2]
@@ -186,7 +178,7 @@ def servicio_update_ajax(request, servicio_id): # [cite: 2]
             return JsonResponse({'status': 'error', 'errors': form.errors}, status=400) # [cite: 2]
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405) # [cite: 2]
 
-def servicio_delete_ajax(request, servicio_id): # [cite: 2]
+def servicio_delete_ajax(request, servicio_id):
     if request.method == 'POST': # [cite: 2]
         try:
             servicio = Servicio.objects.get(pk=servicio_id) # [cite: 2]
@@ -198,7 +190,7 @@ def servicio_delete_ajax(request, servicio_id): # [cite: 2]
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500) # [cite: 2]
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405) # [cite: 2]
 
-def servicio_detail_json(request, servicio_id): # [cite: 2]
+def servicio_detail_json(request, servicio_id):
     try:
         servicio = Servicio.objects.get(pk=servicio_id) # [cite: 2]
         return JsonResponse({ # [cite: 2]
@@ -212,20 +204,18 @@ def servicio_detail_json(request, servicio_id): # [cite: 2]
     except Servicio.DoesNotExist: # [cite: 2]
         return JsonResponse({'status': 'error', 'message': 'Servicio no encontrado'}, status=404) # [cite: 2]
 
-# --- VISTA AJAX PARA ACTUALIZAR CONFIGURACIÓN DEL SITIO ---
 def configuracion_sitio_update_ajax(request):
     if request.method == 'POST':
         nuevo_email = request.POST.get('email_notificaciones_admin')
-        if not nuevo_email: # Validación simple
+        if not nuevo_email:
             return JsonResponse({'status': 'error', 'message': 'El email no puede estar vacío.'}, status=400)
         
-        # Intentamos obtener la configuración con id=1, o la creamos si no existe.
         config, created = ConfiguracionSitio.objects.get_or_create(
-            id=1, # Usamos un ID fijo para asegurar que siempre trabajamos con la misma instancia
+            id=1, 
             defaults={'email_notificaciones_admin': nuevo_email}
         )
         
-        if not created: # Si ya existía (no fue creada ahora), actualizamos el email.
+        if not created:
             config.email_notificaciones_admin = nuevo_email
             config.save()
         

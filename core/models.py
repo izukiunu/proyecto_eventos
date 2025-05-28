@@ -1,5 +1,5 @@
 # core/models.py
-import uuid # Para el ticket ID
+# import uuid # Ya no es necesario para SolicitudCotizacion
 from django.db import models
 
 class Servicio(models.Model):
@@ -11,9 +11,7 @@ class Servicio(models.Model):
         return self.nombre
 
 class SolicitudCotizacion(models.Model):
-    # --- NUEVO CAMPO PARA EL TICKET ---
-    ticket_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    # ----------------------------------
+    # EL CAMPO ticket_id (UUIDField) HA SIDO ELIMINADO. Usaremos el 'id' automático.
     nombre_cliente = models.CharField(max_length=150)
     email_cliente = models.EmailField()
     telefono_cliente = models.CharField(max_length=20, blank=True, null=True)
@@ -30,11 +28,13 @@ class SolicitudCotizacion(models.Model):
     atendida = models.BooleanField(default=False)
 
     def __str__(self):
-        # Usamos una parte del UUID para un identificador más corto en el __str__
-        ticket_corto = str(self.ticket_id).split('-')[-1].upper()
+        # Ahora usamos self.id para el número de ticket.
+        # self.id no estará disponible hasta que el objeto se guarde por primera vez.
+        # Si se llama a __str__ antes de guardar, self.id podría ser None.
+        ticket_num = self.id if self.id else "Nuevo"
         if self.servicio_interesado:
-            return f"Ticket {ticket_corto} - {self.nombre_cliente} para '{self.servicio_interesado.nombre}'"
-        return f"Ticket {ticket_corto} - {self.nombre_cliente} (general)"
+            return f"Ticket #{ticket_num} - {self.nombre_cliente} para '{self.servicio_interesado.nombre}'"
+        return f"Ticket #{ticket_num} - {self.nombre_cliente} (general)"
 
     class Meta:
         verbose_name = "Solicitud de Cotización"
@@ -50,14 +50,15 @@ class MensajeContacto(models.Model):
     leido = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Mensaje de {self.nombre_remitente} ({self.email_remitente}) - {self.fecha_envio.strftime('%Y-%m-%d')}"
+        # Usamos self.id para el número de mensaje.
+        mensaje_num = self.id if self.id else "Nuevo"
+        return f"Mensaje #{mensaje_num} de {self.nombre_remitente} ({self.email_remitente})"
 
     class Meta:
         verbose_name = "Mensaje de Contacto"
         verbose_name_plural = "Mensajes de Contacto"
         ordering = ['-fecha_envio']
 
-# --- NUEVO MODELO PARA CONFIGURACIÓN DEL SITIO ---
 class ConfiguracionSitio(models.Model):
     email_notificaciones_admin = models.EmailField(
         verbose_name="Email para Notificaciones del Administrador",
