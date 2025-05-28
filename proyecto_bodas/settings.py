@@ -13,72 +13,74 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv # <-- AÑADIDO PARA CARGAR VARIABLES DE ENTORNO
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv() # <-- AÑADIDO PARA EJECUTAR LA CARGA DE VARIABLES DEL .env
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-r)k0v=9pfmk8svkzsed2&_#-(2+78mkeh)!-g+n%6+xe+*yinr' #
+SECRET_KEY = 'django-insecure-r)k0v=9pfmk8svkzsed2&_#-(2+78mkeh)!-g+n%6+xe+*yinr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True #
+DEBUG = True
 
-ALLOWED_HOSTS = [] #
+ALLOWED_HOSTS = []
 
 
 # Application definition
 
-INSTALLED_APPS = [ #
-    'django.contrib.admin', #
-    'django.contrib.auth', #
-    'django.contrib.contenttypes', #
-    'django.contrib.sessions', #
-    'django.contrib.messages', #
-    'django.contrib.staticfiles', #
-    'core', #
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'core',
 ]
 
-MIDDLEWARE = [ #
-    'django.middleware.security.SecurityMiddleware', #
-    'django.contrib.sessions.middleware.SessionMiddleware', #
-    'django.middleware.common.CommonMiddleware', #
-    'django.middleware.csrf.CsrfViewMiddleware', #
-    'django.contrib.auth.middleware.AuthenticationMiddleware', #
-    'django.contrib.messages.middleware.MessageMiddleware', #
-    'django.middleware.clickjacking.XFrameOptionsMiddleware', #
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'proyecto_bodas.urls' #
+ROOT_URLCONF = 'proyecto_bodas.urls'
 
-TEMPLATES = [ #
+TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates', #
-        'DIRS': [], #
-        'APP_DIRS': True, #
-        'OPTIONS': { #
-            'context_processors': [ #
-                'django.template.context_processors.request', #
-                'django.contrib.auth.context_processors.auth', #
-                'django.contrib.messages.context_processors.messages', #
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'proyecto_bodas.wsgi.application' #
+WSGI_APPLICATION = 'proyecto_bodas.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = { #
-    'default': { #
-        'ENGINE': 'django.db.backends.sqlite3', #
-        'NAME': BASE_DIR / 'db.sqlite3', #
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -86,18 +88,18 @@ DATABASES = { #
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [ #
+AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', #
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', #
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator', #
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', #
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 
@@ -105,43 +107,46 @@ AUTH_PASSWORD_VALIDATORS = [ #
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'es-cl' # Cambiado a español de Chile como ejemplo, puedes usar 'es' o 'en-us'
+LANGUAGE_CODE = 'es-cl' # Cambiado a español de Chile como ejemplo
 
-TIME_ZONE = 'America/Santiago' # Cambiado a zona horaria de Chile como ejemplo, ajusta a tu necesidad
+TIME_ZONE = 'America/Santiago' # Cambiado a zona horaria de Chile como ejemplo
 
-USE_I18N = True #
+USE_I18N = True
 
-USE_TZ = True #
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/' #
+STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField' #
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configuración de archivos multimedia (subidos por el usuario)
-MEDIA_URL = '/media/' #
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media') #
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# --- CONFIGURACIÓN DE CORREO ELECTRÓNICO ---
-# Para desarrollo: los correos se muestran en la consola donde ejecutas `runserver`
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# --- CONFIGURACIÓN DE CORREO ELECTRÓNICO USANDO GMAIL (LEYENDO DE .ENV) ---
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Para Gmail
+EMAIL_PORT = 587               # Puerto para TLS con Gmail
+EMAIL_USE_TLS = True           # Gmail usa TLS
+# EMAIL_USE_SSL = False        # No necesario si EMAIL_USE_TLS es True
 
-# Para producción (ejemplo, necesitarás tus propios datos SMTP):
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.tuproveedor.com'  # Ej: 'smtp.gmail.com'
-# EMAIL_PORT = 587  # Puerto estándar para TLS
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'tu_correo@ejemplo.com'  # Tu dirección de correo
-# EMAIL_HOST_PASSWORD = 'tu_contraseña_de_correo_o_app_password'  # CUIDADO: No subir esto a repositorios públicos
+# Lee las credenciales desde el archivo .env
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER_GMAIL')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD_GMAIL') # Tu contraseña de aplicación de 16 caracteres
 
-# Email remitente por defecto para correos automáticos del sistema
-DEFAULT_FROM_EMAIL = 'webmaster@tuproyecto-bodas.com' # Cambia esto a un correo que tenga sentido
+# El correo que aparecerá como remitente en los correos.
+# Es buena práctica que sea el mismo que EMAIL_HOST_USER o un alias configurado.
+# Usamos un fallback al EMAIL_HOST_USER si DEFAULT_FROM_EMAIL_GMAIL no está en .env
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL_GMAIL', EMAIL_HOST_USER)
 
-# Opcional: Emails de los administradores del sitio (para ciertos errores de Django si DEBUG=False)
-# ADMINS = [('Tu Nombre', 'tu_correo_admin@ejemplo.com')]
+# Opcional: Para que los errores de Django se envíen a estos correos si DEBUG = False
+# ADMINS = [('Tu Nombre Admin', EMAIL_HOST_USER)] # Ejemplo usando la variable leída
+
+# --- FIN CONFIGURACIÓN DE CORREO ---
