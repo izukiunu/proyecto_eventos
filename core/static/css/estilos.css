@@ -83,3 +83,67 @@ body {
   color: white;
   text-align: center;
 }
+
+
+/* chat bot*/
+/* --- Chatbot flotante --- */
+#chatbot-button {
+  position: fixed;
+  bottom: 20px;
+  right: 25px;
+  background-color: #28a745;
+  color: white;
+  font-size: 24px;
+  border-radius: 50%;
+  width: 55px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  z-index: 1000;
+  transition: background-color 0.3s ease;
+}
+#chatbot-button:hover {
+  background-color: #218838;
+}
+
+#chat-container {
+  position: fixed;
+  bottom: 90px;
+  right: 25px;
+  width: 300px;
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  z-index: 1000;
+  padding: 15px;
+  font-family: 'Poppins', sans-serif;
+}
+
+#chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #28a745;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px 8px 0 0;
+  font-weight: bold;
+}
+
+#chat-body {
+  padding: 10px 0;
+}
+
+#chat-body textarea,
+#chat-body input {
+  font-size: 14px;
+}
+
+#chat-body p {
+  margin: 0 0 10px;
+  font-size: 14px;
+}

@@ -16,7 +16,6 @@
   <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Estilos personalizados -->
-   
   <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
 </head>
 <body>
@@ -53,12 +52,10 @@
   </div>
 </section>
 
-
 <!-- Servicios (Placeholder) -->
 <section id="servicios" class="container py-5">
   <h2 class="text-center mb-5">Servicios Destacados</h2>
   <div class="row g-4">
-    <!-- Ejemplo de tarjeta de servicio -->
     <div class="col-md-6">
       <div class="card h-100 product-card animate-hover border-glow">
         <img src="{% static 'img/sonido profesional.jpg' %}" class="card-img-top object-fit-cover" alt="Sonido Profesional">
@@ -70,6 +67,57 @@
     </div>
   </div>
 </section>
+
+<!-- Footer -->
+<footer class="bg-dark text-white pt-5 pb-4 mt-5">
+  <div class="container text-center text-md-start">
+    <div class="row text-center text-md-start">
+      <div class="col-md-4 mb-4">
+        <h6 class="text-uppercase fw-bold mb-3">MENÚ</h6>
+        <ul class="list-unstyled">
+          <li><a href="#" class="text-white text-decoration-none">Inicio</a></li>
+          <li><a href="#" class="text-white text-decoration-none">Nosotros</a></li>
+          <li><a href="/servicios/" class="text-white text-decoration-none">Servicios</a></li>
+          <li><a href="#contacto" class="text-white text-decoration-none">Contáctanos</a></li>
+        </ul>
+      </div>
+      <div class="col-md-4 mb-4">
+        <h6 class="text-uppercase fw-bold mb-3">CONTÁCTANOS</h6>
+        <p>T (+56) 2 2604 8187<br>Email: info@mejiaeventos.cl</p>
+        <p><strong>OFICINA:</strong><br>Av. Irarrázaval #2401, Oficina #808, Ñuñoa</p>
+        <a href="https://www.google.com/maps" target="_blank" class="text-white text-decoration-none">
+          <i class="fas fa-map-marker-alt"></i> Ver en Google Maps
+        </a>
+      </div>
+      <div class="col-md-4 mb-4 text-center">
+        <img src="{% static 'img/logo-mejiaEventos.png' %}" width="100" alt="Logo">
+      </div>
+    </div>
+  </div>
+  <hr class="bg-secondary mx-5">
+  <div class="text-center text-white">
+    <p class="mb-0">© 2025 Todos los derechos reservados a <strong>MejíaEventos</strong>.</p>
+    <div class="mt-2">
+      <a href="https://facebook.com" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://instagram.com" class="text-white"><i class="fab fa-instagram"></i></a>
+    </div>
+  </div>
+</footer>
+
+<!-- Chatbot -->
+<div id="chatbot-button" onclick="toggleChat()" title="Chatea con nosotros">💬</div>
+<div id="chat-container" class="d-none">
+  <div id="chat-header">
+    <strong>Asistente MejíaEventos</strong>
+    <button onclick="toggleChat()" class="btn-close btn-close-white" aria-label="Cerrar"></button>
+  </div>
+  <div id="chat-body">
+    <p>¡Hola! ¿Cómo podemos ayudarte?</p>
+    <input type="text" id="userName" class="form-control mb-2" placeholder="Tu nombre">
+    <textarea id="userMsg" class="form-control mb-2" rows="3" placeholder="Escribe tu mensaje..."></textarea>
+    <button class="btn btn-primary w-100" onclick="procesarMensaje()">Enviar mensaje</button>
+  </div>
+</div>
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
