@@ -3,26 +3,28 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>{{ titulo_pagina_panel|default:"Administrar Servicios" }}</title>
-    {% comment %} INCLUYE JQUERY AQUÍ {% endcomment %}
+    <title>{{ titulo_pagina_panel|default:"Administrar Contenido" }}</title>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <style>
         body { font-family: sans-serif; margin: 20px; background-color: #f0f0f0; }
         .container { max-width: 900px; margin: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        h1, h2, h3 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; margin-top: 10px;}
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: middle; }
         th { background-color: #e9ecef; }
         .button, button { display: inline-block; padding: 10px 15px; background-color: #007bff; color: white !important; text-decoration: none; border-radius: 5px; margin-bottom:20px; border: none; cursor: pointer; font-size: 1em; }
         .button:hover, button:hover { background-color: #0056b3;}
-        .actions a, .actions button { margin-right: 5px; font-size: 0.9em; padding: 6px 10px;}
+        .actions button { margin-right: 5px; font-size: 0.9em; padding: 6px 10px;}
         .button-danger { background-color: #dc3545; }
         .button-danger:hover { background-color: #c82333; }
         .button-warning { background-color: #ffc107; color: black !important; }
         .button-warning:hover { background-color: #e0a800; }
         .button-success { background-color: #28a745; }
         .button-success:hover { background-color: #218838; }
+        .button-info { background-color: #17a2b8; }
+        .button-info:hover { background-color: #117a8b; }
 
-        #formServicioContainer {
+        #configuracionContainer, #formServicioContainer {
             border: 1px solid #ccc;
             padding: 20px;
             margin-top: 20px;
@@ -30,29 +32,33 @@
             border-radius: 8px;
             background-color: #f9f9f9;
         }
-        .form-group { margin-bottom: 15px; } /* Para usar con {{ form.as_p }} o estructura manual */
+        .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         .form-control, .form-control-file {
-            width: calc(100% - 22px);
+            width: calc(100% - 22px); /* Ajuste para padding y border */
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
         }
-        /* Ajustes si usas form.as_p y quieres estilizar los <p> y <label> que genera */
-        #servicioForm p { margin-bottom: 15px; }
-        #servicioForm p label { display: block; margin-bottom: 5px; font-weight: bold; }
+        /* Ajustes para <p> generados por form.as_p */
+        #servicioForm p, #configForm p { margin-bottom: 15px; }
+        #servicioForm p label, #configForm p label { display: block; margin-bottom: 5px; font-weight: bold; }
         #servicioForm p input[type="text"],
         #servicioForm p textarea,
-        #servicioForm p input[type="file"] {
+        #servicioForm p input[type="file"],
+        #servicioForm p select,
+        #configForm input[type="email"] {
             width: calc(100% - 22px);
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
         }
+        #servicioForm p textarea { resize: vertical; }
 
-        #formServicioContainer h3 { margin-top: 0; }
+
+        #formServicioContainer h3, #configuracionContainer h3 { margin-top: 0; }
         .hidden { display: none; }
         #messageArea div { padding: 12px; margin-bottom: 15px; border-radius: 4px; font-size: 0.95em; }
         .success-message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
@@ -67,8 +73,28 @@
 </head>
 <body>
     <div class="container">
-        <h1>{{ titulo_pagina_panel|default:"Administrar Servicios" }}</h1>
+        <h1>{{ titulo_pagina_panel|default:"Panel de Administración" }}</h1>
 
+        {% comment %} --- SECCIÓN PARA CONFIGURAR EMAIL DEL ADMINISTRADOR --- {% endcomment %}
+        <div id="configuracionContainer">
+            <h3>Configuración de Notificaciones del Sitio</h3>
+            <form id="configForm">
+                {% csrf_token %} {% comment %} El JS tomará este token para la petición AJAX {% endcomment %}
+                <div class="form-group">
+                    <label for="emailNotificacionesAdminInput">Email para recibir notificaciones de tickets/solicitudes:</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="email" id="emailNotificacionesAdminInput" name="email_notificaciones_admin" 
+                               value="{{ configuracion_sitio.email_notificaciones_admin|default_if_none:'' }}"
+                               class="form-control" style="flex-grow: 1; margin-right: 10px;">
+                        <button type="submit" class="button button-info" style="margin-bottom:0; white-space: nowrap;">Guardar Email</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% comment %} --- FIN SECCIÓN CONFIGURACIÓN --- {% endcomment %}
+
+        <hr>
+        <h2>Gestión de Servicios</h2>
         <button id="btnMostrarFormularioCrear" class="button button-success">Agregar Nuevo Servicio</button>
 
         <div id="messageArea" class="hidden"></div>
@@ -77,18 +103,16 @@
         <div id="formServicioContainer" class="hidden">
             <h3 id="formTitulo">Agregar Nuevo Servicio</h3>
             <form id="servicioForm" enctype="multipart/form-data">
+                {% comment %} El CSRF token principal del form de servicios será usado por todas las llamadas AJAX de servicios {% endcomment %}
                 {% csrf_token %}
-                {% comment %} Campo oculto para guardar el ID del servicio cuando se edita {% endcomment %}
-                <input type="hidden" id="currentServicioIdInput">
-                
+                <input type="hidden" id="currentServicioIdInput"> 
                 {{ servicio_form.as_p }} 
-
                 <button type="submit" id="btnSubmitForm" class="button">Guardar</button>
                 <button type="button" id="btnCancelarForm" class="button" style="background-color: #6c757d;">Cancelar</button>
             </form>
         </div>
 
-        <h2>Lista de Servicios</h2>
+        <h3>Lista de Servicios Existentes</h3>
         <table id="tablaServicios">
             <thead>
                 <tr>
@@ -118,79 +142,84 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% if not servicios %}
-            <p id="noServiciosMensaje">No hay servicios registrados.</p>
-        {% else %}
-            <p id="noServiciosMensaje" class="hidden">No hay servicios registrados.</p>
-        {% endif %}
+        <p id="noServiciosMensaje" class="{% if servicios %}hidden{% endif %}">No hay servicios registrados.</p>
     </div>
 
     <script>
     $(document).ready(function() {
+        // Selectores comunes
         const formContainer = $('#formServicioContainer');
         const servicioForm = $('#servicioForm');
         const formTitulo = $('#formTitulo');
         const btnSubmitForm = $('#btnSubmitForm');
-        const currentServicioIdInput = $('#currentServicioIdInput'); // Input oculto para el ID
+        const currentServicioIdInput = $('#currentServicioIdInput');
         const listaServiciosBody = $('#listaServiciosBody');
         const noServiciosMensaje = $('#noServiciosMensaje');
         const messageArea = $('#messageArea');
         const loadingSpinner = $('#loadingSpinner');
-        let editMode = false; // No necesitamos currentEditServicioId global si usamos el input oculto
+        let editMode = false;
+
+        // Selectores para el formulario de configuración
+        const configForm = $('#configForm');
+        const emailNotificacionesAdminInput = $('#emailNotificacionesAdminInput');
 
         function showMessage(type, text, duration = 5000) {
             const messageDiv = $('<div>').addClass(type === 'success' ? 'success-message' : 'error-message').html(text);
             messageArea.empty().append(messageDiv).removeClass('hidden');
-            setTimeout(() => messageArea.addClass('hidden').empty(), duration);
+            if (duration > 0) {
+                setTimeout(() => {
+                    messageDiv.fadeOut(500, function() { $(this).remove(); });
+                    if (messageArea.children().length === 0) {
+                        messageArea.addClass('hidden');
+                    }
+                }, duration);
+            }
         }
 
         function showLoading(show) {
             loadingSpinner.toggleClass('hidden', !show);
         }
         
-        function resetForm() {
+        function resetServicioForm() {
             servicioForm[0].reset(); 
-            currentServicioIdInput.val(''); // Limpia el ID oculto
+            currentServicioIdInput.val(''); 
             formTitulo.text('Agregar Nuevo Servicio');
             btnSubmitForm.text('Guardar');
             editMode = false;
-            
-            // Limpieza específica para el campo de imagen si es ClearableFileInput
             var imagenField = servicioForm.find('input[type="file"][name="imagen"]');
             if (imagenField.length) {
                 var parentP = imagenField.closest('p'); 
                 if (parentP.length) {
-                    parentP.find('a').remove(); // Elimina enlaces de "Currently: ..."
-                    parentP.find('br').remove(); // Elimina <br> si los hay
-                    var clearCheckbox = parentP.find('input[type="checkbox"]');
-                    if (clearCheckbox.length) {
-                        clearCheckbox.prop('checked', false);
-                        // Ocultar el checkbox y su label si no hay imagen actual (manejo de Django)
-                        // Esto es complejo de manejar solo con JS sin conocer la salida exacta del widget
-                    }
+                    parentP.find('a').remove(); 
+                    parentP.find('br').remove();
+                    var clearCheckbox = parentP.find('input[type="checkbox"][name$="-clear"]');
+                    if (clearCheckbox.length) clearCheckbox.prop('checked', false);
                 }
             }
-             // Quitar la clase de error de todos los campos
-            servicioForm.find('.form-control, .form-control-file').removeClass('is-invalid');
+            servicioForm.find('.is-invalid').removeClass('is-invalid');
             servicioForm.find('.invalid-feedback').remove();
         }
 
         $('#btnMostrarFormularioCrear').click(function() {
-            resetForm();
+            resetServicioForm();
+            formTitulo.text('Agregar Nuevo Servicio');
+            btnSubmitForm.text('Guardar');
+            editMode = false;
+            currentServicioIdInput.val('');
             formContainer.slideDown();
         });
 
         $('#btnCancelarForm').click(function() {
             formContainer.slideUp(function() {
-                resetForm();
+                resetServicioForm();
             });
         });
 
+        // --- SUBMIT DEL FORMULARIO DE SERVICIOS (Crear/Actualizar) ---
         servicioForm.submit(function(event) {
             event.preventDefault();
             showLoading(true);
             messageArea.addClass('hidden').empty();
-
             const formData = new FormData(this);
             let url;
             const servicioId = currentServicioIdInput.val();
@@ -202,97 +231,102 @@
             }
 
             $.ajax({
-                url: url,
-                type: 'POST',
-                data: formData,
-                processData: false, 
-                contentType: false, 
-                headers: {'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()},
+                url: url, type: 'POST', data: formData,
+                processData: false, contentType: false, 
+                headers: {'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]', this).val()}, // Usa el token de este form
                 success: function(response) {
                     if (response.status === 'success') {
                         showMessage('success', response.message);
                         formContainer.slideUp();
-                        resetForm();
-                        if (editMode) {
-                            updateServicioEnLista(response.servicio);
-                        } else {
-                            addServicioALista(response.servicio);
-                        }
-                        noServiciosMensaje.addClass('hidden'); 
+                        resetServicioForm();
+                        if (editMode) updateServicioEnLista(response.servicio);
+                        else addServicioALista(response.servicio);
+                        if(listaServiciosBody.find('tr').length > 0) noServiciosMensaje.addClass('hidden');
                     } else if (response.errors) {
                         let errorText = 'Por favor corrige los siguientes errores:<br><ul>';
                         for (const field in response.errors) {
-                            errorText += `<li>${response.errors[field].join(', ')}</li>`;
+                            errorText += `<li>${field}: ${response.errors[field].join(', ')}</li>`;
                         }
                         errorText += '</ul>';
-                        showMessage('error', errorText);
-                    } else {
-                        showMessage('error', response.message || 'Ocurrió un error desconocido.');
-                    }
+                        showMessage('error', errorText, 0);
+                    } else { showMessage('error', response.message || 'Ocurrió un error desconocido.'); }
                 },
                 error: function(xhr) {
                     let errorMsg = 'Error de conexión o del servidor.';
                     if (xhr.responseJSON) {
-                        if (xhr.responseJSON.message) {
-                           errorMsg = xhr.responseJSON.message;
-                        } else if (xhr.responseJSON.errors) {
-                            let errorText = 'Por favor corrige los siguientes errores:<br><ul>';
-                            for (const field in xhr.responseJSON.errors) {
-                                errorText += `<li>${field}: ${xhr.responseJSON.errors[field].join(', ')}</li>`;
-                            }
-                            errorText += '</ul>';
-                            errorMsg = errorText;
-                        }
-                    } else {
-                        errorMsg = `Error: ${xhr.status} ${xhr.statusText}`;
-                    }
-                    showMessage('error', errorMsg);
+                        if (xhr.responseJSON.message) errorMsg = xhr.responseJSON.message;
+                        else if (xhr.responseJSON.errors) {
+                            let errs = xhr.responseJSON.errors; errorMsg = 'Por favor corrige:<br><ul>';
+                            for (const f in errs) errorMsg += `<li>${f}: ${errs[f].join(', ')}</li>`;
+                            errorMsg += '</ul>';
+                        } else errorMsg = `Error ${xhr.status}: ${xhr.statusText}`;
+                    } else errorMsg = `Error: ${xhr.status} ${xhr.statusText}`;
+                    showMessage('error', errorMsg, 0);
                 },
-                complete: function() {
-                    showLoading(false);
-                }
+                complete: function() { showLoading(false); }
             });
         });
 
+        // --- SUBMIT DEL FORMULARIO DE CONFIGURACIÓN DE EMAIL ---
+        configForm.submit(function(event) {
+            event.preventDefault();
+            showLoading(true);
+            messageArea.addClass('hidden').empty();
+            const nuevoEmail = emailNotificacionesAdminInput.val();
+
+            $.ajax({
+                url: "{% url 'core:ajax_configuracion_update_email' %}",
+                type: 'POST',
+                data: {
+                    'email_notificaciones_admin': nuevoEmail,
+                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]', this).val() // CSRF del configForm
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        showMessage('success', response.message);
+                        emailNotificacionesAdminInput.val(response.nuevo_email);
+                    } else { showMessage('error', response.message || 'No se pudo actualizar el email.'); }
+                },
+                error: function(xhr) {
+                    let errorMsg = 'Error de conexión.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) errorMsg = xhr.responseJSON.message;
+                    else errorMsg = `Error ${xhr.status}: ${xhr.statusText}`;
+                    showMessage('error', errorMsg, 0);
+                },
+                complete: function() { showLoading(false); }
+            });
+        });
+
+        // --- Cargar datos para Editar Servicio ---
         listaServiciosBody.on('click', '.btnEditar', function() {
             const servicioId = $(this).data('id');
             showLoading(true);
             messageArea.addClass('hidden').empty();
-            resetForm(); 
+            resetServicioForm(); 
 
             $.ajax({
-                url: `/ajax/servicios/${servicioId}/detalle/`,
-                type: 'GET',
+                url: `/ajax/servicios/${servicioId}/detalle/`, type: 'GET',
                 success: function(response) {
                     if (response.status === 'success') {
                         const servicio = response.servicio;
                         formTitulo.text('Editar Servicio: ' + servicio.nombre);
                         btnSubmitForm.text('Actualizar');
-                        currentServicioIdInput.val(servicio.id); // Poner ID en el campo oculto
-                        
+                        currentServicioIdInput.val(servicio.id);
                         servicioForm.find('input[name="nombre"]').val(servicio.nombre);
                         servicioForm.find('textarea[name="descripcion"]').val(servicio.descripcion);
-                        // El campo de imagen 'ClearableFileInput' mostrará la imagen actual y la opción "Clear"
-                        // No necesitamos (ni podemos) pre-llenar el input[type=file] directamente.
-                        // Si hay una imagen_url en la respuesta de detalle y quieres mostrar un preview,
-                        // tendrías que añadir un <img> y ponerle el src.
-                        // ej: if (servicio.imagen_url) { $('#imagenPreview').attr('src', servicio.imagen_url).show(); }
-
+                        // El widget ClearableFileInput de Django maneja la visualización de la imagen actual.
+                        // Si existe una imagen, mostrará un enlace a ella y un checkbox para "Clear".
+                        // No pre-llenamos el input[type=file] en sí.
                         editMode = true;
                         formContainer.slideDown();
-                    } else {
-                        showMessage('error', response.message || 'No se pudieron cargar los datos del servicio.');
-                    }
+                    } else { showMessage('error', response.message || 'No se pudieron cargar los datos del servicio.');}
                 },
-                error: function(xhr) {
-                    showMessage('error', 'Error al cargar datos para editar: ' + xhr.statusText);
-                },
-                complete: function() {
-                    showLoading(false);
-                }
+                error: function(xhr) { showMessage('error', 'Error al cargar datos para editar: ' + xhr.statusText); },
+                complete: function() { showLoading(false); }
             });
         });
 
+        // --- Eliminar Servicio ---
         listaServiciosBody.on('click', '.btnEliminar', function() {
             const servicioId = $(this).data('id');
             const servicioRow = $(this).closest('tr');
@@ -302,9 +336,8 @@
                 showLoading(true);
                 messageArea.addClass('hidden').empty();
                 $.ajax({
-                    url: `/ajax/servicios/${servicioId}/eliminar/`,
-                    type: 'POST',
-                    headers: {'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()},
+                    url: `/ajax/servicios/${servicioId}/eliminar/`, type: 'POST',
+                    headers: {'X-CSRFToken': $('#servicioForm input[name="csrfmiddlewaretoken"]').val()}, // Usa el CSRF del form principal
                     success: function(response) {
                         if (response.status === 'success') {
                             showMessage('success', response.message);
@@ -314,47 +347,48 @@
                                     noServiciosMensaje.removeClass('hidden');
                                 }
                             });
-                        } else {
-                            showMessage('error', response.message || 'No se pudo eliminar el servicio.');
-                        }
+                        } else { showMessage('error', response.message || 'No se pudo eliminar el servicio.'); }
                     },
-                    error: function(xhr) {
-                        showMessage('error', 'Error al eliminar: ' + xhr.statusText);
-                    },
-                    complete: function() {
-                        showLoading(false);
-                    }
+                    error: function(xhr) { showMessage('error', 'Error al eliminar: ' + xhr.statusText); },
+                    complete: function() { showLoading(false); }
                 });
             }
         });
 
+        // Funciones para actualizar la lista de servicios en el HTML
         function addServicioALista(servicio) {
             let imagenHtml = 'Sin imagen';
             if (servicio.imagen_url) {
-                imagenHtml = `<img src="${servicio.imagen_url}" alt="${servicio.nombre}" style="max-width: 100px; max-height: 70px;">`;
+                imagenHtml = `<img src="${servicio.imagen_url}" alt="${$('<div/>').text(servicio.nombre).html()}" style="max-width: 100px; max-height: 70px;">`;
             }
-            const newRow = `
+            // Escapar HTML para nombre y descripción corta para prevenir XSS
+            const nombreEscapado = $('<div/>').text(servicio.nombre).html();
+            const descripcionEscapada = $('<div/>').text(servicio.descripcion_corta).html();
+
+            const newRowHtml = `
                 <tr data-id="${servicio.id}">
-                    <td class="nombre">${servicio.nombre}</td>
-                    <td class="descripcion">${servicio.descripcion_corta}</td>
+                    <td class="nombre">${nombreEscapado}</td>
+                    <td class="descripcion">${descripcionEscapada}</td>
                     <td class="imagen">${imagenHtml}</td>
                     <td class="actions">
                         <button class="button-warning btnEditar" data-id="${servicio.id}">Editar</button>
                         <button class="button-danger btnEliminar" data-id="${servicio.id}">Eliminar</button>
                     </td>
                 </tr>`;
-            listaServiciosBody.prepend(newRow); // Añade al principio para ver el nuevo inmediatamente
+            listaServiciosBody.prepend(newRowHtml);
             noServiciosMensaje.addClass('hidden');
         }
 
         function updateServicioEnLista(servicio) {
             const row = listaServiciosBody.find(`tr[data-id="${servicio.id}"]`);
             if (row.length) {
-                row.find('.nombre').text(servicio.nombre);
-                row.find('.descripcion').text(servicio.descripcion_corta);
+                const nombreEscapado = $('<div/>').text(servicio.nombre).html();
+                const descripcionEscapada = $('<div/>').text(servicio.descripcion_corta).html();
+                row.find('.nombre').html(nombreEscapado);
+                row.find('.descripcion').html(descripcionEscapada);
                 let imagenHtml = 'Sin imagen';
                 if (servicio.imagen_url) {
-                    imagenHtml = `<img src="${servicio.imagen_url}" alt="${servicio.nombre}" style="max-width: 100px; max-height: 70px;">`;
+                    imagenHtml = `<img src="${servicio.imagen_url}" alt="${nombreEscapado}" style="max-width: 100px; max-height: 70px;">`;
                 }
                 row.find('.imagen').html(imagenHtml);
             }

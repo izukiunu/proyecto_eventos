@@ -11,5 +11,4 @@ class SolicitudCotizacionAdmin(admin.ModelAdmin):
     list_filter = ('atendida', 'fecha_solicitud', 'servicio_interesado') # Añadido servicio_interesado
     search_fields = ('nombre_cliente', 'email_cliente', 'descripcion_evento', 'servicio_interesado__nombre') # Búsqueda por nombre de servicio
     readonly_fields = ('fecha_solicitud',)
-
 admin.site.register(SolicitudCotizacion, SolicitudCotizacionAdmin)
