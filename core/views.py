@@ -229,3 +229,15 @@ def configuracion_sitio_update_ajax(request):
             'nuevo_email': config.email_notificaciones_admin
         })
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+
+
+
+
+
+from django.shortcuts import render
+from .models import Servicio
+
+def lista_servicios(request):
+    servicios = Servicio.objects.all()
+    return render(request, 'core/lista_servicios.html', {'servicios': servicios})
