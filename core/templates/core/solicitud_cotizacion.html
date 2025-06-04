@@ -1,168 +1,63 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Solicitar Cotización | MejíaEventos</title>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
-
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background-color: #f7f5f3;
-      color: #333;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: 60px auto;
-      background: #fff;
-      padding: 40px 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
-    }
-
-    h1 {
-      text-align: center;
-      color: #8b4b35;
-      margin-bottom: 30px;
-      font-size: 2rem;
-    }
-
-    form label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    form input[type="text"],
-    form input[type="email"],
-    form textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      box-sizing: border-box;
-      margin-bottom: 15px;
-    }
-
-    form textarea {
-      resize: vertical;
-      min-height: 120px;
-    }
-
-    button[type="submit"] {
-      background-color: #b76e4f;
-      color: #fff;
-      border: none;
-      padding: 12px 20px;
-      font-size: 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      width: 100%;
-      transition: background-color 0.3s ease;
-    }
-
-    button[type="submit"]:hover {
-      background-color: #9c543b;
-    }
-
-    .messages {
-      list-style: none;
-      padding: 0;
-      margin-bottom: 20px;
-    }
-
-    .messages li {
-      padding: 12px 15px;
-      border-radius: 6px;
-      margin-bottom: 12px;
-      font-size: 0.95rem;
-    }
-
-    .messages li.success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-
-    .messages li.error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-
-    .errorlist {
-      list-style: none;
-      padding: 0;
-      margin: -10px 0 10px 0;
-      color: #a94442;
-      font-size: 0.85rem;
-    }
-
-    .errorlist li {
-      margin-bottom: 6px;
-    }
-
-    .volver {
-      text-align: center;
-      margin-top: 25px;
-    }
-
-    .volver a {
-      color: #8b4b35;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .volver a:hover {
-      text-decoration: underline;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitar Cotización</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { max-width: 600px; margin: 40px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; margin-bottom: 20px; }
+        form p { margin-bottom: 15px; }
+        form label { display: block; margin-bottom: 5px; font-weight: bold; }
+        form input[type="text"],
+        form input[type="email"],
+        form textarea {
+            width: calc(100% - 22px); /* Ajuste para padding y border */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* Importante para que el padding no aumente el ancho total */
+        }
+        form textarea { resize: vertical; }
+        form button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        form button:hover { background-color: #4cae4c; }
+        .messages { list-style: none; padding: 0; margin-bottom: 20px; }
+        .messages li { padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+        .messages li.success { background-color: #dff0d8; color: #3c763d; border: 1px solid #d6e9c6; }
+        .messages li.error { background-color: #f2dede; color: #a94442; border: 1px solid #ebccd1; }
+        .errorlist { list-style: none; padding: 0; color: #a94442; font-size: 0.9em; }
+        .errorlist li { margin-bottom: 5px; }
+    </style>
 </head>
 <body>
-<div class="container">
-  <h1>Solicitar Cotización</h1>
+    <div class="container">
+        <h1>Solicitar Cotización</h1>
 
-  <p style="text-align: center; font-size: 1rem; color: #555; margin-bottom: 25px;">
-    Completa el siguiente formulario para recibir una cotización personalizada. Nuestro equipo te responderá dentro de las próximas 24 horas.
-  </p>
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
-<div style="max-width: 700px; margin: 0 auto; background-color: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
-
-  <!-- Beneficios -->
-  <div style="background-color: #f9f9f9; border-left: 5px solid #b76e4f; padding: 15px 20px; border-radius: 8px; margin-bottom: 30px;">
-    <ul style="padding-left: 20px; margin: 0; color: #555; font-size: 0.95rem;">
-      <li>✔ Atención personalizada y rápida</li>
-      <li>✔ Cotización sin compromiso</li>
-      <li>✔ Confidencialidad total en tus datos</li>
-      <li>✔ Soporte para eventos sociales y corporativos</li>
-    </ul>
-  </div>
-  <!-- Formulario -->
-  <form method="post" novalidate style="background-color: #fffefc; padding: 25px 20px; border-radius: 10px; border: 1px solid #eee;">
-
-    <button type="submit" style="margin-top: 10px; padding: 12px 25px; background-color: #b76e4f; color: #fff; font-size: 1rem; border: none; border-radius: 6px; cursor: pointer;">
-      Enviar Solicitud
-    </button>
-  </form>
-
-  <!-- Contacto -->
-  <p style="text-align: center; margin-top: 25px; font-size: 0.95rem; color: #666;">
-    ¿Tienes preguntas? Escríbenos a <strong>contacto@mejiaeventos.cl</strong> o envíanos un WhatsApp al <strong>+56 9 5204 6511</strong>. Estamos para ayudarte a organizar tu evento perfecto.
-  </p>
-
-</div>
-
-    <div class="volver">
-      <a href="{% url 'core:lista_servicios' %}">&larr; Volver a los servicios</a>
+        <form method="post" novalidate>
+            {% csrf_token %} {{ form.as_p }} <p>
+                <button type="submit">Enviar Solicitud</button>
+            </p>
+        </form>
+        <p style="text-align: center; margin-top: 20px;">
+            <a href="{% url 'core:lista_servicios' %}">Volver a la lista de servicios</a>
+        </p>
     </div>
-  </div>
-
 </body>
 </html>

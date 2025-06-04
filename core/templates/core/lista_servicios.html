@@ -1,167 +1,65 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Servicios | Centro de Eventos Mejía</title>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Open+Sans&display=swap" rel="stylesheet" />
-  <!-- AOS Animations -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet" />
-
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Open Sans', sans-serif;
-      background: linear-gradient(to bottom, #eef2f7, #ffffff);
-      color: #1a1a2e;
-    }
-
-    header {
-      text-align: center;
-      padding: 60px 20px 30px;
-      background-color: #0D1E4C;
-      color: #ffffff;
-    }
-
-    header h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.8rem;
-      margin-bottom: 10px;
-    }
-
-    header p {
-      font-size: 1.1rem;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-
-    main {
-      max-width: 1100px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-
-    .servicio {
-      background: #fdfdfd;
-      border-radius: 12px;
-      padding: 25px;
-      margin-bottom: 35px;
-      box-shadow: 0 6px 16px rgba(13, 30, 76, 0.08);
-      transition: transform 0.3s ease;
-      border-left: 5px solid #26415E;
-    }
-
-    .servicio:hover {
-      transform: translateY(-5px);
-    }
-
-    .servicio img {
-      width: 100%;
-      height: auto;
-      border-radius: 10px;
-      margin-bottom: 15px;
-    }
-
-    .servicio h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.6rem;
-      color: #0D1E4C;
-      margin-bottom: 10px;
-    }
-
-    .servicio p {
-      font-size: 1rem;
-      color: #333;
-    }
-
-    .boton-cotizar,
-    .boton-cotizar-general {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 10px 20px;
-      background-color: #3a72c7;
-      color: #fff;
-      text-decoration: none;
-      font-weight: bold;
-      border-radius: 8px;
-      transition: background-color 0.3s ease;
-    }
-
-    .boton-cotizar:hover,
-    .boton-cotizar-general:hover {
-      background-color: #0D1E4C;
-    }
-
-    .no-servicios {
-      text-align: center;
-      font-size: 1.1rem;
-      color: #555;
-      margin-top: 30px;
-    }
-
-    .contacto {
-      text-align: center;
-      margin: 60px 0 30px;
-      color: #0D1E4C;
-    }
-
-    .contacto p {
-      margin: 10px 0;
-      font-size: 1rem;
-    }
-
-    footer {
-      text-align: center;
-      padding: 30px 20px;
-      background-color: #0D1E4C;
-      color: #fff;
-      font-size: 0.9rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestros Servicios</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 20px; }
+        .servicio { border: 1px solid #ddd; margin-bottom: 20px; padding: 15px; border-radius: 5px; background-color: #fff; }
+        .servicio img { max-width: 100%; height: auto; display: block; margin-bottom: 10px; border-radius: 4px; }
+        .servicio h2 { color: #555; margin-top: 0; }
+        .no-servicios { text-align: center; color: #777; }
+        /* Estilos para el botón de cotizar */
+        .servicio a.boton-cotizar, a.boton-cotizar-general { /* Aplicado también al general */
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white !important; /* Importante para asegurar color de texto */
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: none; /* Para que parezca más un botón */
+            cursor: pointer; /* Cursor de botón */
+        }
+        .servicio a.boton-cotizar:hover, a.boton-cotizar-general:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Nuestros Servicios para Bodas</h1>
 
-  <header data-aos="fade-down">
-    <h1>Catálogo de Servicios</h1>
-    <p>Te ofrecemos experiencias inolvidables con nuestros servicios exclusivos para bodas, eventos sociales y empresariales. Planificación integral, ambientación y atención a cada detalle.</p>
-  </header>
+        {% if servicios %}
+            {% for servicio_actual in servicios %}
+                <div class="servicio">
+                    <h2>{{ servicio_actual.nombre }}</h2>
+                    {% if servicio_actual.imagen %}
+                        <img src="{{ servicio_actual.imagen.url }}" alt="{{ servicio_actual.nombre }}">
+                    {% else %}
+                        <p><small>No hay imagen disponible para este servicio.</small></p>
+                    {% endif %}
+                    <p>{{ servicio_actual.descripcion|linebreaks }}</p>
 
-  <main data-aos="fade-up">
-    {% for servicio_actual in servicios %}
-      <section class="servicio" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
-        <h2>{{ servicio_actual.nombre }}</h2>
-
-        {% if servicio_actual.imagen %}
-          <img src="{{ servicio_actual.imagen.url }}" alt="{{ servicio_actual.nombre }}">
+                    <a href="{% url 'core:solicitar_cotizacion_especifica' servicio_id=servicio_actual.id %}" class="boton-cotizar">
+                        Solicitar Cotización para este Servicio
+                    </a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-servicios">Actualmente no hay servicios disponibles. Por favor, crea algunos en el panel de administración.</p>
         {% endif %}
 
-        <p>{{ servicio_actual.descripcion|linebreaks }}</p>
-
-        <a href="{% url 'core:solicitar_cotizacion_especifica' servicio_id=servicio_actual.id %}" class="boton-cotizar">
-          Solicitar Cotización
-        </a>
-      </section>
-    {% endfor %}
-
-    <p class="no-servicios">No hay servicios disponibles actualmente. Estamos trabajando para ofrecerte nuevas experiencias pronto.</p>
-
-    <div class="contacto" data-aos="fade-up">
-      <p>¿Necesitas ayuda para elegir el servicio adecuado?</p>
-      <a href="{% url 'core:solicitar_cotizacion_general' %}" class="boton-cotizar-general">Solicitar Cotización General</a>
-      <p>También puedes contactarnos al <strong>+56 9 1234 5678</strong> o <strong>contacto@mejiaeventos.cl</strong></p>
+        <hr style="margin: 30px 0;">
+        <p style="text-align: center;">
+            <a href="{% url 'core:solicitar_cotizacion_general' %}" class="boton-cotizar-general" style="background-color: #6c757d;">
+                Solicitar Cotización General
+            </a>
+        </p>
     </div>
-  </main>
-
-  <footer>
-    &copy; 2025 MejíaEventos Web · Todos los derechos reservados.
-  </footer>
-
-  <!-- AOS Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
-  <script>
-    AOS.init({ once: true, duration: 1000 });
-  </script>
 </body>
 </html>
