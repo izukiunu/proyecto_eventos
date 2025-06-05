@@ -1,0 +1,47 @@
+{% comment %} core/templates/core/partials/_footer.html {% endcomment %}
+{% load static %}
+
+<footer class="site-footer pt-5 pb-4"> {# La clase 'site-footer' será estilizada en CSS #}
+    <div class="container text-center text-md-start">
+        <div class="row gy-4"> {# gy-4 para espaciado vertical en mobile #}
+            <div class="col-lg-4 col-md-6 mx-auto">
+                <a href="{% url 'core:index' %}">
+                    <img src="{% static 'img/majiaeventoslogo.png' %}" width="100" alt="Logo MejíaEventos en Footer" class="mb-3 d-block mx-auto mx-md-0">
+                </a>
+                <p class="footer-text">Soluciones profesionales para tus eventos. Calidad y experiencia a tu servicio, llevando tus celebraciones al siguiente nivel.</p>
+            </div>
+
+            <div class="col-lg-2 col-md-6 mx-auto">
+                <h6 class="text-uppercase fw-bold mb-4">Menú</h6>
+                <p><a href="{% url 'core:lista_servicios' %}" class="footer-link">Inicio</a></p>
+                <p><a href="#" class="footer-link">Nosotros</a></p> {# Crear página Nosotros #}
+                <p><a href="{% url 'core:lista_servicios' %}" class="footer-link">Servicios</a></p>
+                <p><a href="https://wa.me/56932454866" target="_blank" class="footer-link">Contacto</a></p>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6 mx-auto">
+                <h6 class="text-uppercase fw-bold mb-4">Contáctanos</h6>
+                <p><i class="fas fa-phone me-2"></i> (+56) 9 5204 6511</p>
+                <p><i class="fas fa-envelope me-2"></i> info@mejiaeventos.cl</p>
+                <p><i class="fas fa-map-marker-alt me-2"></i> Oficina: Los Simpson 123, Chile</p> {# Ejemplo de dirección #}
+                {% comment %}
+                <a href="URL_DE_TU_MAPA_DE_GOOGLE" target="_blank" class="footer-link d-block mt-2">
+                     Ver en Google Maps
+                </a>
+                {% endcomment %}
+            </div>
+
+            <div class="col-lg-3 col-md-6 mx-auto text-center text-lg-start">
+                <h6 class="text-uppercase fw-bold mb-4">Síguenos</h6>
+                <a href="https://facebook.com/tu_pagina_de_facebook" target="_blank" class="footer-social-link me-3"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://instagram.com/tu_pagina_de_instagram" target="_blank" class="footer-social-link"><i class="fab fa-instagram"></i></a>
+                {% comment %} Añade más redes si las tienes {% endcomment %}
+            </div>
+        </div>
+    </div>
+    <hr class="footer-hr my-4">
+    <div class="text-center pb-3">
+        <p class="mb-0 copyright-text">© {% now "Y" %} Todos los derechos reservados a <strong>MejíaEventos</strong>.</p>
+    </div>
+</footer>

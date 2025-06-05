@@ -1,47 +1,28 @@
-{% comment %} core/templates/core/admin_panel/servicio_list.html {% endcomment %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ titulo_pagina_panel|default:"Administrar Contenido" }}</title>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <style>
-        body { font-family: sans-serif; margin: 20px; background-color: #f0f0f0; }
-        .container { max-width: 900px; margin: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1, h2, h3 { color: #333; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; margin-top: 10px;}
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: middle; }
-        th { background-color: #e9ecef; }
-        .button, button { display: inline-block; padding: 10px 15px; background-color: #007bff; color: white !important; text-decoration: none; border-radius: 5px; margin-bottom:20px; border: none; cursor: pointer; font-size: 1em; }
-        .button:hover, button:hover { background-color: #0056b3;}
-        .actions button { margin-right: 5px; font-size: 0.9em; padding: 6px 10px;}
-        .button-danger { background-color: #dc3545; }
-        .button-danger:hover { background-color: #c82333; }
-        .button-warning { background-color: #ffc107; color: black !important; }
-        .button-warning:hover { background-color: #e0a800; }
-        .button-success { background-color: #28a745; }
-        .button-success:hover { background-color: #218838; }
-        .button-info { background-color: #17a2b8; }
-        .button-info:hover { background-color: #117a8b; }
+{% extends 'core/base.html' %}
+{% load static %}
 
+{% block title %}{{ titulo_pagina_panel|default:"Panel de Administración" }} - MejíaEventos{% endblock title %}
+
+{% block extra_head %}
+    {# Estilos específicos para el panel de administración SPA-like #}
+    <style>
+        /* Estilos generales para esta página específica */
+        .admin-container h1, .admin-container h2, .admin-container h3 { color: #333; }
+        .admin-container table { width: 100%; border-collapse: collapse; margin-bottom: 20px; margin-top: 10px;}
+        .admin-container th, .admin-container td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: middle; }
+        .admin-container th { background-color: #e9ecef; }
+        
+        /* Ajustes para botones usando clases de Bootstrap y las tuyas personalizadas */
+        .admin-container .actions button { margin-right: 5px; font-size: 0.9em; padding: 6px 10px;}
+
+        /* Contenedores de formularios y configuración */
         #configuracionContainer, #formServicioContainer {
-            border: 1px solid #ccc;
-            padding: 20px;
-            margin-top: 20px;
-            margin-bottom: 30px;
-            border-radius: 8px;
-            background-color: #f9f9f9;
+            border: 1px solid #ccc; padding: 20px;
+            margin-top: 20px; margin-bottom: 30px;
+            border-radius: 8px; background-color: #f9f9f9;
         }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-control, .form-control-file {
-            width: calc(100% - 22px); /* Ajuste para padding y border */
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        /* Ajustes para <p> generados por form.as_p */
+
+        /* Estilos para los campos de formulario generados por {{ form.as_p }} */
         #servicioForm p, #configForm p { margin-bottom: 15px; }
         #servicioForm p label, #configForm p label { display: block; margin-bottom: 5px; font-weight: bold; }
         #servicioForm p input[type="text"],
@@ -49,44 +30,49 @@
         #servicioForm p input[type="file"],
         #servicioForm p select,
         #configForm input[type="email"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            width: 100%; /* Bootstrap se encargará de esto si usas .form-control, pero lo dejamos por si acaso */
             box-sizing: border-box;
         }
         #servicioForm p textarea { resize: vertical; }
 
-
+        /* Contenedores de formularios y títulos internos */
         #formServicioContainer h3, #configuracionContainer h3 { margin-top: 0; }
-        .hidden { display: none; }
-        #messageArea div { padding: 12px; margin-bottom: 15px; border-radius: 4px; font-size: 0.95em; }
+        
+        /* Clases para mensajes y spinner */
+        .hidden { display: none !important; } /* !important para asegurar que se oculte */
+        #messageArea { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 1040; width: auto; max-width: 90%; }
+        #messageArea div { padding: 12px; margin-bottom: 15px; border-radius: 4px; font-size: 0.95em; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .success-message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
         .error-message { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;}
         #loadingSpinner {
-            border: 4px solid #f3f3f3; border-top: 4px solid #3498db;
-            border-radius: 50%; width: 30px; height: 30px;
-            animation: spin 1s linear infinite; margin: 10px auto;
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border: 4px solid #f3f3f3; border-top: 4px solid #0d6efd;
+            border-radius: 50%; width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+            z-index: 1060; /* Por encima de la mayoría de los elementos */
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
     </style>
-</head>
-<body>
-    <div class="container">
+{% endblock extra_head %}
+
+{% block main_classes %}main-content-with-padding{% endblock main_classes %}
+{% block content %}
+    <div class="admin-container">
         <h1>{{ titulo_pagina_panel|default:"Panel de Administración" }}</h1>
 
         {% comment %} --- SECCIÓN PARA CONFIGURAR EMAIL DEL ADMINISTRADOR --- {% endcomment %}
         <div id="configuracionContainer">
             <h3>Configuración de Notificaciones del Sitio</h3>
             <form id="configForm">
-                {% csrf_token %} {% comment %} El JS tomará este token para la petición AJAX {% endcomment %}
+                {% csrf_token %}
                 <div class="form-group">
                     <label for="emailNotificacionesAdminInput">Email para recibir notificaciones de tickets/solicitudes:</label>
-                    <div style="display: flex; align-items: center;">
+                    <div class="d-flex align-items-center">
                         <input type="email" id="emailNotificacionesAdminInput" name="email_notificaciones_admin" 
                                value="{{ configuracion_sitio.email_notificaciones_admin|default_if_none:'' }}"
-                               class="form-control" style="flex-grow: 1; margin-right: 10px;">
-                        <button type="submit" class="button button-info" style="margin-bottom:0; white-space: nowrap;">Guardar Email</button>
+                               class="form-control me-2">
+                        <button type="submit" class="btn btn-info flex-shrink-0">Guardar Email</button>
                     </div>
                 </div>
             </form>
@@ -95,59 +81,60 @@
 
         <hr>
         <h2>Gestión de Servicios</h2>
-        <button id="btnMostrarFormularioCrear" class="button button-success">Agregar Nuevo Servicio</button>
-
-        <div id="messageArea" class="hidden"></div>
-        <div id="loadingSpinner" class="hidden"></div>
+        <button id="btnMostrarFormularioCrear" class="btn btn-success mb-3">Agregar Nuevo Servicio</button>
 
         <div id="formServicioContainer" class="hidden">
             <h3 id="formTitulo">Agregar Nuevo Servicio</h3>
             <form id="servicioForm" enctype="multipart/form-data">
-                {% comment %} El CSRF token principal del form de servicios será usado por todas las llamadas AJAX de servicios {% endcomment %}
                 {% csrf_token %}
                 <input type="hidden" id="currentServicioIdInput"> 
                 {{ servicio_form.as_p }} 
-                <button type="submit" id="btnSubmitForm" class="button">Guardar</button>
-                <button type="button" id="btnCancelarForm" class="button" style="background-color: #6c757d;">Cancelar</button>
+                <button type="submit" id="btnSubmitForm" class="btn btn-primary">Guardar</button>
+                <button type="button" id="btnCancelarForm" class="btn btn-secondary">Cancelar</button>
             </form>
         </div>
 
         <h3>Lista de Servicios Existentes</h3>
-        <table id="tablaServicios">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Descripción (resumen)</th>
-                    <th>Imagen</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="listaServiciosBody">
-                {% for servicio in servicios %}
-                <tr data-id="{{ servicio.id }}">
-                    <td class="nombre">{{ servicio.nombre }}</td>
-                    <td class="descripcion">{{ servicio.descripcion|truncatewords:10 }}</td>
-                    <td class="imagen">
-                        {% if servicio.imagen %}
-                            <img src="{{ servicio.imagen.url }}" alt="{{ servicio.nombre }}" style="max-width: 100px; max-height: 70px;">
-                        {% else %}
-                            Sin imagen
-                        {% endif %}
-                    </td>
-                    <td class="actions">
-                        <button class="button-warning btnEditar" data-id="{{ servicio.id }}">Editar</button>
-                        <button class="button-danger btnEliminar" data-id="{{ servicio.id }}">Eliminar</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table id="tablaServicios" class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Descripción (resumen)</th>
+                        <th>Imagen</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="listaServiciosBody">
+                    {% for servicio in servicios %}
+                    <tr data-id="{{ servicio.id }}">
+                        <td class="nombre">{{ servicio.nombre }}</td>
+                        <td class="descripcion">{{ servicio.descripcion|truncatewords:10 }}</td>
+                        <td class="imagen">
+                            {% if servicio.imagen %}
+                                <img src="{{ servicio.imagen.url }}" alt="{{ servicio.nombre }}" style="max-width: 100px; max-height: 70px;">
+                            {% else %}
+                                Sin imagen
+                            {% endif %}
+                        </td>
+                        <td class="actions">
+                            <button class="btn btn-sm btn-warning btnEditar" data-id="{{ servicio.id }}">Editar</button>
+                            <button class="btn btn-sm btn-danger btnEliminar" data-id="{{ servicio.id }}">Eliminar</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         <p id="noServiciosMensaje" class="{% if servicios %}hidden{% endif %}">No hay servicios registrados.</p>
     </div>
+{% endblock content %}
 
+
+{% block extra_scripts %}
     <script>
     $(document).ready(function() {
-        // Selectores comunes
+        // --- TODO TU JAVASCRIPT/JQUERY VA AQUÍ ---
         const formContainer = $('#formServicioContainer');
         const servicioForm = $('#servicioForm');
         const formTitulo = $('#formTitulo');
@@ -159,7 +146,6 @@
         const loadingSpinner = $('#loadingSpinner');
         let editMode = false;
 
-        // Selectores para el formulario de configuración
         const configForm = $('#configForm');
         const emailNotificacionesAdminInput = $('#emailNotificacionesAdminInput');
 
@@ -186,6 +172,7 @@
             formTitulo.text('Agregar Nuevo Servicio');
             btnSubmitForm.text('Guardar');
             editMode = false;
+            
             var imagenField = servicioForm.find('input[type="file"][name="imagen"]');
             if (imagenField.length) {
                 var parentP = imagenField.closest('p'); 
@@ -233,7 +220,7 @@
             $.ajax({
                 url: url, type: 'POST', data: formData,
                 processData: false, contentType: false, 
-                headers: {'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]', this).val()}, // Usa el token de este form
+                headers: {'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]', this).val()},
                 success: function(response) {
                     if (response.status === 'success') {
                         showMessage('success', response.message);
@@ -279,7 +266,7 @@
                 type: 'POST',
                 data: {
                     'email_notificaciones_admin': nuevoEmail,
-                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]', this).val() // CSRF del configForm
+                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]', this).val()
                 },
                 success: function(response) {
                     if (response.status === 'success') {
@@ -314,9 +301,6 @@
                         currentServicioIdInput.val(servicio.id);
                         servicioForm.find('input[name="nombre"]').val(servicio.nombre);
                         servicioForm.find('textarea[name="descripcion"]').val(servicio.descripcion);
-                        // El widget ClearableFileInput de Django maneja la visualización de la imagen actual.
-                        // Si existe una imagen, mostrará un enlace a ella y un checkbox para "Clear".
-                        // No pre-llenamos el input[type=file] en sí.
                         editMode = true;
                         formContainer.slideDown();
                     } else { showMessage('error', response.message || 'No se pudieron cargar los datos del servicio.');}
@@ -337,7 +321,7 @@
                 messageArea.addClass('hidden').empty();
                 $.ajax({
                     url: `/ajax/servicios/${servicioId}/eliminar/`, type: 'POST',
-                    headers: {'X-CSRFToken': $('#servicioForm input[name="csrfmiddlewaretoken"]').val()}, // Usa el CSRF del form principal
+                    headers: {'X-CSRFToken': $('#servicioForm input[name="csrfmiddlewaretoken"]').val()},
                     success: function(response) {
                         if (response.status === 'success') {
                             showMessage('success', response.message);
@@ -361,18 +345,16 @@
             if (servicio.imagen_url) {
                 imagenHtml = `<img src="${servicio.imagen_url}" alt="${$('<div/>').text(servicio.nombre).html()}" style="max-width: 100px; max-height: 70px;">`;
             }
-            // Escapar HTML para nombre y descripción corta para prevenir XSS
             const nombreEscapado = $('<div/>').text(servicio.nombre).html();
             const descripcionEscapada = $('<div/>').text(servicio.descripcion_corta).html();
-
             const newRowHtml = `
                 <tr data-id="${servicio.id}">
                     <td class="nombre">${nombreEscapado}</td>
                     <td class="descripcion">${descripcionEscapada}</td>
                     <td class="imagen">${imagenHtml}</td>
                     <td class="actions">
-                        <button class="button-warning btnEditar" data-id="${servicio.id}">Editar</button>
-                        <button class="button-danger btnEliminar" data-id="${servicio.id}">Eliminar</button>
+                        <button class="btn btn-sm btn-warning btnEditar" data-id="${servicio.id}">Editar</button>
+                        <button class="btn btn-sm btn-danger btnEliminar" data-id="${servicio.id}">Eliminar</button>
                     </td>
                 </tr>`;
             listaServiciosBody.prepend(newRowHtml);
@@ -395,5 +377,4 @@
         }
     });
     </script>
-</body>
-</html>
+{% endblock extra_scripts %}

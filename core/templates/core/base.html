@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}MejíaEventos Web - Gestión y cotización de servicios de eventos.{% endblock meta_description %}">
+    <meta name="keywords" content="{% block meta_keywords %}eventos, producción, cotización, reservas, MejíaEventos{% endblock meta_keywords %}">
+    <meta name="author" content="MejíaEventos">
+    
+    <title>{% block title %}MejíaEventos{% endblock title %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}"> {# Asumiendo que está en core/static/css/estilos.css #}
+
+    {% block extra_head %}{% endblock extra_head %}
+</head>
+<body>
+
+    {% include 'core/partials/_navbar.html' %}
+
+    <main role="main" class="site-content {% block main_classes %}{% endblock main_classes %}">
+        {% block main_content %}
+            {# Este bloque puede ser sobrescrito si una página no quiere el .container o el .py-3 #}
+            <div class="container py-3">
+                {% block content %}
+                {% comment %} El contenido específico de cada página irá aquí {% endcomment %}
+                {% endblock content %}
+            </div>
+        {% endblock main_content %}
+    </main>
+
+    {% include 'core/partials/_footer.html' %}
+
+    {% comment %} Chatbot (lo mantenemos aquí si es global) {% endcomment %}
+    <div id="chatbot-button" onclick="toggleChat()" title="Chatea con nosotros">💬</div>
+    <div id="chat-container" class="d-none">
+        <div id="chat-header">
+            <strong>Asistente MejíaEventos</strong>
+            <button onclick="toggleChat()" class="btn-close btn-close-white" aria-label="Cerrar"></button>
+        </div>
+        <div id="chat-body">
+            <p>¡Hola! ¿Cómo podemos ayudarte?</p>
+            <input type="text" id="userName" class="form-control mb-2" placeholder="Tu nombre">
+            <textarea id="userMsg" class="form-control mb-2" rows="3" placeholder="Escribe tu mensaje..."></textarea>
+            <button class="btn btn-primary w-100" onclick="procesarMensaje()">Enviar mensaje</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/scripts.js' %}"></script> {# Asumiendo que está en core/static/js/scripts.js #}
+
+    {% block extra_scripts %}{% endblock extra_scripts %}
+
+</body>
+</html>

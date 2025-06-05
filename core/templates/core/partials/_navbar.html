@@ -1,0 +1,39 @@
+{% comment %} core/templates/core/partials/_navbar.html {% endcomment %}
+{% load static %}
+
+<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'core:index' %}"> {% comment %} Asumiendo que 'lista_servicios' es tu página de inicio o principal {% endcomment %}
+            <img src="{% static 'img/majiaeventoslogo.png' %}" alt="Logo MejíaEventos" class="me-2">
+            <span class="fw-bold fs-4" style="color: #ffffff;"></span> {% comment %} Texto del logo en negro {% endcomment %}
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navMenu">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href="{% url 'core:lista_servicios' %}">Servicios</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'core:solicitar_cotizacion_general' %}">Cotizar</a></li>
+                {% comment %}
+                Si 'contacto' es el nombre de tu URL para la página de contacto en core/urls.py:
+                <li class="nav-item"><a class="nav-link" href="{% url 'core:contacto' %}">Contacto</a></li>
+                Si aún no la tienes, puedes dejar el href="#" temporalmente o crear la URL y vista.
+                {% endcomment %}
+                <li class="nav-item"><a class="nav-link" href="https://wa.me/56932454866">Contacto</a></li> {# MODIFICAR CUANDO TENGAS LA URL 'core:contacto' #}
+
+                {% if user.is_authenticated and user.is_staff %} {# Mostrar solo a usuarios staff/admin logueados #}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'core:admin_servicio_list' %}" style="color: #ffffff !important;">Admin Servicios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Admin Django</a></li>
+                {% endif %}
+                {% comment %}
+                Puedes añadir enlaces de login/logout aquí más adelante:
+                {% if user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Salir</a></li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Ingresar</a></li>
+                {% endif %}
+                {% endcomment %}
+            </ul>
+        </div>
+    </div>
+</nav>
