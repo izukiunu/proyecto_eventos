@@ -1,27 +1,24 @@
 # core/urls.py
 from django.urls import path
-from . import views
+# from . import views  # Ya no necesitamos esta línea si importamos explícitamente
 from .views import (
-    index,
+    index_view,
     ListaServiciosView,
     solicitar_cotizacion_view,
-    # contacto_view, # Descomenta si ya la tienes definida en views.py
     AdminServicioListView,
-    # Vistas AJAX para servicios
     servicio_create_ajax,
     servicio_update_ajax,
     servicio_delete_ajax,
     servicio_detail_json,
-    configuracion_sitio_update_ajax, # <-- IMPORTA LA NUEVA VISTA AJAX
+    configuracion_sitio_update_ajax,
 )
 
 app_name = 'core'
 
 urlpatterns = [
-
     # --- index ---
+    path('', index_view, name='index'), # <-- CAMBIADO: de 'views.index' a 'index_view'
 
-    path('', views.index, name='index'),
     # URLs Públicas
     path('servicios/', ListaServiciosView.as_view(), name='lista_servicios'),
     path('solicitar-cotizacion/<int:servicio_id>/', solicitar_cotizacion_view, name='solicitar_cotizacion_especifica'),

@@ -1,0 +1,440 @@
+/* core/static/css/estilos.css (o main.css) */
+
+/* --- Globales y Tipografía --- */
+body {
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Para asegurar que el footer se quede abajo */
+    background-color: #f8f9fa; /* Un gris muy claro de Bootstrap para el fondo general */
+    color: #212529; /* Color de texto principal (Bootstrap default) */
+    margin: 0; /* Quitar margen por defecto */
+}
+
+/* --- Globales y Tipografía (Ajuste para el main si el navbar es fijo) --- */
+main {
+    flex-grow: 1;
+   /* o 70px, o el valor que tengas */ /* Hace que el contenido principal ocupe el espacio disponible, empujando el footer */
+    /*padding-top: 70px; /* AJUSTA ESTE VALOR al alto de tu navbar.
+                          Es necesario si el navbar es fixed-top para que el contenido no quede debajo.
+                          Si tu navbar es transparente y quieres que el contenido hero se vea detrás,
+                          este padding podría ir en un contenedor interno después del hero. */
+}
+
+/* Eliminamos la regla .container vacía para evitar el warning del linter.
+   Si necesitas estilos personalizados para una clase .container que no sea la de Bootstrap,
+   puedes definirlos aquí. Si usas solo el .container de Bootstrap, no necesitas esta regla. */
+
+/* AÑADIR esta nueva regla */
+.main-content-with-padding {
+    padding-top: 110px; /* Ajusta este valor al alto de tu navbar + un pequeño margen */
+}
+
+/* --- Navbar / Header (MODIFICADO para controlar la altura) --- */
+.navbar.fixed-top {
+    /* 1. DEFINIMOS UNA ALTURA FIJA PARA EL NAVBAR */
+    height: 100px; /* <-- ALTURA TOTAL. Puedes cambiar este valor, ej: 65px, 75px, 80px. */
+    
+    /* Mantenemos tus estilos de transparencia y blur */
+    background-color: rgba(63, 63, 63, 0.8) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    border-bottom: 2px solid #dc3545;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 2. AJUSTAMOS EL LOGO PARA QUE QUEPA DENTRO DEL NAVBAR */
+.navbar-brand img {
+    /* La altura del logo debe ser MENOR que la altura del navbar para dejar margen. */
+    height: 95px; /* <-- PRUEBA CON UN VALOR MÁS PEQUEÑO como 55px (para un navbar de 70px). */
+    width: auto;  /* Mantiene la proporción de la imagen. */
+}
+
+.navbar-brand span {
+    color: #000000 !important;
+    font-weight: 600;
+}
+
+/* 3. AJUSTAMOS LOS ENLACES PARA QUE SE CENTREN VERTICALMENTE */
+/* Bootstrap y la clase 'align-items-center' en tu HTML ya ayudan a centrar,
+   pero podemos asegurar que el padding no interfiera con la altura fija. */
+.navbar .navbar-nav .nav-link {
+    color: #ffffff !important;
+    font-weight: 500;
+    padding: 0.5rem 0.9rem; /* Padding para el look de botón */
+    margin: 0 0.2rem;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.navbar .navbar-nav .nav-link:hover,
+.navbar .navbar-nav .nav-link.active {
+    color: #ffffff !important;
+    background-color: #dc3545;
+    border-color: #a71d2a;
+    font-weight: 600;
+}
+
+/* Ajustes para el botón de menú en móviles (hamburguesa) */
+.navbar-toggler {
+    border-color: rgba(0, 0, 0, 0.2);
+}
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 0, 0, 0.85)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+/* --- Hero Section (Tus estilos existentes, ajustados) --- */
+.hero {
+    height: 70vh; /* Lo tenías en "index linea 54" */
+    /* Combinando tus dos definiciones de .hero */
+    background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)),
+                url("../img/transfondo-soluciones.jpg") center center / cover no-repeat; /* Asegúrate que la ruta sea correcta desde donde se sirve el CSS */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    padding: 3rem 1rem; /* Añadido padding */
+}
+
+.hero h2 { /* Asumo que quieres que el h2 del hero sea el título principal */
+    font-weight: 600; /* O 700 para más énfasis */
+    font-size: 2.5rem; /* Ajusta según necesites */
+    margin-bottom: 1rem;
+}
+@media (min-width: 768px) {
+    .hero h2 {
+        font-size: 3.5rem;
+    }
+}
+
+.hero p {
+    font-size: 1.1rem; /* Ajusta según necesites */
+    margin-bottom: 1.5rem;
+    max-width: 600px; /* Para que no sea demasiado ancho el texto */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero .btn-warning { /* Estilo para tu botón "Ver Servicios" */
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+.hero .btn-rojo-principal { /* Si prefieres usar el botón rojo */
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+.hero .btn-rojo-principal:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+
+/* --- Product Card (Tus estilos existentes) --- */
+.product-card.animate-hover {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Añadida transición para sombra */
+    background-color: #fff;
+    z-index: 0;
+}
+.product-card.animate-hover:hover {
+    transform: scale(1.02) translateY(-5px); /* Ligero levantamiento y escala */
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15); /* Sombra más pronunciada al hacer hover */
+}
+/* El efecto de borde animado que tenías es genial, pero puede ser intensivo.
+   Lo mantengo, pero asegúrate de que el rendimiento sea bueno. */
+.product-card.animate-hover::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    background: linear-gradient(270deg, #dc3545, #ff6b6b, #dc3545); /* Cambiado a tonos rojos */
+    background-size: 600% 600%;
+    border-radius: 14px; /* Un poco más que el border-radius de la card */
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+}
+.product-card.animate-hover:hover::before {
+    opacity: 1;
+    animation: borderFlow 3s linear infinite;
+}
+@keyframes borderFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.product-card .card-img-top.object-fit-cover { /* Tus clases */
+    /* object-fit: cover; ya lo tienes */
+    height: 200px; /* Ejemplo de altura fija para las imágenes de las cards */
+}
+
+
+/* Glow Hover (Tu estilo existente) */
+.glow-hover {
+    position: relative;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    z-index: 0;
+}
+.glow-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px rgba(220, 53, 69, 0.6); /* Sombra roja (usando el color danger de Bootstrap) */
+}
+
+/* Carousel (Tus estilos existentes) */
+.carousel-inner img {
+    height: 250px; /* Ajusta según el contenido de tu carousel */
+    object-fit: cover;
+    border-radius: 8px;
+}
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(220, 53, 69, 0.7); /* Rojo semitransparente para los controles */
+    border-radius: 50%;
+    padding: 10px; /* O ajusta el tamaño del ícono con width/height */
+}
+
+/* Botones (Tu estilo existente, ajustado para consistencia) */
+.btn-primary { /* Este es el azul de Bootstrap por defecto, puedes mantenerlo o cambiarlo */
+    background-color: #0d6efd;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #0b5ed7; /* Un azul más oscuro */
+}
+
+/* Object fit (Tu clase de utilidad) */
+.object-fit-cover {
+    object-fit: cover;
+}
+
+
+/* --- Footer --- */
+.site-footer {
+    background-color: #000000; /* Fondo negro */
+    color: #ffffff; /* Texto blanco */
+    padding-top: 3rem;
+    padding-bottom: 1rem;
+    border-top: 3px solid #dc3545; /* Borde superior rojo */
+    font-size: 0.9rem; /* Tamaño de fuente base para el footer */
+}
+
+.site-footer h6 {
+    color: #ffffff;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.site-footer p, .site-footer .footer-text {
+    color: #ced4da; /* Gris claro para texto secundario */
+    margin-bottom: 0.5rem;
+}
+
+.site-footer .list-unstyled li { /* Para los elementos del menú en el footer */
+    margin-bottom: 0.5rem;
+}
+
+.site-footer a, .site-footer a:visited {
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+.site-footer a:hover {
+    color: #dc3545; /* Rojo al pasar el mouse */
+    text-decoration: none; /* O underline si prefieres */
+}
+
+.site-footer .footer-social-link i.fab { /* Iconos sociales */
+    font-size: 1.5rem;
+    color: #ffffff;
+    transition: color 0.2s ease-in-out;
+}
+
+.site-footer .footer-social-link i.fab:hover {
+    color: #dc3545; /* Rojo al pasar el mouse */
+}
+
+.site-footer hr.footer-hr { /* Si decides usar una etiqueta hr dentro del footer */
+    border-color: #495057; /* Gris más oscuro para la línea */
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.site-footer .copyright-text { /* Para el texto de copyright al final */
+    font-size: 0.85rem;
+    color: #adb5bd; /* Gris aún más claro */
+    padding-top: 1.5rem; /* Espacio después de la línea o contenido */
+}
+.site-footer .copyright-text strong {
+    color: #ffffff;
+}
+
+
+/* --- Chatbot (Tus estilos existentes, revisados para consistencia) --- */
+#chatbot-button {
+    position: fixed;
+    bottom: 20px;
+    right: 25px;
+    background-color: #dc3545; /* Rojo principal */
+    color: white;
+    font-size: 24px;
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+}
+#chatbot-button:hover {
+    background-color: #c82333; /* Rojo más oscuro */
+}
+
+#chat-container {
+    position: fixed;
+    bottom: 90px; /* Para que no se solape con el botón */
+    right: 25px;
+    width: 300px;
+    max-width: calc(100% - 50px); /* Para que no se salga de pantalla en móviles */
+    background-color: #ffffff; /* Fondo blanco para el chat */
+    border: 1px solid #dee2e6; /* Borde suave */
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    z-index: 1000;
+    /* padding: 15px; Ya no es necesario aquí si el header y body tienen su padding */
+    font-family: 'Poppins', sans-serif;
+}
+
+#chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #000000; /* Cabecera del chat en negro */
+    color: white;
+    padding: 10px 15px;
+    border-top-left-radius: 9px; /* Ajustar al border-radius del container */
+    border-top-right-radius: 9px;
+    font-weight: 600; /* Un poco más de peso */
+}
+#chat-header .btn-close { /* Bootstrap 5 usa .btn-close */
+    /* filter: invert(1) grayscale(100%) brightness(200%); Para el ícono X blanco */
+}
+
+#chat-body {
+    padding: 15px; /* Padding interno para el contenido del chat */
+    max-height: 300px; /* Altura máxima antes de hacer scroll */
+    overflow-y: auto;
+}
+
+#chat-body textarea.form-control, /* Usando clases de Bootstrap si las aplicas */
+#chat-body input.form-control {
+    font-size: 14px;
+    margin-bottom: 10px; /* Espacio entre inputs */
+}
+
+#chat-body p {
+    margin: 0 0 10px;
+    font-size: 14px;
+}
+
+/* Estilos para formularios dentro de main (ej. solicitud_cotizacion.html, contacto.html) */
+/* Puedes crear una clase contenedora para estos formularios, ej: .form-page-container */
+.form-page-container {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 700px; /* O el ancho que prefieras */
+    margin-left: auto;
+    margin-right: auto;
+}
+.form-page-container h1 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+/* Si usas {{ form.as_p }}, los campos vendrán en <p> */
+.form-page-container form p {
+    margin-bottom: 1rem;
+}
+.form-page-container form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+.form-page-container form .form-control { /* Aplicar a tus inputs de formulario */
+    width: 100%; /* Ocupar todo el ancho del contenedor del campo */
+    /* padding, border, etc. ya heredados o definidos por Bootstrap */
+}
+.form-page-container form textarea.form-control {
+    min-height: 120px; /* Más altura para textareas */
+}
+.form-page-container form button[type="submit"] {
+    background-color: #dc3545; /* Botón de envío principal en rojo */
+    border-color: #dc3545;
+}
+.form-page-container form button[type="submit"]:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* Mensajes de Django (success, error, etc.) */
+.messages {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1.5rem;
+}
+.messages li {
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+}
+.messages li.success {
+    color: #0f5132;
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+}
+.messages li.error {
+    color: #842029;
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+}
+.messages li.warning {
+    color: #664d03;
+    background-color: #fff3cd;
+    border-color: #ffecb5;
+}
+.messages li.info {
+    color: #055160;
+    background-color: #cff4fc;
+    border-color: #b6effb;
+}
+
+/* Utilidades de color */
+.text-rojo {
+    color: #dc3545 !important;
+}
+.bg-negro {
+    background-color: #000000 !important;
+}
+.text-blanco {
+    color: #ffffff !important;
+}

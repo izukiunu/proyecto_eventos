@@ -23,9 +23,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Esta es la línea crucial:
-    path('', include('core.urls', namespace='core')), # <--- Verifica esta línea
-    # Si usaste un prefijo como 'web/', entonces sería path('web/', include('core.urls', namespace='core')),
-    # y tu URL para servicios sería http://127.0.0.1:8000/web/servicios/
+    path('', include('core.urls', namespace='core')),
 ]
 
 if settings.DEBUG:

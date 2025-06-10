@@ -1,0 +1,116 @@
+/* core/static/core/css/admin_panel.css */
+
+/* Estilos generales para el contenedor principal del panel */
+.admin-container h1, .admin-container h2, .admin-container h3 {
+    color: #333;
+}
+
+.admin-container h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+/* Estilos para la tabla de servicios */
+.admin-container .table-responsive {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.admin-container table {
+    margin-bottom: 0; /* Bootstrap table responsive ya maneja el margen */
+}
+
+.admin-container th {
+    background-color: #f8f9fa;
+}
+
+.admin-container .actions button {
+    margin-right: 5px;
+}
+
+.admin-container .imagen img {
+    width: 100px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* Contenedores para formularios y configuración */
+#configuracionContainer, #formServicioContainer {
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+/* Estilos para los campos de formulario generados por {{ form.as_p }} */
+#servicioForm p, #configForm p {
+    margin-bottom: 1rem;
+}
+#servicioForm p label, #configForm p label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+/* Bootstrap se encarga de los inputs con la clase .form-control que añadimos en forms.py */
+#servicioForm p textarea {
+    resize: vertical;
+}
+
+/* Clases para mensajes y spinner */
+.hidden {
+    display: none !important;
+}
+
+#messageArea {
+    position: fixed;
+    top: 80px; /* Debajo del navbar */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1040;
+    width: auto;
+    max-width: 90%;
+}
+
+#messageArea div {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.success-message {
+    color: #0f5132;
+    background-color: #d1e7dd;
+    border: 1px solid #badbcc;
+}
+
+.error-message {
+    color: #842029;
+    background-color: #f8d7da;
+    border: 1px solid #f5c2c7;
+}
+
+#loadingSpinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 5px solid #f3f3f3; /* Borde claro */
+    border-top-color: #dc3545; /* Rojo, como tu tema */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 0.8s linear infinite;
+    z-index: 1060; /* Por encima de la mayoría de los elementos */
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
