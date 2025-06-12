@@ -1,12 +1,14 @@
 # core/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView
-from .models import Servicio, SolicitudCotizacion, MensajeContacto, ConfiguracionSitio
+from .models import Servicio, SolicitudCotizacion, MensajeContacto, ConfiguracionSitio, ChatbotQA
 from .forms import SolicitudCotizacionForm, MensajeContactoForm, ServicioForm
 from django.contrib import messages
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.conf import settings
+from .models import ChatbotQA
+from .forms import ChatbotQAForm
 
 # --- Vistas Públicas ---
 
@@ -118,7 +120,11 @@ class AdminServicioListView(ListView):
         context['titulo_pagina_panel'] = 'Administrar Servicios y Configuración'
         configuracion, _ = ConfiguracionSitio.objects.get_or_create(id=1, defaults={'email_notificaciones_admin': settings.DEFAULT_FROM_EMAIL})
         context['configuracion_sitio'] = configuracion
+        context['chatbot_qa_list'] = ChatbotQA.objects.all()
+        context['chatbot_qa_form'] = ChatbotQAForm()
         return context
+    
+    
 
 # --- VISTAS/ENDPOINTS AJAX ---
 def servicio_create_ajax(request):
@@ -161,3 +167,79 @@ def configuracion_sitio_update_ajax(request):
         if not _: config.email_notificaciones_admin = nuevo_email; config.save()
         return JsonResponse({'status': 'success', 'message': 'Email de notificaciones actualizado.', 'nuevo_email': config.email_notificaciones_admin})
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+# --- chatbot --- 
+def chatbot_query_ajax(request):
+    if request.method == 'POST':
+        user_question = request.POST.get('question', '').lower().strip()
+        if not user_question:
+            return JsonResponse({'status': 'error', 'answer': 'No se recibió ninguna pregunta.'}, status=400)
+
+        # --- LÓGICA DE BÚSQUEDA MEJORADA CON KEYWORDS ---
+        all_qas = ChatbotQA.objects.all()
+        best_match = None
+        highest_score = 0
+        user_words = set(user_question.split())
+
+        for qa in all_qas:
+            # Obtenemos las palabras clave, las limpiamos y las convertimos en un conjunto
+            keywords = set(kw.strip() for kw in qa.keywords.lower().split(','))
+            
+            score = len(keywords.intersection(user_words))
+            
+            if score > highest_score:
+                highest_score = score
+                best_match = qa
+
+        if best_match and highest_score > 0:
+            answer = best_match.respuesta
+            return JsonResponse({'status': 'success', 'answer': answer})
+        else:
+            # ... (la lógica de fallback se queda igual, la veremos en la Mejora 2) ...
+            try:
+                config = ConfiguracionSitio.objects.first()
+                fallback_answer = config.chatbot_fallback_response
+            except (ConfiguracionSitio.DoesNotExist, AttributeError):
+                fallback_answer = "Lo siento, no tengo una respuesta para eso en este momento."
+            
+            suggestions = [qa.keywords.split(',')[0].strip().capitalize() for qa in all_qas[:5]]
+
+            return JsonResponse({
+                'status': 'fallback', 
+                'answer': fallback_answer,
+                'suggestions': suggestions
+            })
+    
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+def chatbot_qa_create_ajax(request):
+    if request.method == 'POST':
+        form = ChatbotQAForm(request.POST)
+        if form.is_valid():
+            qa = form.save()
+            return JsonResponse({'status': 'success', 'message': 'Pregunta/Respuesta agregada.', 'qa': {'id': qa.id, 'keywords': qa.keywords, 'respuesta': qa.respuesta}})
+        else:
+            return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+def chatbot_qa_update_ajax(request, qa_id):
+    qa = get_object_or_404(ChatbotQA, pk=qa_id)
+    if request.method == 'POST':
+        form = ChatbotQAForm(request.POST, instance=qa)
+        if form.is_valid():
+            updated_qa = form.save()
+            return JsonResponse({'status': 'success', 'message': 'Pregunta/Respuesta actualizada.', 'qa': {'id': updated_qa.id, 'keywords': updated_qa.keywords, 'respuesta': updated_qa.respuesta}})
+        else:
+            return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+def chatbot_qa_delete_ajax(request, qa_id):
+    if request.method == 'POST':
+        qa = get_object_or_404(ChatbotQA, pk=qa_id)
+        qa.delete()
+        return JsonResponse({'status': 'success', 'message': 'Pregunta/Respuesta eliminada.'})
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+def chatbot_qa_detail_json(request, qa_id):
+    qa = get_object_or_404(ChatbotQA, pk=qa_id)
+    return JsonResponse({'status': 'success', 'qa': {'id': qa.id, 'keywords': qa.keywords, 'respuesta': qa.respuesta}})

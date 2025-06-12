@@ -77,3 +77,21 @@ class ConfiguracionSitio(models.Model):
         verbose_name = "Configuración del Sitio"
         # Usamos el mismo nombre en singular y plural para enfatizar que solo debe haber una.
         verbose_name_plural = "Configuración del Sitio"
+
+# --- NUEVO MODELO PARA EL CHATBOT ---
+class ChatbotQA(models.Model):
+    keywords = models.TextField(
+        verbose_name="Palabras Clave (separadas por comas)",
+        help_text="Escribe palabras clave que activarán esta respuesta, separadas por comas. Ej: horario, atencion, abierto"
+    )
+    respuesta = models.TextField(
+        help_text="La respuesta que el chatbot debe dar."
+    )
+
+    def __str__(self):
+        # Muestra las primeras palabras clave en el admin para fácil identificación
+        return f"Respuesta para: '{self.keywords.split(',')[0].strip()}'"
+
+    class Meta:
+        verbose_name = "Pregunta/Respuesta del Chatbot"
+        verbose_name_plural = "Preguntas y Respuestas del Chatbot"

@@ -1,6 +1,6 @@
 # core/forms.py
 from django import forms
-from .models import SolicitudCotizacion, Servicio, MensajeContacto # Asegúrate de importar todos los modelos
+from .models import SolicitudCotizacion, Servicio, MensajeContacto, ChatbotQA 
 
 class SolicitudCotizacionForm(forms.ModelForm):
     class Meta:
@@ -54,4 +54,16 @@ class MensajeContactoForm(forms.ModelForm):
             'email_remitente': 'Tu Correo Electrónico',
             'asunto': 'Asunto',
             'mensaje': 'Mensaje',
+        }
+class ChatbotQAForm(forms.ModelForm):
+    class Meta:
+        model = ChatbotQA
+        fields = ['keywords', 'respuesta']
+        widgets = {
+            'keywords': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: horario, atencion, abierto'}),
+            'respuesta': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Escribe aquí la respuesta del bot...'}),
+        }
+        labels = {
+            'keywords': "Palabras Clave (separadas por comas)",
+            'respuesta': "Respuesta del Bot",
         }

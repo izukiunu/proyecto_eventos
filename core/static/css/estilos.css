@@ -285,7 +285,7 @@ main {
 }
 
 
-/* --- Chatbot (Tus estilos existentes, revisados para consistencia) --- */
+/* --- Chatbot flotante --- */
 #chatbot-button {
     position: fixed;
     bottom: 20px;
@@ -294,33 +294,36 @@ main {
     color: white;
     font-size: 24px;
     border-radius: 50%;
-    width: 55px;
-    height: 55px;
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     z-index: 1000;
-    transition: background-color 0.3s ease;
+    transition: transform 0.2s ease, background-color 0.3s ease;
 }
 #chatbot-button:hover {
     background-color: #c82333; /* Rojo más oscuro */
+    transform: scale(1.1);
 }
 
 #chat-container {
     position: fixed;
-    bottom: 90px; /* Para que no se solape con el botón */
+    bottom: 95px; /* Para que no se solape con el botón */
     right: 25px;
-    width: 300px;
-    max-width: calc(100% - 50px); /* Para que no se salga de pantalla en móviles */
-    background-color: #ffffff; /* Fondo blanco para el chat */
-    border: 1px solid #dee2e6; /* Borde suave */
+    width: 320px;
+    max-width: calc(100% - 40px); /* Para que no se salga de pantalla en móviles */
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
     border-radius: 10px;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
     z-index: 1000;
-    /* padding: 15px; Ya no es necesario aquí si el header y body tienen su padding */
     font-family: 'Poppins', sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Para que los bordes redondeados afecten a los hijos */
 }
 
 #chat-header {
@@ -329,30 +332,107 @@ main {
     align-items: center;
     background-color: #000000; /* Cabecera del chat en negro */
     color: white;
-    padding: 10px 15px;
-    border-top-left-radius: 9px; /* Ajustar al border-radius del container */
-    border-top-right-radius: 9px;
-    font-weight: 600; /* Un poco más de peso */
+    padding: 12px 15px;
+    font-weight: 600;
 }
-#chat-header .btn-close { /* Bootstrap 5 usa .btn-close */
-    /* filter: invert(1) grayscale(100%) brightness(200%); Para el ícono X blanco */
+#chat-header .btn-close {
+    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+    opacity: 0.8;
 }
-
-#chat-body {
-    padding: 15px; /* Padding interno para el contenido del chat */
-    max-height: 300px; /* Altura máxima antes de hacer scroll */
-    overflow-y: auto;
+#chat-header .btn-close:hover {
+    opacity: 1;
 }
 
-#chat-body textarea.form-control, /* Usando clases de Bootstrap si las aplicas */
-#chat-body input.form-control {
-    font-size: 14px;
-    margin-bottom: 10px; /* Espacio entre inputs */
+#chat-messages {
+    padding: 15px;
+    height: 300px; /* Altura fija para el área de mensajes */
+    overflow-y: auto; /* Scroll si los mensajes superan la altura */
+    background-color: #f8f9fa; /* Un fondo ligeramente gris para el chat */
 }
 
-#chat-body p {
-    margin: 0 0 10px;
-    font-size: 14px;
+.message {
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+.bot-message {
+    background-color: #e9ecef; /* Gris para el bot */
+    align-self: flex-start; /* Alineado a la izquierda */
+    border-bottom-left-radius: 2px;
+}
+.user-message {
+    background-color: #dc3545; /* Rojo para el usuario */
+    color: white;
+    align-self: flex-end; /* Alineado a la derecha */
+    border-bottom-right-radius: 2px;
+    margin-left: auto; /* Empuja a la derecha */
+}
+.message p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+#chat-input-container {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-top: 1px solid #e0e0e0;
+}
+#chat-input-container textarea {
+    flex-grow: 1;
+    border-radius: 18px;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    resize: none; /* Evitar que el usuario cambie el tamaño */
+    font-size: 0.9rem;
+    max-height: 80px; /* Evita que crezca demasiado */
+}
+#chat-input-container button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+}
+#chat-input-container button:hover {
+    background-color: #c82333;
+}
+/* --- Estilos para las Preguntas Sugeridas del Chatbot --- */
+.suggestion-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+    margin-left: auto; /* Para alinear con la burbuja del bot si es necesario */
+    max-width: 80%; /* Para que no ocupe todo el ancho */
+}
+.suggestion-list li {
+    margin-bottom: 5px;
+}
+.suggestion-item {
+    background-color: transparent;
+    border: 1px solid #dc3545; /* Borde rojo */
+    color: #dc3545; /* Texto rojo */
+    padding: 6px 12px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-align: center;
+    width: 100%;
+    display: block;
+    transition: background-color 0.2s, color 0.2s;
+}
+.suggestion-item:hover {
+    background-color: #dc3545; /* Fondo rojo al pasar el mouse */
+    color: white; /* Texto blanco */
 }
 
 /* Estilos para formularios dentro de main (ej. solicitud_cotizacion.html, contacto.html) */

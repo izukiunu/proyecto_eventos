@@ -1,7 +1,7 @@
 # core/admin.py
 from django.contrib import admin
 # Asegúrate de importar todos los modelos que vas a registrar
-from .models import Servicio, SolicitudCotizacion, MensajeContacto, ConfiguracionSitio
+from .models import Servicio, SolicitudCotizacion, MensajeContacto, ConfiguracionSitio, ChatbotQA
 
 # Registro para Servicio (simple, sin clase Admin personalizada por ahora)
 admin.site.register(Servicio)
@@ -56,3 +56,7 @@ class ConfiguracionSitioAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # No permitir borrar la configuración para asegurar que siempre exista una.
         return False
+@admin.register(ChatbotQA)
+class ChatbotQAAdmin(admin.ModelAdmin):
+    list_display = ('keywords', 'respuesta')
+    search_fields = ('keywords', 'respuesta')

@@ -11,6 +11,12 @@ from .views import (
     servicio_delete_ajax,
     servicio_detail_json,
     configuracion_sitio_update_ajax,
+    chatbot_query_ajax,
+    chatbot_qa_create_ajax,
+    chatbot_qa_update_ajax,
+    chatbot_qa_delete_ajax,
+    chatbot_qa_detail_json
+
 )
 
 app_name = 'core'
@@ -36,4 +42,10 @@ urlpatterns = [
 
     # --- NUEVA URL PARA ACTUALIZAR CONFIGURACIÓN DEL EMAIL DEL ADMIN ---
     path('ajax/configuracion/actualizar-email/', configuracion_sitio_update_ajax, name='ajax_configuracion_update_email'),
+    path('ajax/chatbot/query/', chatbot_query_ajax, name='ajax_chatbot_query'),
+    path('ajax/chatbot-qa/crear/', chatbot_qa_create_ajax, name='ajax_chatbot_qa_create'),
+    path('ajax/chatbot-qa/<int:qa_id>/actualizar/', chatbot_qa_update_ajax, name='ajax_chatbot_qa_update'),
+    path('ajax/chatbot-qa/<int:qa_id>/eliminar/', chatbot_qa_delete_ajax, name='ajax_chatbot_qa_delete'),
+    path('ajax/chatbot-qa/<int:qa_id>/detalle/', chatbot_qa_detail_json, name='ajax_chatbot_qa_detail'),
+
 ]
