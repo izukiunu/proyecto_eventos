@@ -564,42 +564,58 @@ main {
 ============================================================
 */
 
-/* --- Estilos principales de los botones --- */
-section#servicios-destacados .slider-contenedor .swiper-button-next,
-section#servicios-destacados .slider-contenedor .swiper-button-prev {
-  
-  /* --- Tus Estilos de Apariencia (ya los tenías) --- */
-  color: #dc3545; /* Rojo */
+/*
+ * 1. Hacemos que el contenedor principal del slider sea el punto de referencia
+ * para posicionar los botones. Esto es clave.
+ */
+.slider-contenedor {
+  position: relative;
+}
+
+/*
+ * 2. Posicionamos los botones de forma absoluta DENTRO del .slider-contenedor.
+ */
+.slider-contenedor .swiper-button-next,
+.slider-contenedor .swiper-button-prev {
+  /* Apariencia (tus estilos están perfectos) */
+  color: #dc3545;
   background-color: rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   width: 44px;
   height: 44px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 
-  /* --- Posicionamiento Corregido (lo nuevo) --- */
-  position: absolute !important; /* Forza la posición */
-  top: 135%; /* Centrado vertical inicial */
-  transform: translateY(-50%); /* Ajuste fino para un centrado perfecto */
+  /* --- Posicionamiento Corregido --- */
+  position: absolute; /* Posición absoluta relativa al .slider-contenedor */
+  top: 50%;          /* Los bajamos hasta la mitad de la altura del contenedor */
+  transform: translateY(-50%); /* Los centramos verticalmente de forma precisa */
+  z-index: 10;       /* Nos aseguramos de que estén por encima de las tarjetas */
 }
 
+/*
+ * 3. Movemos cada botón a su lado correspondiente.
+ */
+.slider-contenedor .swiper-button-prev {
+  left: -50px; /* Lo movemos a la izquierda. Ajusta este valor (ej: 0, -15px) como prefieras. */
+}
+
+.slider-contenedor .swiper-button-next {
+  right: -50px; /* Lo movemos a la derecha. Ajusta este valor (ej: 0, -15px) como prefieras. */
+}
+
+
 /* --- Estilos para los íconos de flecha (dentro de los botones) --- */
-section#servicios-destacados .slider-contenedor .swiper-button-next:after,
-section#servicios-destacados .slider-contenedor .swiper-button-prev:after {
+/* (Esta parte estaba bien, solo simplificamos el selector para mayor claridad) */
+.slider-contenedor .swiper-button-next:after,
+.slider-contenedor .swiper-button-prev:after {
   font-size: 1.1rem;
   font-weight: bold;
 }
 
 /* --- Estilos para cuando el mouse está sobre los botones --- */
-section#servicios-destacados .slider-contenedor .swiper-button-next:hover,
-section#servicios-destacados .slider-contenedor .swiper-button-prev:hover {
+/* (Esta parte también estaba bien) */
+.slider-contenedor .swiper-button-next:hover,
+.slider-contenedor .swiper-button-prev:hover {
   background-color: #dc3545;
   color: #ffffff;
-}
-
-.servicios-slider .swiper-pagination {
-    position: absolute;
-    bottom: -5px;
-}
-.servicios-slider .swiper-pagination-bullet-active {
-    background-color: #dc3545; /* Punto activo en rojo */
 }
