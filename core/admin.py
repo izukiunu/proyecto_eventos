@@ -4,7 +4,11 @@ from django.contrib import admin
 from .models import Servicio, SolicitudCotizacion, MensajeContacto, ConfiguracionSitio, ChatbotQA
 
 # Registro para Servicio (simple, sin clase Admin personalizada por ahora)
-admin.site.register(Servicio)
+@admin.register(Servicio)
+class ServicioAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'destacado') # Muestra si es destacado en la lista
+    list_filter = ('destacado',) # Permite filtrar por destacados
+    list_editable = ('destacado',) # Permite cambiarlo directamente desde la lista (muy útil)
 
 # Admin para SolicitudCotizacion
 class SolicitudCotizacionAdmin(admin.ModelAdmin):

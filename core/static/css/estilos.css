@@ -36,7 +36,7 @@ main {
     height: 100px; /* <-- ALTURA TOTAL. Puedes cambiar este valor, ej: 65px, 75px, 80px. */
     
     /* Mantenemos tus estilos de transparencia y blur */
-    background-color: rgba(63, 63, 63, 0.8) !important;
+    background-color: rgba(63, 63, 63, 0.8)!important ;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     
@@ -52,7 +52,7 @@ main {
 }
 
 .navbar-brand span {
-    color: #000000 !important;
+    color: #000000 ;
     font-weight: 600;
 }
 
@@ -60,7 +60,7 @@ main {
 /* Bootstrap y la clase 'align-items-center' en tu HTML ya ayudan a centrar,
    pero podemos asegurar que el padding no interfiera con la altura fija. */
 .navbar .navbar-nav .nav-link {
-    color: #ffffff !important;
+    color: #ffffff ;
     font-weight: 500;
     padding: 0.5rem 0.9rem; /* Padding para el look de botón */
     margin: 0 0.2rem;
@@ -71,7 +71,7 @@ main {
 
 .navbar .navbar-nav .nav-link:hover,
 .navbar .navbar-nav .nav-link.active {
-    color: #ffffff !important;
+    color: #ffffff ;
     background-color: #dc3545;
     border-color: #a71d2a;
     font-weight: 600;
@@ -510,11 +510,96 @@ main {
 
 /* Utilidades de color */
 .text-rojo {
-    color: #dc3545 !important;
+    color: #dc3545 ;
 }
 .bg-negro {
-    background-color: #000000 !important;
+    background-color: #000000 ;
 }
 .text-blanco {
-    color: #ffffff !important;
+    color: #ffffff ;
+}
+
+/* --- Estilos para Tarjetas de Servicio Uniformes --- */
+.servicio-card {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.servicio-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.servicio-card .card-img-top {
+  height: 220px;      /* <-- ALTURA FIJA. Esta es la clave. */
+  object-fit: cover;  /* <-- Hace que la imagen se adapte sin estirarse. */
+}
+
+.servicio-card .card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.servicio-card .card-text {
+    flex-grow: 1; /* Esto alinea los botones en la parte inferior */
+}
+
+/* --- Estilos para el Slider (Swiper.js) --- */
+.servicios-slider {
+    position: relative;
+    padding: 10px;
+}
+
+.servicios-slider .swiper-slide {
+    height: auto; /* Permite que las tarjetas se estiren uniformemente */
+}
+
+/*
+============================================================
+  CÓDIGO CSS UNIFICADO Y CORREGIDO PARA LOS BOTONES
+============================================================
+*/
+
+/* --- Estilos principales de los botones --- */
+section#servicios-destacados .slider-contenedor .swiper-button-next,
+section#servicios-destacados .slider-contenedor .swiper-button-prev {
+  
+  /* --- Tus Estilos de Apariencia (ya los tenías) --- */
+  color: #dc3545; /* Rojo */
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+
+  /* --- Posicionamiento Corregido (lo nuevo) --- */
+  position: absolute !important; /* Forza la posición */
+  top: 135%; /* Centrado vertical inicial */
+  transform: translateY(-50%); /* Ajuste fino para un centrado perfecto */
+}
+
+/* --- Estilos para los íconos de flecha (dentro de los botones) --- */
+section#servicios-destacados .slider-contenedor .swiper-button-next:after,
+section#servicios-destacados .slider-contenedor .swiper-button-prev:after {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* --- Estilos para cuando el mouse está sobre los botones --- */
+section#servicios-destacados .slider-contenedor .swiper-button-next:hover,
+section#servicios-destacados .slider-contenedor .swiper-button-prev:hover {
+  background-color: #dc3545;
+  color: #ffffff;
+}
+
+.servicios-slider .swiper-pagination {
+    position: absolute;
+    bottom: -5px;
+}
+.servicios-slider .swiper-pagination-bullet-active {
+    background-color: #dc3545; /* Punto activo en rojo */
 }

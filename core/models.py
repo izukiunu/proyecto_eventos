@@ -6,6 +6,11 @@ class Servicio(models.Model):
     nombre = models.CharField(max_length=200)
     descripcion = models.TextField()
     imagen = models.ImageField(upload_to='servicios/', blank=True, null=True, help_text="Imagen opcional del servicio")
+    destacado = models.BooleanField(
+        default=False,
+        verbose_name="Servicio Destacado",
+        help_text="Marcar para que este servicio aparezca en la sección de destacados."
+    )
 
     def __str__(self):
         return self.nombre

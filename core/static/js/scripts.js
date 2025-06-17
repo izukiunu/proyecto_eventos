@@ -191,3 +191,64 @@ function updateCart() {
     </li>
   `).join('');
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Contamos cuántos slides hay en total
+    const swiperWrapper = document.querySelector('.servicios-slider .swiper-wrapper');
+    const totalSlides = swiperWrapper ? swiperWrapper.children.length : 0;
+    
+    // Obtenemos los elementos de navegación para poder ocultarlos
+    const swiperNavNext = document.querySelector('.slider-contenedor .swiper-button-next');
+    const swiperNavPrev = document.querySelector('.slider-contenedor .swiper-button-prev');
+    const swiperPagination = document.querySelector('.slider-contenedor .swiper-pagination');
+
+    let swiperOptions;
+
+    // --- LÓGICA CONDICIONAL ---
+    // Si hay 3 o menos slides, usamos una configuración simple
+    if (totalSlides <= 3) {
+        
+        swiperOptions = {
+            slidesPerView: 'auto', // Se ajusta al contenido
+            spaceBetween: 30,
+            centeredSlides: true, // ¡CLAVE para centrar 1, 2 o 3 slides!
+            loop: false, // Desactivamos el loop
+            autoplay: false, // Desactivamos el autoplay
+        };
+
+        // Ocultamos los botones y la paginación si existen
+        if(swiperNavNext) swiperNavNext.style.display = 'none';
+        if(swiperNavPrev) swiperNavPrev.style.display = 'none';
+        if(swiperPagination) swiperPagination.style.display = 'none';
+
+    } else {
+        // Si hay más de 3, usamos la configuración completa
+        swiperOptions = {
+            loop: true,
+            slidesPerView: 1,
+            spaceBetween: 30,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            breakpoints: {
+                768: { slidesPerView: 2 },
+                992: { slidesPerView: 3 }
+            }
+        };
+    }
+
+    // Inicializamos Swiper con la configuración elegida
+    const serviciosSlider = new Swiper('.servicios-slider', swiperOptions);
+
+});

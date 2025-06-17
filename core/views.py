@@ -16,7 +16,7 @@ def index_view(request): # CAMBIADO: de 'index' a 'index_view' para que coincida
     """
     Vista para la página de inicio. Muestra los servicios más recientes como destacados.
     """
-    servicios_destacados = Servicio.objects.all().order_by('-id')[:4]
+    servicios_destacados = Servicio.objects.filter(destacado=True)
     context = {
         'servicios_destacados': servicios_destacados,
     }
@@ -126,13 +126,23 @@ class AdminServicioListView(ListView):
     
     
 
-# --- VISTAS/ENDPOINTS AJAX ---
+# ==========================================================
+# --- VISTAS/ENDPOINTS AJAX (SECCIÓN CORREGIDA) ---
+# ==========================================================
+
 def servicio_create_ajax(request):
     if request.method == 'POST':
         form = ServicioForm(request.POST, request.FILES)
         if form.is_valid():
             servicio = form.save()
-            return JsonResponse({'status': 'success', 'message': 'Servicio agregado.', 'servicio': {'id': servicio.id, 'nombre': servicio.nombre, 'descripcion_corta': servicio.descripcion[:50]+"...", 'imagen_url': servicio.imagen.url if servicio.imagen else None }})
+            # CORREGIDO: Se devuelve la descripción completa para que coincida con el JS
+            response_data = {
+                'id': servicio.id,
+                'nombre': servicio.nombre,
+                'descripcion': servicio.descripcion, # <-- CAMBIO CLAVE
+                'imagen_url': servicio.imagen.url if servicio.imagen else None
+            }
+            return JsonResponse({'status': 'success', 'message': 'Servicio agregado.', 'servicio': response_data})
         else:
             return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
@@ -143,7 +153,14 @@ def servicio_update_ajax(request, servicio_id):
         form = ServicioForm(request.POST, request.FILES, instance=servicio)
         if form.is_valid():
             updated_servicio = form.save()
-            return JsonResponse({'status': 'success', 'message': 'Servicio actualizado.', 'servicio': {'id': updated_servicio.id, 'nombre': updated_servicio.nombre, 'descripcion_corta': updated_servicio.descripcion[:50]+"...", 'imagen_url': updated_servicio.imagen.url if updated_servicio.imagen else None}})
+            # CORREGIDO: Se devuelve la descripción completa
+            response_data = {
+                'id': updated_servicio.id,
+                'nombre': updated_servicio.nombre,
+                'descripcion': updated_servicio.descripcion, # <-- CAMBIO CLAVE
+                'imagen_url': updated_servicio.imagen.url if updated_servicio.imagen else None
+            }
+            return JsonResponse({'status': 'success', 'message': 'Servicio actualizado.', 'servicio': response_data})
         else:
             return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
@@ -157,14 +174,22 @@ def servicio_delete_ajax(request, servicio_id):
 
 def servicio_detail_json(request, servicio_id):
     servicio = get_object_or_404(Servicio, pk=servicio_id)
-    return JsonResponse({'status': 'success', 'servicio': {'id': servicio.id, 'nombre': servicio.nombre, 'descripcion': servicio.descripcion}})
+    response_data = {
+        'id': servicio.id,
+        'nombre': servicio.nombre,
+        'descripcion': servicio.descripcion,
+        'destacado': servicio.destacado # <-- AÑADIR ESTA LÍNEA
+    }
+    return JsonResponse({'status': 'success', 'servicio': response_data})
 
 def configuracion_sitio_update_ajax(request):
+    # Tu código existente para esta vista está bien
     if request.method == 'POST':
         nuevo_email = request.POST.get('email_notificaciones_admin')
         if not nuevo_email: return JsonResponse({'status': 'error', 'message': 'El email no puede estar vacío.'}, status=400)
-        config, _ = ConfiguracionSitio.objects.get_or_create(id=1, defaults={'email_notificaciones_admin': nuevo_email})
-        if not _: config.email_notificaciones_admin = nuevo_email; config.save()
+        config, _ = ConfiguracionSitio.objects.get_or_create(id=1)
+        config.email_notificaciones_admin = nuevo_email
+        config.save()
         return JsonResponse({'status': 'success', 'message': 'Email de notificaciones actualizado.', 'nuevo_email': config.email_notificaciones_admin})
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 

@@ -15,41 +15,162 @@ function enviarAWhatsApp() {
   window.open(`https://wa.me/${numero}?text=${texto}`, "_blank");
 }
 
-// Chat inteligente básico
-document.addEventListener("DOMContentLoaded", () => {
-  const userMsgInput = document.getElementById("userMsg");
+// core/static/js/scripts.js
 
-  userMsgInput.addEventListener("input", () => {
-    const mensaje = userMsgInput.value.toLowerCase().trim();
+// --- LÓGICA COMPLETA Y MEJORADA DEL CHATBOT ---
 
-    let respuesta = "";
-    if (mensaje.includes("hola") || mensaje.includes("buenas")) {
-      respuesta = "¡Hola! ¿En qué te puedo ayudar?";
-    } else if (mensaje.includes("servicio") || mensaje.includes("evento")) {
-      respuesta = "Ofrecemos varios servicios para eventos. ¿Qué tipo de evento deseas organizar?";
-    } else if (mensaje.includes("precio") || mensaje.includes("costo")) {
-      respuesta = "Los precios varían según el tipo de servicio. ¿Quieres que te contacte un asesor?";
-    } else {
-      respuesta = "";
+// Función para mostrar/ocultar la ventana del chat.
+// Ahora también se encarga de mostrar las sugerencias iniciales.
+function toggleChat() {
+    const chatContainer = $('#chat-container');
+    chatContainer.toggleClass('d-none');
+
+    // --- LÓGICA AÑADIDA: Mostrar sugerencias iniciales al abrir ---
+    const chatMessages = $('#chat-messages');
+    // Si estamos abriendo el chat y es la primera vez (no hay mensajes de usuario)
+    if (!chatContainer.hasClass('d-none') && chatMessages.find('.user-message').length === 0) {
+        
+        const suggestionsDataEl = document.getElementById('chatbot-initial-suggestions');
+        let suggestions = [];
+
+        // Verificamos que el elemento con las sugerencias exista y lo parseamos
+        if (suggestionsDataEl) {
+            try {
+                suggestions = JSON.parse(suggestionsDataEl.textContent);
+            } catch (e) {
+                console.error("Error al parsear las sugerencias iniciales del chatbot:", e);
+            }
+        }
+        
+        // Limpiamos cualquier contenido previo y añadimos el saludo con las sugerencias
+        chatMessages.empty(); 
+        addMessageToChat(
+            '¡Hola! Soy tu asistente virtual. Puedes escribirme una pregunta o seleccionar una de las siguientes opciones:', 
+            'bot', 
+            suggestions
+        );
+    }
+}
+
+// Lógica principal que se ejecuta cuando la página está lista
+$(document).ready(function() {
+    
+    // --- CONFIGURACIÓN DE CSRF TOKEN PARA TODAS LAS LLAMADAS AJAX ---
+    // Esta función obtiene el token CSRF de las cookies del navegador.
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 
-    const chatBody = document.getElementById("chat-body");
-    const respuestaBot = document.getElementById("botRespuesta");
+    // Esta función configura jQuery para que envíe el token CSRF en la cabecera
+    // de cada petición AJAX que no sea GET, protegiéndolas.
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+            }
+        }
+    });
+    // --- FIN DE LA CONFIGURACIÓN CSRF ---
 
-    if (respuesta) {
-      if (!respuestaBot) {
-        const p = document.createElement("p");
-        p.className = "text-secondary small mt-2";
-        p.id = "botRespuesta";
-        p.textContent = respuesta;
-        chatBody.appendChild(p);
-      } else {
-        respuestaBot.textContent = respuesta;
-      }
+    const chatMessages = $('#chat-messages');
+    const userInput = $('#userMsg');
+
+    // Función para añadir mensajes y sugerencias al chat
+    window.addMessageToChat = function(message, sender, suggestions = []) {
+        const messageClass = sender === 'user' ? 'user-message' : 'bot-message';
+        // Limpiamos el HTML para evitar inyección de código (XSS)
+        const cleanMessage = $('<div/>').text(message).html().replace(/\n/g, '<br>');
+        let messageHtml = `<div class="message ${messageClass}"><p>${cleanMessage}</p></div>`;
+
+        // Si la respuesta del servidor incluye sugerencias, las creamos como botones
+        if (suggestions.length > 0) {
+            let suggestionsHtml = '<ul class="suggestion-list">';
+            suggestions.forEach(function(suggestion) {
+                // Escapamos las comillas en la sugerencia por si acaso
+                const escapedSuggestion = suggestion.replace(/'/g, "\\'");
+                suggestionsHtml += `<li><button class="suggestion-item" onclick="sendSuggestion('${escapedSuggestion}')">${suggestion}</button></li>`;
+            });
+            suggestionsHtml += '</ul>';
+            messageHtml += suggestionsHtml;
+        }
+
+        chatMessages.append(messageHtml);
+        // Hacer scroll automático hasta el final para ver el último mensaje
+        chatMessages.scrollTop(chatMessages[0].scrollHeight);
     }
-  });
-});
 
+    // Función para que los botones de sugerencia funcionen
+    window.sendSuggestion = function(question) {
+        // Muestra la pregunta seleccionada como si el usuario la hubiera escrito
+        addMessageToChat(question, 'user');
+        // Envía la pregunta al backend
+        queryBackend(question);
+    }
+
+    // Función que se comunica con el backend de Django
+    function queryBackend(question) {
+        // Opcional: mostrar un indicador de "escribiendo..."
+        // addMessageToChat('...', 'bot'); 
+
+        $.ajax({
+            url: "/ajax/chatbot/query/", // La URL que creamos en urls.py
+            type: "POST",
+            data: {
+                'question': question
+                // Ya no es necesario pasar el csrfmiddlewaretoken aquí, ajaxSetup lo maneja.
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Pequeña demora para que la respuesta no sea instantánea
+                setTimeout(function() { 
+                    if (response.status === 'success') {
+                        // Respuesta normal encontrada
+                        addMessageToChat(response.answer, 'bot');
+                    } else if (response.status === 'fallback') {
+                        // Respuesta por defecto + sugerencias
+                        addMessageToChat(response.answer, 'bot', response.suggestions);
+                    } else {
+                        addMessageToChat('Lo siento, hubo un error al procesar tu solicitud.', 'bot');
+                    }
+                }, 500); // 500 milisegundos de demora
+            },
+            error: function() {
+                setTimeout(function() {
+                    addMessageToChat('No pude conectarme para obtener una respuesta. Intenta de nuevo.', 'bot');
+                }, 500);
+            }
+        });
+    }
+    
+    // Función principal que se llama desde el botón "Enviar" en el HTML
+    window.procesarMensaje = function() {
+        const userQuestion = userInput.val().trim();
+        if (!userQuestion) return;
+        addMessageToChat(userQuestion, 'user');
+        userInput.val('');
+        queryBackend(userQuestion);
+    }
+
+    // Permitir enviar el mensaje con la tecla Enter en el textarea
+    userInput.on('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { // shiftKey permite saltos de línea con Shift+Enter
+            e.preventDefault(); // Evita el salto de línea por defecto al presionar solo Enter
+            procesarMensaje();
+        }
+    });
+
+}); // Fin de $(document).ready()
 
 // Carrito de cotización
 let cart = [];
@@ -70,3 +191,41 @@ function updateCart() {
     </li>
   `).join('');
 }
+
+const serviciosSlider = new Swiper('.servicios-slider', {
+    // Opciones visuales
+    loop: totalSlides > 3,
+    slidesPerView: 1, // Mostrar 1 slide en pantallas pequeñas
+    spaceBetween: 30, // Espacio entre slides    
+    
+    // --- MEJORA AÑADIDA: Autoplay cada 5 segundos ---
+    autoplay: {
+        delay: 5000, // 5000 milisegundos = 5 segundos
+        disableOnInteraction: false, // Para que no se detenga si el usuario interactúa con él
+        pauseOnMouseEnter: true, // Se detiene si el usuario pone el mouse encima
+    },
+
+    // Paginación (los puntitos)
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+    },
+
+    // Flechas de Navegación
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev',
+    },
+
+    // Breakpoints para hacerlo responsivo
+    breakpoints: {
+        768: {
+          slidesPerView: 2,
+          spaceBetween: 30
+        },
+        992: {
+          slidesPerView: 3,
+          spaceBetween: 40
+        }
+    }
+});
