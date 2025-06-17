@@ -9,7 +9,12 @@ class Servicio(models.Model):
     destacado = models.BooleanField(
         default=False,
         verbose_name="Servicio Destacado",
-        help_text="Marcar para que este servicio aparezca en la sección de destacados."
+        help_text="Marcar para que este servicio aparezca en la sección de destacados.")
+    precio = models.DecimalField(
+        max_digits=10,      # Número máximo de dígitos en total (ej: 100,000,000.00)
+        decimal_places=2,   # Número de decimales
+        null=True,          # Permite que el valor sea NULL en la base de datos (importante para que sea opcional)
+        blank=True          # Permite que el campo esté vacío en formularios (también importante)
     )
 
     def __str__(self):

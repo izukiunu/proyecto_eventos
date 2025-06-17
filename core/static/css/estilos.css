@@ -14,76 +14,70 @@ body {
 /* --- Globales y Tipografía (Ajuste para el main si el navbar es fijo) --- */
 main {
     flex-grow: 1;
-   /* o 70px, o el valor que tengas */ /* Hace que el contenido principal ocupe el espacio disponible, empujando el footer */
-    /*padding-top: 70px; /* AJUSTA ESTE VALOR al alto de tu navbar.
-                          Es necesario si el navbar es fixed-top para que el contenido no quede debajo.
-                          Si tu navbar es transparente y quieres que el contenido hero se vea detrás,
-                          este padding podría ir en un contenedor interno después del hero. */
 }
 
-/* Eliminamos la regla .container vacía para evitar el warning del linter.
-   Si necesitas estilos personalizados para una clase .container que no sea la de Bootstrap,
-   puedes definirlos aquí. Si usas solo el .container de Bootstrap, no necesitas esta regla. */
-
-/* AÑADIR esta nueva regla */
 .main-content-with-padding {
-    padding-top: 110px; /* Ajusta este valor al alto de tu navbar + un pequeño margen */
+    /* Ajustado para la nueva altura del navbar de 90px + 20px de margen */
+    padding-top: 110px; 
 }
 
-/* --- Navbar / Header (MODIFICADO para controlar la altura) --- */
+
+/* ============================================================
+  NUEVOS ESTILOS PARA NAVBAR (Glassmorphism)
+============================================================
+*/
+
+/* --- Navbar / Header (MODIFICADO para efecto Glassmorphism) --- */
 .navbar.fixed-top {
-    /* 1. DEFINIMOS UNA ALTURA FIJA PARA EL NAVBAR */
-    height: 100px; /* <-- ALTURA TOTAL. Puedes cambiar este valor, ej: 65px, 75px, 80px. */
+    /* 1. Altura ajustada para un look más moderno */
+    height: 90px;
     
-    /* Mantenemos tus estilos de transparencia y blur */
-    background-color: rgba(63, 63, 63, 0.8)!important ;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    /* 2. Fondo semitransparente oscuro */
+    background-color: rgba(10, 10, 10, 0.65) !important;
+
+    /* 3. Efecto de desenfoque del fondo (vidrio esmerilado) */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* Para compatibilidad con Safari */
     
-    border-bottom: 2px solid #dc3545;
+    /* 4. Borde inferior sutil para definir el límite */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* 2. AJUSTAMOS EL LOGO PARA QUE QUEPA DENTRO DEL NAVBAR */
+/* --- Ajustamos el logo para la nueva altura --- */
 .navbar-brand img {
-    /* La altura del logo debe ser MENOR que la altura del navbar para dejar margen. */
-    height: 95px; /* <-- PRUEBA CON UN VALOR MÁS PEQUEÑO como 55px (para un navbar de 70px). */
-    width: auto;  /* Mantiene la proporción de la imagen. */
+    height: 85px; /* Ligeramente más pequeño que la altura del navbar */
+    width: auto;
 }
 
-.navbar-brand span {
-    color: #000000 ;
-    font-weight: 600;
-}
-
-/* 3. AJUSTAMOS LOS ENLACES PARA QUE SE CENTREN VERTICALMENTE */
-/* Bootstrap y la clase 'align-items-center' en tu HTML ya ayudan a centrar,
-   pero podemos asegurar que el padding no interfiera con la altura fija. */
+/* --- Ajustamos los enlaces para el nuevo estilo --- */
 .navbar .navbar-nav .nav-link {
-    color: #ffffff ;
+    color: #ffffff;
     font-weight: 500;
-    padding: 0.5rem 0.9rem; /* Padding para el look de botón */
+    padding: 0.5rem 1rem;
     margin: 0 0.2rem;
-    border: 2px solid transparent;
+    border: 2px solid transparent; /* Mantenemos el borde transparente para que no salte en hover */
     border-radius: 5px;
-    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: background-color 0.2s ease-in-out;
 }
 
+/* Nuevo efecto hover más sutil que encaja con el glassmorphism */
 .navbar .navbar-nav .nav-link:hover,
 .navbar .navbar-nav .nav-link.active {
-    color: #ffffff ;
-    background-color: #dc3545;
-    border-color: #a71d2a;
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
     font-weight: 600;
 }
 
-/* Ajustes para el botón de menú en móviles (hamburguesa) */
+/* --- Ajustes para el botón de menú en móviles (hamburguesa) --- */
+/* Cambiamos el color para que sea visible en el fondo oscuro */
 .navbar-toggler {
-    border-color: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 0, 0, 0.85)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
+
 /* --- Hero Section (Tus estilos existentes, ajustados) --- */
 .hero {
     height: 70vh; /* Lo tenías en "index linea 54" */
@@ -521,6 +515,7 @@ main {
 
 /* --- Estilos para Tarjetas de Servicio Uniformes --- */
 .servicio-card {
+    width: 100%;
     border: none;
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     transition: transform 0.3s ease, box-shadow 0.3s ease;

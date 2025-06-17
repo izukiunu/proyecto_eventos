@@ -6,6 +6,7 @@ Django settings for proyecto_bodas project.
 from pathlib import Path
 import os
 from dotenv import load_dotenv  # Para cargar variables de entorno
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,10 +27,26 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'core',
+    'axes',
+]
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'axes.backends.AxesBackend',
 ]
 
+# --- CONFIGURACIÓN FINAL DE DJANGO-AXES (SIN ADVERTENCIAS) ---
+
+# --- CONFIGURACIÓN FINAL DE DJANGO-AXES (APUNTANDO A LA FUNCIÓN) ---
+AXES_HANDLER = 'axes.handlers.database.AxesDatabaseHandler'
+AXES_FAILURE_LIMIT = 5
+
+# Apuntamos a nuestra función personalizada en utils.py para el bloqueo progresivo.
+AXES_COOLOFF_TIME = 'core.utils.get_cooloff_time'
+AXES_LOCKOUT_TEMPLATE = 'core/lockout.html'
 MIDDLEWARE = [
+    'axes.middleware.AxesMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -38,8 +55,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+SILENCED_SYSTEM_CHECKS = ['axes.W003']
 ROOT_URLCONF = 'proyecto_bodas.urls'
+
 
 TEMPLATES = [
     {
@@ -70,7 +88,12 @@ DATABASES = {
 # --- VALIDACIÓN DE CONTRASEÑAS ---
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 10,  # <-- Aumenta este número para más seguridad
+        }
+    },
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
@@ -98,3 +121,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER_GMAIL')      # Lee desde .env
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD_GMAIL')  # Lee desde .env
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL_GMAIL', EMAIL_HOST_USER)
+
+# --- CONFIGURACIÓN DE AUTENTICACIÓN ---
+LOGIN_URL = 'core:login'
+LOGIN_REDIRECT_URL = 'core:admin_servicio_list'
+LOGOUT_REDIRECT_URL = 'core:index'

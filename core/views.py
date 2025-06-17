@@ -9,6 +9,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .models import ChatbotQA
 from .forms import ChatbotQAForm
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.mixins import UserPassesTestMixin
+
 
 # --- Vistas Públicas ---
 
@@ -125,6 +128,36 @@ class AdminServicioListView(ListView):
         return context
     
     
+##---- admnin seguridad ----####
+class AdminServicioListView(UserPassesTestMixin, ListView):
+    """
+    Esta vista ahora usa un Mixin para la seguridad.
+    UserPassesTestMixin: Se asegura de que el usuario pase una prueba.
+    ListView: Muestra una lista de objetos.
+    """
+    model = Servicio
+    template_name = 'core/admin_panel/servicio_list.html'
+    context_object_name = 'servicios'
+
+    def test_func(self):
+        """
+        La prueba que UserPassesTestMixin ejecuta.
+        Solo permite el acceso si el usuario es un administrador (staff).
+        """
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        """
+        Este método se queda exactamente como lo tenías.
+        """
+        context = super().get_context_data(**kwargs)
+        context['servicio_form'] = ServicioForm()
+        context['titulo_pagina_panel'] = 'Administrar Servicios y Configuración'
+        configuracion, _ = ConfiguracionSitio.objects.get_or_create(id=1, defaults={'email_notificaciones_admin': settings.DEFAULT_FROM_EMAIL})
+        context['configuracion_sitio'] = configuracion
+        context['chatbot_qa_list'] = ChatbotQA.objects.all()
+        context['chatbot_qa_form'] = ChatbotQAForm()
+        return context
 
 # ==========================================================
 # --- VISTAS/ENDPOINTS AJAX (SECCIÓN CORREGIDA) ---
@@ -140,7 +173,8 @@ def servicio_create_ajax(request):
                 'id': servicio.id,
                 'nombre': servicio.nombre,
                 'descripcion': servicio.descripcion, # <-- CAMBIO CLAVE
-                'imagen_url': servicio.imagen.url if servicio.imagen else None
+                'imagen_url': servicio.imagen.url if servicio.imagen else None,
+                'precio': servicio.precio
             }
             return JsonResponse({'status': 'success', 'message': 'Servicio agregado.', 'servicio': response_data})
         else:
@@ -178,7 +212,8 @@ def servicio_detail_json(request, servicio_id):
         'id': servicio.id,
         'nombre': servicio.nombre,
         'descripcion': servicio.descripcion,
-        'destacado': servicio.destacado # <-- AÑADIR ESTA LÍNEA
+        'destacado': servicio.destacado,
+        'precio': servicio.precio,
     }
     return JsonResponse({'status': 'success', 'servicio': response_data})
 

@@ -1,6 +1,7 @@
 # core/urls.py
 from django.urls import path
 # from . import views  # Ya no necesitamos esta línea si importamos explícitamente
+from django.contrib.auth.views import LoginView, LogoutView
 from .views import (
     index_view,
     ListaServiciosView,
@@ -30,6 +31,8 @@ urlpatterns = [
     path('solicitar-cotizacion/<int:servicio_id>/', solicitar_cotizacion_view, name='solicitar_cotizacion_especifica'),
     path('solicitar-cotizacion/', solicitar_cotizacion_view, name='solicitar_cotizacion_general'),
     # path('contacto/', contacto_view, name='contacto'), # Descomenta si la tienes
+    path('login/', LoginView.as_view(template_name='core/login.html'), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
 
     # URLs para el Panel de Administración Personalizado de Servicios
     path('admin-panel/servicios/', AdminServicioListView.as_view(), name='admin_servicio_list'), # Carga la página SPA

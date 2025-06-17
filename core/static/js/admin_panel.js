@@ -109,6 +109,7 @@ listaServiciosBody.on('click', '.btnEditar', function() {
                 servicioForm.find('input[name="nombre"]').val(servicio.nombre);
                 servicioForm.find('textarea[name="descripcion"]').val(servicio.descripcion);
                 $('#id_destacado').prop('checked', servicio.destacado);
+                $('#id_precio').val(servicio.precio || '');
                 
                 editMode = true;
                 qaFormContainer.removeClass('form-visible'); // Oculta el otro form
@@ -293,20 +294,77 @@ listaServiciosBody.on('click', '.btnEliminar', function() {
         }
     });
 
-    // --- Funciones de ayuda para actualizar las tablas ---
-    function addServicioALista(servicio) { /* Tu función existente */ }
-    function updateServicioEnLista(servicio) { /* Tu función existente */ }
-    function addQAToList(qa) {
-        noQAMensaje.parent().is('tr') ? noQAMensaje.parent().hide() : noQAMensaje.hide();
-        const detailUrlTemplate = $('#tablaQA .btnEditarQA:first').data('detail-url-template') || '/ajax/chatbot-qa/0/detalle/';
-        const deleteUrlTemplate = $('#tablaQA .btnEliminarQA:first').data('delete-url-template') || '/ajax/chatbot-qa/0/eliminar/';
-        const keywordsEscapado = $('<div/>').text(qa.keywords).html();
-        const respuestaEscapada = $('<div/>').text(qa.respuesta).html();
-        const newRowHtml = `<tr data-id="${qa.id}"><td class="keywords">${keywordsEscapado}</td><td class="respuesta">${respuestaEscapada.substring(0, 50)}...</td><td class="actions"><button class="btn btn-sm btn-warning btnEditarQA" data-id="${qa.id}" data-detail-url-template="${detailUrlTemplate}"><i class="fas fa-edit"></i> Editar</button> <button class="btn btn-sm btn-danger btnEliminarQA" data-id="${qa.id}" data-delete-url-template="${deleteUrlTemplate}"><i class="fas fa-trash"></i> Eliminar</button></td></tr>`;
-        listaQABody.prepend(newRowHtml);
+   // ==========================================================
+// --- FUNCIONES DE AYUDA PARA ACTUALIZAR LA TABLA DE SERVICIOS ---
+// ==========================================================
+
+/**
+ * Genera el contenido HTML (todos los <td>) para una fila de la tabla.
+ * @param {object} servicio - El objeto del servicio con sus datos.
+ * @returns {string} - El string HTML con el contenido de la fila.
+ */
+function generarHtmlFilaServicio(servicio) {
+    // --- AQUÍ ESTÁ LA LÓGICA DE FORMATO DE PRECIO ---
+    let precioHtml = '-';
+    // Comprobamos si el precio existe y es un número
+    if (servicio.precio && !isNaN(parseFloat(servicio.precio))) {
+        // Usamos toLocaleString para añadir separadores de miles para CLP
+        let precioFormateado = parseFloat(servicio.precio).toLocaleString('es-CL');
+        precioHtml = `$ ${precioFormateado}`;
     }
-    function updateQAInList(qa) {
-        const row = listaQABody.find(`tr[data-id="${qa.id}"]`);
-        if (row.length) { row.find('.keywords').text(qa.keywords); row.find('.respuesta').text(qa.respuesta.substring(0, 50) + '...'); }
+
+    // Lógica para la imagen
+    const imagenHtml = servicio.imagen_url ?
+        `<img src="${servicio.imagen_url}" alt="${servicio.nombre}" width="80" class="img-thumbnail">` :
+        `<span class="text-muted">Sin imagen</span>`;
+
+    // Lógica para el estado "Destacado"
+    const destacadoHtml = servicio.destacado ?
+        `<i class="fas fa-check-circle text-success"></i> Sí` :
+        `<i class="fas fa-times-circle text-danger"></i> No`;
+    
+    // Obtenemos las plantillas de URL de un botón existente para que los nuevos también funcionen
+    const editUrlTemplate = $('#listaServiciosBody .btnEditar:first').data('detail-url-template');
+    const deleteUrlTemplate = $('#listaServiciosBody .btnEliminar:first').data('delete-url-template');
+
+    // Retornamos todo el contenido HTML para la fila
+    return `
+        <td class="nombre">${servicio.nombre}</td>
+        <td>${servicio.descripcion.substring(0, 100)}...</td>
+        <td>${imagenHtml}</td>
+        <td class="precio-servicio fw-bold">${precioHtml}</td>
+        <td>${destacadoHtml}</td>
+        <td>
+            <button class="btn btn-sm btn-info btnEditar" data-id="${servicio.id}" data-detail-url-template="${editUrlTemplate}" title="Editar">
+                <i class="fas fa-pencil-alt"></i>
+            </button>
+            <button class="btn btn-sm btn-danger btnEliminar" data-id="${servicio.id}" data-delete-url-template="${deleteUrlTemplate}" title="Eliminar">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+}
+
+/**
+ * Añade una nueva fila a la tabla de servicios.
+ * @param {object} servicio - El objeto del nuevo servicio.
+ */
+function addServicioALista(servicio) {
+    // Si la tabla mostraba el mensaje "No hay servicios", lo ocultamos
+    if (noServiciosMensaje.length) {
+        noServiciosMensaje.parent().hide();
     }
-});
+    const nuevaFilaHtml = `<tr id="servicio-${servicio.id}">${generarHtmlFilaServicio(servicio)}</tr>`;
+    listaServiciosBody.prepend(nuevaFilaHtml);
+}
+
+/**
+ * Actualiza una fila existente en la tabla de servicios.
+ * @param {object} servicio - El objeto del servicio con sus datos actualizados.
+ */
+function updateServicioEnLista(servicio) {
+    const filaExistente = $(`#servicio-${servicio.id}`);
+    if (filaExistente.length) {
+        filaExistente.html(generarHtmlFilaServicio(servicio));
+    }
+}});

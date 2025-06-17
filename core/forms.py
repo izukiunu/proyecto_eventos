@@ -27,12 +27,13 @@ class SolicitudCotizacionForm(forms.ModelForm):
 class ServicioForm(forms.ModelForm): # Para el panel de admin personalizado
     class Meta:
         model = Servicio
-        fields = ['nombre', 'descripcion', 'imagen', 'destacado']
+        fields = ['nombre', 'descripcion', 'imagen', 'destacado','precio']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del servicio'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Descripción detallada del servicio'}),
             'imagen': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
             'destacado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'precio': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 250000.00'}),
         }
         labels = {
             'nombre': 'Nombre del Servicio',
