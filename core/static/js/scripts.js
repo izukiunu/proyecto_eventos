@@ -172,25 +172,6 @@ $(document).ready(function() {
 
 }); // Fin de $(document).ready()
 
-// Carrito de cotización
-let cart = [];
-
-function addToCart(service, price) {
-  cart.push({ name: service, price });
-  updateCart();
-}
-
-function updateCart() {
-  const cartCount = document.getElementById('cartCount');
-  const cartItems = document.getElementById('cartItems');
-  cartCount.textContent = cart.length;
-  cartItems.innerHTML = cart.map(item => `
-    <li class="dropdown-item d-flex justify-content-between">
-      <span>${item.name}</span>
-      <span class="text-success">$${item.price.toLocaleString()}</span>
-    </li>
-  `).join('');
-}
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -247,8 +228,88 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
     }
+    const sobreNosotrosSlider = new Swiper('.sobre-nosotros-slider', {
+        loop: true,
+        effect: 'fade',
+        autoplay: {
+            delay: 4000, // Cambia cada 4 segundos
+        },
+        allowTouchMove: false,
+    });
+
+    // --- NUEVO: Sliders anidados para las imágenes de los Testimonios ---
+    const imagenesTestimonioSliders = document.querySelectorAll('.imagenes-testimonio-slider');
+    imagenesTestimonioSliders.forEach(sliderElement => {
+        new Swiper(sliderElement, {
+            loop: true,
+            effect: 'fade',
+            autoplay: {
+                delay: 2500, // Cambia cada 2.5 segundos
+            },
+            allowTouchMove: false,
+        });
+    });
+
 
     // Inicializamos Swiper con la configuración elegida
     const serviciosSlider = new Swiper('.servicios-slider', swiperOptions);
+    const proyectosSlider = new Swiper('.proyectos-slider', {
+        loop: true,
+        spaceBetween: 30,
+        autoplay: {
+            delay: 10000, // Cambia de proyecto cada 10 segundos
+            disableOnInteraction: false,
+        },
+        navigation: {
+            nextEl: '.proyectos-nav-next',
+            prevEl: '.proyectos-nav-prev',
+        },
+        // Responsivo: muestra 1 proyecto en móvil, 2 en tablet, 3 en desktop
+        slidesPerView: 1,
+        breakpoints: {
+            768: {
+                slidesPerView: 2,
+            },
+            992: {
+                slidesPerView: 3,
+            }
+        }
+    });
+
+    // 2. Sliders de Imágenes de Proyectos (anidados)
+    // Se inicializa cada uno por separado
+    const imagenesProyectoSliders = document.querySelectorAll('.imagenes-proyecto-slider');
+    imagenesProyectoSliders.forEach(sliderElement => {
+        new Swiper(sliderElement, {
+            loop: true,
+            effect: 'fade', // Efecto de desvanecimiento para un cambio suave
+            autoplay: {
+                delay: 2000, // Cambia de imagen cada 2 segundos
+            },
+            allowTouchMove: false, // El usuario no puede arrastrar las imágenes
+            // No tiene navegación ni paginación
+        });
+    });
+
+    // 3. Slider de Testimonios
+    const testimoniosSlider = new Swiper('.testimonios-slider', {
+        loop: true,
+        spaceBetween: 30,
+        centeredSlides: true,
+        autoplay: {
+            delay: 5000, // Cambia de testimonio cada 5 segundos
+            disableOnInteraction: false,
+        },
+        slidesPerView: 1,
+        breakpoints: {
+            768: {
+                slidesPerView: 2,
+            },
+            1200: {
+                slidesPerView: 3,
+            }
+        }
+    });
+
 
 });

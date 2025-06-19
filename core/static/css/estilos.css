@@ -3,12 +3,9 @@
 /* --- Globales y Tipografía --- */
 body {
     font-family: 'Poppins', sans-serif;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh; /* Para asegurar que el footer se quede abajo */
-    background-color: #f8f9fa; /* Un gris muy claro de Bootstrap para el fondo general */
-    color: #212529; /* Color de texto principal (Bootstrap default) */
-    margin: 0; /* Quitar margen por defecto */
+    background-color: #f8f9fa; 
+    color: #212529;
+    margin: 0;
 }
 
 /* --- Globales y Tipografía (Ajuste para el main si el navbar es fijo) --- */
@@ -17,37 +14,67 @@ main {
 }
 
 .main-content-with-padding {
-    /* Ajustado para la nueva altura del navbar de 90px + 20px de margen */
-    padding-top: 110px; 
+    /* Ajustado para la altura del navbar. Se mantiene para tu logo de 125px. */
+    padding-top: 155px; 
 }
 
 
 /* ============================================================
-  NUEVOS ESTILOS PARA NAVBAR (Glassmorphism)
+    NUEVOS ESTILOS PARA NAVBAR (Transparente sin Borde en Logo)
 ============================================================
 */
 
-/* --- Navbar / Header (MODIFICADO para efecto Glassmorphism) --- */
+/* --- Navbar / Header (MODIFICADO para transparencia total y animación) --- */
 .navbar.fixed-top {
-    /* 1. Altura ajustada para un look más moderno */
-    height: 90px;
-    
-    /* 2. Fondo semitransparente oscuro */
-    background-color: rgba(10, 10, 10, 0.65) !important;
-
-    /* 3. Efecto de desenfoque del fondo (vidrio esmerilado) */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px); /* Para compatibilidad con Safari */
-    
-    /* 4. Borde inferior sutil para definir el límite */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    height: 135px; /* Mantén la altura del navbar para acomodar el logo */
+    background-color: rgba(0, 0, 0, 0) !important; /* Completamente transparente */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: none;
+    box-shadow: none;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    top: 0; /* Asegura que esté pegado al top inicialmente */
+    transition: top 0.3s ease-in-out; /* Animación suave para el movimiento vertical */
+    z-index: 1030; /* Asegura que el navbar esté por encima de la mayoría del contenido */
 }
 
-/* --- Ajustamos el logo para la nueva altura --- */
-.navbar-brand img {
-    height: 85px; /* Ligeramente más pequeño que la altura del navbar */
+/* Clase para ocultar el navbar (se añadirá con JavaScript) */
+.navbar.hidden {
+    /* Mueve el navbar completamente fuera de la vista hacia arriba */
+    top: -135px; /* Ajusta este valor para que sea igual o mayor a la altura del navbar */
+}
+
+
+/* --- Ajustamos el logo (Centrado en Escritorio) --- */
+
+/* 1. Centramos el logo SÓLO en pantallas de escritorio (768px o más) */
+
+/* 2. Ajustamos el tamaño de la imagen del logo */
+.navbar-brand .logo-responsive { 
+    max-height: 125px; /* Tu punto óptimo para la legibilidad */
+    height: auto;
     width: auto;
+    /* *** BORDES DEL LOGO ELIMINADOS DE AQUÍ *** */
+}
+
+/* Media query para ajustar el tamaño del logo y navbar en pantallas más pequeñas */
+@media (max-width: 767.98px) { 
+    .navbar.fixed-top {
+        height: 70px; /* Reducimos la altura del navbar para móviles */
+    }
+    .navbar-brand .logo-responsive {
+        max-height: 50px; /* Logo más pequeño para móviles */
+        /* *** BORDES DEL LOGO EN MÓVIL ELIMINADOS DE AQUÍ *** */
+    }
+    .main-content-with-padding {
+        padding-top: 80px; 
+    }
+    /* Clase para ocultar el navbar en móvil (debe ajustarse a la altura de móvil) */
+    .navbar.hidden {
+        top: -70px; /* Ajusta este valor para la altura del navbar en móvil */
+    }
 }
 
 /* --- Ajustamos los enlaces para el nuevo estilo --- */
@@ -56,21 +83,22 @@ main {
     font-weight: 500;
     padding: 0.5rem 1rem;
     margin: 0 0.2rem;
-    border: 2px solid transparent; /* Mantenemos el borde transparente para que no salte en hover */
+    background-color: rgba(30, 30, 30, 0.4); /* Fondo semi-transparente oscuro para mejor legibilidad */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Borde blanco sutil para definir el elemento */
     border-radius: 5px;
-    transition: background-color 0.2s ease-in-out;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
-/* Nuevo efecto hover más sutil que encaja con el glassmorphism */
+/* Efecto hover */
 .navbar .navbar-nav .nav-link:hover,
 .navbar .navbar-nav .nav-link.active {
     color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(50, 50, 50, 0.7);
+    border-color: rgba(255, 255, 255, 0.6);
     font-weight: 600;
 }
 
 /* --- Ajustes para el botón de menú en móviles (hamburguesa) --- */
-/* Cambiamos el color para que sea visible en el fondo oscuro */
 .navbar-toggler {
     border-color: rgba(255, 255, 255, 0.2);
 }
@@ -78,57 +106,115 @@ main {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
-/* --- Hero Section (Tus estilos existentes, ajustados) --- */
-.hero {
-    height: 70vh; /* Lo tenías en "index linea 54" */
-    /* Combinando tus dos definiciones de .hero */
-    background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)),
-                url("../img/transfondo-soluciones.jpg") center center / cover no-repeat; /* Asegúrate que la ruta sea correcta desde donde se sirve el CSS */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    text-align: center;
-    padding: 3rem 1rem; /* Añadido padding */
-}
+/* Estilo para el menú desplegable en modo móvil */
+@media (max-width: 991.98px) { 
+    .navbar-collapse {
+        background-color: rgba(30, 30, 30, 0.95);
+        border-radius: 5px;
+        margin-top: 10px;
+        padding: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
 
-.hero h2 { /* Asumo que quieres que el h2 del hero sea el título principal */
-    font-weight: 600; /* O 700 para más énfasis */
-    font-size: 2.5rem; /* Ajusta según necesites */
-    margin-bottom: 1rem;
-}
-@media (min-width: 768px) {
-    .hero h2 {
-        font-size: 3.5rem;
+    .navbar-nav {
+        width: 100%;
+    }
+
+    .navbar .navbar-nav .nav-item {
+        margin-bottom: 5px;
+    }
+
+    .navbar .navbar-nav .nav-link {
+        width: 100%;
+        text-align: center;
     }
 }
+/* =============================================
+   Estilos para el Hero Section con Carrusel
+   ============================================= */
 
-.hero p {
-    font-size: 1.1rem; /* Ajusta según necesites */
-    margin-bottom: 1.5rem;
-    max-width: 600px; /* Para que no sea demasiado ancho el texto */
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.hero .btn-warning { /* Estilo para tu botón "Ver Servicios" */
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-}
-.hero .btn-rojo-principal { /* Si prefieres usar el botón rojo */
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: white;
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-}
-.hero .btn-rojo-principal:hover {
-    background-color: #c82333;
-    border-color: #bd2130;
+/* * Contenedor principal del Hero Section.
+ * Define la altura para que ocupe toda la pantalla y sirve como
+ * referencia para elementos posicionados de forma absoluta en su interior.
+ * Se eliminó 'display: flex' para no interferir con el JavaScript del carrusel.
+*/
+.hero-full-height {
+  height: 100vh; /* Ocupa el 100% de la altura visible del viewport */
+  width: 100%;
+  overflow: hidden; /* Asegura que la imagen no se desborde */
+  position: relative; /* Necesario para posicionar el contenido y el carrusel */
+  /* La siguiente línea compensa la altura de un navbar fijo.
+     Ajusta el valor (135px) si la altura de tu navbar cambia. */
+  margin-top: -135px;
 }
 
+/* * Estilos para cada slide individual del carrusel.
+ * Aquí es donde se aplica la imagen de fondo y se utiliza Flexbox
+ * para centrar el contenido del slide.
+*/
+.hero-slide-item {
+  height: 100vh; /* Cada slide también ocupa el 100% de la altura */
+  width: 100%;
+  background-size: cover; /* Cubre todo el área sin distorsionar la imagen */
+  background-position: center center; /* Centra la imagen */
+  background-repeat: no-repeat;
+  
+  /* Flexbox para centrar el contenido del slide (el div .hero-content-wrapper) */
+  display: flex !important; /* !important puede ser necesario para sobreescribir estilos de Bootstrap */
+  align-items: center; /* Centra verticalmente */
+  justify-content: center; /* Centra horizontalmente */
+  
+  /* Necesario para posicionar el overlay oscuro ::before */
+  position: relative;
+}
+
+/* * Overlay oscuro.
+ * Se muestra encima de la imagen de fondo y debajo del texto para asegurar
+ * que el texto blanco siempre sea legible.
+*/
+.hero-slide-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* Overlay oscuro semitransparente */
+  z-index: 1; /* Se asegura que el overlay esté debajo del contenido */
+}
+
+/* * Contenedor para el texto (título, subtítulo) y el botón.
+*/
+.hero-content-wrapper {
+  position: relative; /* Asegura que el contenido esté por encima del overlay */
+  z-index: 2;
+  padding: 2rem 1rem; /* Padding para el contenido del slide */
+  max-width: 800px; /* Limita el ancho del texto para mejor legibilidad */
+  /* La clase 'text-center' de Bootstrap en el HTML se encarga de alinear el texto */
+}
+
+/* * Estilos responsivos para los textos del Hero.
+*/
+.hero-content-wrapper h1 {
+  font-size: calc(2rem + 1.5vw); /* Tamaño de fuente que se adapta al ancho de la pantalla */
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.hero-content-wrapper p {
+  font-size: calc(1rem + 0.5vw); /* Tamaño de fuente que se adapta al ancho de la pantalla */
+  margin-bottom: 2rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* * Ajustes para el botón dentro del carrusel.
+*/
+.hero-content-wrapper .btn-lg {
+  padding: 0.8rem 2rem;
+  font-size: 1.2rem;
+}
 
 /* --- Product Card (Tus estilos existentes) --- */
 .product-card.animate-hover {
@@ -190,7 +276,7 @@ main {
 /* Carousel (Tus estilos existentes) */
 .carousel-inner img {
     height: 250px; /* Ajusta según el contenido de tu carousel */
-    object-fit: cover;
+    object-fit: fill;
     border-radius: 8px;
 }
 .carousel-control-prev-icon,
@@ -279,11 +365,11 @@ main {
 }
 
 
-/* --- Chatbot flotante --- */
-#chatbot-button {
+/* --- Estilos Comunes para Botones Flotantes --- */
+#chatbot-button,
+.icono-carrito-contenedor {
     position: fixed;
     bottom: 20px;
-    right: 25px;
     background-color: #dc3545; /* Rojo principal */
     color: white;
     font-size: 24px;
@@ -294,19 +380,64 @@ main {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Sombra unificada */
     z-index: 1000;
     transition: transform 0.2s ease, background-color 0.3s ease;
 }
-#chatbot-button:hover {
+.notification-dot {
+    position: absolute; /* Se posiciona sobre el botón */
+    top: 5px;          /* Distancia desde arriba */
+    right: 5px;         /* Distancia desde la derecha */
+    width: 15px;        /* Ancho del círculo */
+    height: 15px;       /* Alto del círculo */
+    background-color: #ff5252; /* Un rojo brillante y amigable */
+    border-radius: 50%; /* Lo convierte en un círculo perfecto */
+    border: 2px solid white; /* Borde blanco para que resalte sobre el botón */
+    box-shadow: 0 0 0 rgba(255, 82, 82, 0.7); /* Sombra para la animación */
+    animation: pulse-animation 2s infinite; /* Aplica nuestra animación */
+}
+
+/* 3. Definición de la animación de pulso */
+@keyframes pulse-animation {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
+    }
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 10px rgba(255, 82, 82, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
+    }
+}
+
+/* Efecto hover unificado para AMBOS botones */
+#chatbot-button:hover,
+.icono-carrito-contenedor:hover {
     background-color: #c82333; /* Rojo más oscuro */
     transform: scale(1.1);
 }
 
+/* --- Posicionamiento Específico de cada botón --- */
+#chatbot-button {
+    left: 25px;
+    right: auto;
+}
+
+/* Asegúrate de tener un elemento con esta clase en tu HTML */
+.icono-carrito-contenedor {
+    right: 25px;
+}
+
+
+/* --- Chatbot flotante --- */
 #chat-container {
     position: fixed;
     bottom: 95px; /* Para que no se solape con el botón */
-    right: 25px;
+    right: auto;
+    left: 25px;
     width: 320px;
     max-width: calc(100% - 40px); /* Para que no se salga de pantalla en móviles */
     background-color: #ffffff;
@@ -343,7 +474,6 @@ main {
     overflow-y: auto; /* Scroll si los mensajes superan la altura */
     background-color: #f8f9fa; /* Un fondo ligeramente gris para el chat */
 }
-
 .message {
     margin-bottom: 12px;
     padding: 8px 12px;
@@ -613,4 +743,69 @@ main {
 .slider-contenedor .swiper-button-prev:hover {
   background-color: #dc3545;
   color: #ffffff;
+}
+.proyecto-card {
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden; /* Clave para que el borde redondeado afecte a la imagen */
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.imagenes-proyecto-slider {
+    width: 100%;
+    height: 250px; /* Altura fija para el slider de imágenes */
+}
+
+.imagenes-proyecto-slider img {
+    width: 100%;
+    height: 100%;
+    object-fit: fill; /* Asegura que la imagen cubra el área sin deformarse */
+}
+
+.proyecto-card-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+}
+
+/* Estilos para los botones de navegación del slider de proyectos */
+.proyectos-nav-next, .proyectos-nav-prev {
+    color: #dc3545; /* Rojo de tu marca */
+}
+.proyectos-nav-next:after, .proyectos-nav-prev:after {
+    font-size: 1.5rem; /* Íconos de flecha más grandes */
+}
+
+/* --- Estilos para la Sección de Testimonios --- */
+.testimonio-card {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    border-top: 4px solid #dc3545;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.sobre-nosotros-slider {
+    width: 100%;
+    height: 450px; /* Ajusta la altura como prefieras */
+}
+.sobre-nosotros-slider img {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+}
+
+/* Slider de imágenes en los Testimonios */
+.imagenes-testimonio-slider {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 1rem auto; /* Centrado y con margen inferior */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border-radius: 50%; /* Lo hace circular */
+}
+.imagenes-testimonio-slider img {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
 }

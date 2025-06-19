@@ -1,28 +1,54 @@
 # core/forms.py
 from django import forms
 from .models import SolicitudCotizacion, Servicio, MensajeContacto, ChatbotQA 
+import re
+
+from .models import Proyecto
+
 
 class SolicitudCotizacionForm(forms.ModelForm):
+    cotizacion_detallada = forms.CharField(
+        widget=forms.HiddenInput(), 
+        required=False
+    )
+
     class Meta:
         model = SolicitudCotizacion
-        fields = ['nombre_cliente', 'email_cliente', 'telefono_cliente', 'servicio_interesado', 'descripcion_evento']
+        # El campo 'telefono_cliente' ahora es requerido por el cambio en models.py
+        fields = ['nombre_cliente', 'email_cliente', 'telefono_cliente', 'descripcion_evento']
         widgets = {
             'nombre_cliente': forms.TextInput(attrs={'placeholder': 'Tu nombre completo', 'class': 'form-control'}),
             'email_cliente': forms.EmailInput(attrs={'placeholder': 'tu_correo@ejemplo.com', 'class': 'form-control'}),
-            'telefono_cliente': forms.TextInput(attrs={'placeholder': 'Tu número de teléfono (Opcional)', 'class': 'form-control'}),
-            'servicio_interesado': forms.Select(attrs={'class': 'form-control'}), # Añadido para consistencia si usas clases
-            'descripcion_evento': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Detalles adicionales de tu solicitud...', 'class': 'form-control'}),
+            'telefono_cliente': forms.TextInput(attrs={'placeholder': '+56912345678', 'class': 'form-control'}),
+            'descripcion_evento': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Detalles adicionales de tu evento...', 'class': 'form-control'}),
         }
         labels = {
             'nombre_cliente': 'Nombre Completo',
             'email_cliente': 'Correo Electrónico',
             'telefono_cliente': 'Teléfono de Contacto',
-            'servicio_interesado': 'Servicio de Interés',
-            'descripcion_evento': 'Describe tu Solicitud',
+            'descripcion_evento': 'Describe tu Evento o Solicitud Adicional',
         }
-        help_texts = {
-            'email_cliente': 'Nos pondremos en contacto contigo a través de este correo.',
-        }
+
+    # --- NUEVA VALIDACIÓN PARA EL NOMBRE ---
+    def clean_nombre_cliente(self):
+        nombre = self.cleaned_data.get('nombre_cliente')
+        # Esta expresión regular permite letras (incluyendo acentos y ñ) y espacios.
+        if not re.match(r'^[a-zA-Z\sÁÉÍÓÚáéíóúÑñ]+$', nombre):
+            raise forms.ValidationError("El nombre solo puede contener letras y espacios.")
+        return nombre
+class ProyectoForm(forms.ModelForm):
+    class Meta:
+        model = Proyecto
+        fields = '__all__'
+
+
+    # --- NUEVA VALIDACIÓN PARA EL TELÉFONO ---
+    def clean_telefono_cliente(self):
+        telefono = self.cleaned_data.get('telefono_cliente')
+        # Esta expresión regular permite un signo '+' opcional al inicio, seguido de números y espacios.
+        if not re.match(r'^\+?[0-9\s]+$', telefono):
+            raise forms.ValidationError("El teléfono solo puede contener números, espacios y el signo '+' al inicio.")
+        return telefono
 
 class ServicioForm(forms.ModelForm): # Para el panel de admin personalizado
     class Meta:

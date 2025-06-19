@@ -1,32 +1,36 @@
-{% comment %} core/templates/core/partials/_navbar.html {% endcomment %}
+{% comment %} core/templates/core/partials/_navbar.html - VERSIÓN FINAL CORREGIDA {% endcomment %}
 {% load static %}
 
 <nav class="navbar navbar-expand-lg fixed-top">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="{% url 'core:index' %}">
-            <img src="{% static 'img/majiaeventoslogo.png' %}" alt="Logo MejíaEventos" class="me-2">
-            <span class="fw-bold fs-4" style="color: #ffffff;"></span>
+    <div class="container-fluid">
+        {# El logo ahora es un enlace a la página principal 'index'. Si esto no funciona, el problema está en tu archivo urls.py #}
+        <a class="navbar-brand d-flex align-items-center ms-3" href="{% url 'core:index' %}">
+            <img src="{% static 'img/majiaeventoslogo.png' %}" alt="Logo MejíaEventos" class="img-fluid me-2 logo-responsive">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navMenu">
             <ul class="navbar-nav align-items-center">
-                {# --- ENLACES PÚBLICOS --- #}
+                
+                {# --- INICIO: NUEVO ORDEN LÓGICO DE BOTONES --- #}
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'core:index' %}">Inicio</a>
+                </li>
+                
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'core:lista_servicios' %}">Servicios</a>
                 </li>
                 
-                {# --- NUEVO BOTÓN "NOSOTROS" --- #}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'core:index' %}#sobre-nosotros">Nosotros</a>
-                </li>
-
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'core:solicitar_cotizacion_general' %}">Cotizar</a>
                 </li>
 
-                {# --- NUEVO MENÚ DESPLEGABLE DE CONTACTO --- #}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'core:index' %}#sobre-nosotros">Sobre Nosotros</a>
+                </li>
+
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownContacto" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Contacto
@@ -38,14 +42,20 @@
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="mailto:info@mejiaeventos.cl">
-                                <i class="far fa-envelope fa-fw me-2"></i>Correo Electrónico
+                            {# --- CORREO CON ASUNTO Y MENSAJE PREDEFINIDOS --- #}
+                            <a class="dropdown-item" 
+                                href="https://mail.google.com/mail/?view=cm&fs=1&to=sebastianaguirremundaca@gmail.com&su=Solicitud%20de%20Información%20-%20Contacto%20Web&body=Hola%20Sebastián,%0A%0AMe%20gustar%C3%ADa%20saber%20m%C3%A1s%20sobre%20los%20servicios%20de%20Mej%C3%ADaEventos.%0A%0A%C2%A1Gracias!" 
+                                target="_blank" 
+                                rel="noopener noreferrer">
+                                <i class="far fa-envelope fa-fw me-2"></i>Correo vía Gmail
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                {# --- MENÚ DE ADMINISTRADOR (SOLO SI ESTÁ LOGUEADO) --- #}
+                {# --- FIN: NUEVO ORDEN --- #}
+
+                {# --- MENÚ DE ADMINISTRADOR (Sin cambios) --- #}
                 {% if user.is_authenticated and user.is_staff %}
                 <li class="nav-item dropdown ms-lg-2">
                     <a class="nav-link dropdown-toggle fw-bold" href="#" id="navbarDropdownAdmin" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -54,23 +64,13 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="navbarDropdownAdmin">
                         <li><h6 class="dropdown-header">Modo Administrador</h6></li>
-                        <li>
-                            <a class="dropdown-item" href="{% url 'core:admin_servicio_list' %}">
-                                <i class="fas fa-cogs fa-fw me-2"></i>Panel de Control
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{% url 'admin:index' %}" target="_blank">
-                                <i class="fas fa-database fa-fw me-2"></i>Admin Django
-                            </a>
-                        </li>
+                        <li><a class="dropdown-item" href="{% url 'core:admin_servicio_list' %}"><i class="fas fa-cogs fa-fw me-2"></i>Panel de Control</a></li>
+                        <li><a class="dropdown-item" href="{% url 'admin:index' %}" target="_blank"><i class="fas fa-database fa-fw me-2"></i>Admin Django</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form action="{% url 'core:logout' %}" method="post" class="d-inline">
                                 {% csrf_token %}
-                                <button type="submit" class="dropdown-item">
-                                    <i class="fas fa-sign-out-alt fa-fw me-2"></i>Salir
-                                </button>
+                                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt fa-fw me-2"></i>Salir</button>
                             </form>
                         </li>
                     </ul>
@@ -79,4 +79,20 @@
             </ul>
         </div>
     </div>
+    {# Script para ocultar/mostrar el navbar (Sin cambios) #}
+    <script>
+        let prevScrollpos = window.pageYOffset;
+        const navbar = document.querySelector('.navbar.fixed-top');
+        const scrollThreshold = 300; 
+
+        window.onscroll = function() {
+            let currentScrollPos = window.pageYOffset;
+            if (prevScrollpos > currentScrollPos || currentScrollPos < scrollThreshold) {
+                navbar.classList.remove("hidden");
+            } else if (currentScrollPos > scrollThreshold) {
+                navbar.classList.add("hidden");
+            }
+            prevScrollpos = currentScrollPos;
+        }
+    </script>
 </nav>

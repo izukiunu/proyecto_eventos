@@ -1,6 +1,7 @@
 # core/models.py
 # import uuid # Ya no es necesario para SolicitudCotizacion
 from django.db import models
+from django.core.exceptions import ValidationError
 
 class Servicio(models.Model):
     nombre = models.CharField(max_length=200)
@@ -10,21 +11,61 @@ class Servicio(models.Model):
         default=False,
         verbose_name="Servicio Destacado",
         help_text="Marcar para que este servicio aparezca en la sección de destacados.")
-    precio = models.DecimalField(
-        max_digits=10,      # Número máximo de dígitos en total (ej: 100,000,000.00)
-        decimal_places=2,   # Número de decimales
-        null=True,          # Permite que el valor sea NULL en la base de datos (importante para que sea opcional)
-        blank=True          # Permite que el campo esté vacío en formularios (también importante)
+    precio = models.PositiveIntegerField(
+        verbose_name="Precio Base (Opcional)",
+        null=True,
+        blank=True,
+        help_text="Precio base del servicio."
     )
 
     def __str__(self):
         return self.nombre
+class Oferta(models.Model):
+    # Relación uno-a-uno: Un servicio solo puede tener una oferta a la vez.
+    servicio = models.OneToOneField(
+        Servicio, 
+        on_delete=models.CASCADE, 
+        related_name='oferta',
+        verbose_name="Servicio asociado"
+    )
+    # Precio de la oferta, también como número entero. Es obligatorio.
+    precio_oferta = models.PositiveIntegerField(
+        verbose_name="Precio de Oferta",
+        help_text="El precio especial con el descuento aplicado."
+    )
+    descripcion_oferta = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        verbose_name="Descripción de la oferta (ej: 'Solo por este mes!')"
+    )
+    # Interruptor para activar/desactivar la oferta fácilmente.
+    activa = models.BooleanField(
+        default=True,
+        verbose_name="¿Oferta activa?",
+        help_text="Desmarca esta casilla para ocultar la oferta sin borrarla."
+    )
+
+    def clean(self):
+        """
+        Validación personalizada: Asegura que no se pueda crear una oferta
+        para un servicio que no tiene un precio base definido.
+        """
+        if not self.servicio.precio or self.servicio.precio <= 0:
+            raise ValidationError('No se puede crear una oferta para un servicio que no tiene un precio base asignado.')
+
+    def __str__(self):
+        return f"Oferta para '{self.servicio.nombre}' - Precio: ${self.precio_oferta}"
+
+    class Meta:
+        verbose_name = "Oferta"
+        verbose_name_plural = "Ofertas"
 
 class SolicitudCotizacion(models.Model):
     # EL CAMPO ticket_id (UUIDField) HA SIDO ELIMINADO. Usaremos el 'id' automático.
     nombre_cliente = models.CharField(max_length=150)
     email_cliente = models.EmailField()
-    telefono_cliente = models.CharField(max_length=20, blank=True, null=True)
+    telefono_cliente = models.CharField(max_length=20)
     servicio_interesado = models.ForeignKey(
         Servicio,
         on_delete=models.SET_NULL,
@@ -105,3 +146,122 @@ class ChatbotQA(models.Model):
     class Meta:
         verbose_name = "Pregunta/Respuesta del Chatbot"
         verbose_name_plural = "Preguntas y Respuestas del Chatbot"
+from django.db import models
+
+class HeroSlide(models.Model):
+    # Título principal del slide
+    title = models.CharField(max_length=200, verbose_name="Título del Slide")
+    # Texto descriptivo más pequeño
+    subtitle = models.TextField(max_length=500, blank=True, verbose_name="Subtítulo del Slide (opcional)")
+    # Imagen de fondo para el slide
+    background_image = models.ImageField(upload_to='hero_slides/', verbose_name="Imagen de Fondo")
+    # URL a la que redirige el botón (opcional)
+    button_link = models.URLField(max_length=200, blank=True, null=True, verbose_name="Enlace del Botón (opcional)")
+    # Texto del botón (opcional, si hay un enlace)
+    button_text = models.CharField(max_length=50, blank=True, verbose_name="Texto del Botón (opcional)")
+    
+    # MODIFICACIÓN CLAVE AQUÍ: Usamos PositiveIntegerField y default=1
+    order = models.PositiveIntegerField(default=1, verbose_name="Orden de aparición", help_text="Número de orden para los slides (1, 2, 3...). Sin números negativos.")
+    
+    is_active = models.BooleanField(default=True, verbose_name="¿Activo?")
+
+    class Meta:
+        verbose_name = "Slide de Inicio"
+        verbose_name_plural = "Slides de Inicio"
+        # Esto ya estaba bien, asegura el orden ascendente
+        ordering = ['order'] 
+
+    def __str__(self):
+        return self.title
+# --- MODELOS PARA LA SECCIÓN "PROYECTOS REALIZADOS" ---
+
+class Proyecto(models.Model):
+    titulo = models.CharField(max_length=200, verbose_name="Título del Proyecto")
+    descripcion = models.TextField(verbose_name="Descripción del Proyecto")
+    fecha_realizacion = models.DateField(verbose_name="Fecha de Realización", null=True, blank=True)
+    activo = models.BooleanField(default=True, help_text="Marcar para que se muestre en la página de inicio.")
+    orden = models.PositiveIntegerField(default=0, help_text="Orden de aparición (0 primero).")
+
+    class Meta:
+        verbose_name = "Proyecto Realizado"
+        verbose_name_plural = "Proyectos Realizados"
+        ordering = ['orden']
+
+    def __str__(self):
+        return self.titulo
+
+class ImagenProyecto(models.Model):
+    proyecto = models.ForeignKey(Proyecto, related_name='imagenes', on_delete=models.CASCADE)
+    imagen = models.ImageField(upload_to='proyectos/', verbose_name="Imagen del Proyecto")
+    alt_text = models.CharField(max_length=255, blank=True, verbose_name="Texto alternativo (accesibilidad)")
+
+    class Meta:
+        verbose_name = "Imagen de Proyecto"
+        verbose_name_plural = "Imágenes de Proyectos"
+
+    def __str__(self):
+        return f"Imagen para {self.proyecto.titulo}"
+
+
+# --- MODELOS PARA LA SECCIÓN "SOBRE NOSOTROS" (Personalizable) ---
+
+class SeccionSobreNosotros(models.Model):
+    titulo = models.CharField(max_length=200, default="Transformamos Tu Visión en un Evento Inolvidable")
+    descripcion = models.TextField()
+
+    class Meta:
+        verbose_name = "Sección Sobre Nosotros"
+        verbose_name_plural = "Sección Sobre Nosotros"
+
+    def __str__(self):
+        return "Contenido de la Sección 'Sobre Nosotros'"
+    
+class ImagenSobreNosotros(models.Model):
+    seccion = models.ForeignKey(SeccionSobreNosotros, related_name='imagenes', on_delete=models.CASCADE)
+    imagen = models.ImageField(upload_to='sobre_nosotros_galeria/', verbose_name="Imagen de la Galería")
+    orden = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['orden']
+        verbose_name = "Imagen de Sobre Nosotros"
+        verbose_name_plural = "Imágenes de Sobre Nosotros"
+
+class PuntoClaveSobreNosotros(models.Model):
+    seccion = models.ForeignKey(SeccionSobreNosotros, related_name='puntos_clave', on_delete=models.CASCADE)
+    texto = models.CharField(max_length=255, verbose_name="Texto del Punto Clave")
+    orden = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Punto Clave"
+        verbose_name_plural = "Puntos Clave"
+        ordering = ['orden']
+    
+    def __str__(self):
+        return self.texto
+
+
+# --- MODELO PARA LOS TESTIMONIOS (Carrusel Pequeño) ---
+
+class Testimonio(models.Model):
+    cita = models.TextField(verbose_name="Cita o Comentario")
+    autor = models.CharField(max_length=100, verbose_name="Autor del testimonio")
+    descripcion_autor = models.CharField(max_length=150, blank=True, verbose_name="Descripción del autor (ej: 'Matrimonio, Enero 2025')")
+    activo = models.BooleanField(default=True)
+    orden = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Testimonio"
+        verbose_name_plural = "Testimonios"
+        ordering = ['orden']
+
+    def __str__(self):
+        return f"Testimonio de {self.autor}"
+    
+class ImagenTestimonio(models.Model):
+    testimonio = models.ForeignKey(Testimonio, related_name='imagenes', on_delete=models.CASCADE)
+    imagen = models.ImageField(upload_to='testimonios/', verbose_name="Imagen del Testimonio")
+    alt_text = models.CharField(max_length=255, blank=True, verbose_name="Texto alternativo")
+
+    class Meta:
+        verbose_name = "Imagen de Testimonio"
+        verbose_name_plural = "Imágenes de Testimonios"

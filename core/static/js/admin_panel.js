@@ -368,3 +368,445 @@ function updateServicioEnLista(servicio) {
         filaExistente.html(generarHtmlFilaServicio(servicio));
     }
 }});
+
+// =======================================================
+// --- SELECTORES PARA HERO SLIDERS (Agrégalos al inicio con los otros selectores) ---
+// =======================================================
+const heroSlideFormContainer = $('#formHeroSlideContainer');
+const heroSlideForm = $('#heroSlideForm');
+const heroSlideFormTitulo = $('#formHeroSlideTitulo');
+const currentHeroSlideIdInput = $('#currentHeroSlideIdInput');
+const listaHeroSlidesBody = $('#listaHeroSlidesBody');
+let editModeHeroSlide = false;
+
+// =======================================================
+// --- EVENTOS PARA HERO SLIDERS ---
+// =======================================================
+$('#btnMostrarFormHeroSlide').click(function() {
+    resetHeroSlideForm();
+    heroSlideFormContainer.toggleClass('hidden');
+});
+
+$('#btnCancelarHeroSlide').click(function() {
+    heroSlideFormContainer.addClass('hidden');
+});
+
+// =======================================================
+// --- FUNCIONES PARA HERO SLIDERS ---
+// =======================================================
+function resetHeroSlideForm() {
+    heroSlideForm[0].reset();
+    currentHeroSlideIdInput.val('');
+    heroSlideFormTitulo.text('Agregar Nuevo Slide');
+    editModeHeroSlide = false;
+}
+
+heroSlideForm.submit(function(e) {
+    e.preventDefault();
+    showLoading(true);
+    
+    const formData = new FormData(this);
+    const url = editModeHeroSlide 
+        ? $(this).data('update-url-template').replace('0', currentHeroSlideIdInput.val())
+        : $(this).data('create-url');
+
+    $.ajax({
+        url: url,
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: { 'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]', this).val() },
+        success: function(response) {
+            if (response.success) {
+                showMessage('success', response.message);
+                heroSlideFormContainer.addClass('hidden');
+                if (editModeHeroSlide) {
+                    updateHeroSlideInList(response.slide);
+                } else {
+                    addHeroSlideToList(response.slide);
+                }
+            } else {
+                showMessage('error', response.message);
+            }
+        },
+        error: function(xhr) {
+            showMessage('error', 'Error de conexión. Intenta nuevamente.');
+            console.error(xhr);
+        },
+        complete: function() {
+            showLoading(false);
+        }
+    });
+});
+
+function addHeroSlideToList(slide) {
+    const newRow = `
+        <tr data-id="${slide.id}">
+            <td class="title">${slide.title}</td>
+            <td class="image">
+                <img src="${slide.image_url}" width="100" style="border-radius:4px;">
+            </td>
+            <td class="order">${slide.order}</td>
+            <td class="is_active">${slide.is_active ? '✅' : '❌'}</td>
+            <td class="actions">
+                <button class="btn btn-sm btn-warning btnEditarHeroSlide" 
+                        data-id="${slide.id}"
+                        data-detail-url-template="{% url 'core:ajax_hero_slide_detail' slide_id=0 %}">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                <button class="btn btn-sm btn-danger btnEliminarHeroSlide" 
+                        data-id="${slide.id}"
+                        data-delete-url-template="{% url 'core:ajax_hero_slide_delete' slide_id=0 %}">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+            </td>
+        </tr>
+    `;
+    listaHeroSlidesBody.append(newRow);
+}
+
+function updateHeroSlideInList(slide) {
+    const row = $(`tr[data-id="${slide.id}"]`);
+    row.find('.title').text(slide.title);
+    row.find('.image').html(`<img src="${slide.image_url}" width="100" style="border-radius:4px;">`);
+    row.find('.order').text(slide.order);
+    row.find('.is_active').html(slide.is_active ? '✅' : '❌');
+}
+
+// =======================================================
+// --- EVENTOS PARA EDITAR/ELIMINAR HERO SLIDES ---
+// =======================================================
+listaHeroSlidesBody.on('click', '.btnEditarHeroSlide', function() {
+    const slideId = $(this).data('id');
+    const url = $(this).data('detail-url-template').replace('0', slideId);
+    showLoading(true);
+
+    $.ajax({
+        url: url,
+        type: 'GET',
+        success: function(response) {
+            if (response.success) {
+                heroSlideFormTitulo.text('Editar Slide');
+                currentHeroSlideIdInput.val(response.slide.id);
+                // Llena el formulario con los datos
+                $('#id_title').val(response.slide.title);
+                $('#id_subtitle').val(response.slide.subtitle);
+                $('#id_button_text').val(response.slide.button_text);
+                $('#id_button_link').val(response.slide.button_link);
+                $('#id_order').val(response.slide.order);
+                $('#id_is_active').prop('checked', response.slide.is_active);
+                
+                editModeHeroSlide = true;
+                heroSlideFormContainer.removeClass('hidden');
+            }
+        },
+        complete: function() {
+            showLoading(false);
+        }
+    });
+});
+// =======================================================
+// --- SELECTORES PARA TESTIMONIOS (Agrégalos al inicio con los otros selectores) ---
+// =======================================================
+const testimonioFormContainer = $('#formTestimonioContainer');
+const testimonioForm = $('#testimonioForm');
+const testimonioFormTitulo = $('#formTestimonioTitulo');
+const currentTestimonioIdInput = $('#currentTestimonioIdInput');
+const listaTestimoniosBody = $('#listaTestimoniosBody');
+let editModeTestimonio = false;
+
+// =======================================================
+// --- EVENTOS PARA TESTIMONIOS ---
+// =======================================================
+$('#btnMostrarFormTestimonio').click(function() {
+    resetTestimonioForm();
+    testimonioFormContainer.toggleClass('hidden');
+});
+
+$('#btnCancelarTestimonio').click(function() {
+    testimonioFormContainer.addClass('hidden');
+});
+
+// =======================================================
+// --- FUNCIONES PARA TESTIMONIOS ---
+// =======================================================
+function resetTestimonioForm() {
+    testimonioForm[0].reset();
+    currentTestimonioIdInput.val('');
+    testimonioFormTitulo.text('Agregar Nuevo Testimonio');
+    editModeTestimonio = false;
+}
+
+testimonioForm.submit(function(e) {
+    e.preventDefault();
+    showLoading(true);
+    
+    const formData = new FormData(this);
+    const url = editModeTestimonio 
+        ? $(this).data('update-url-template').replace('0', currentTestimonioIdInput.val())
+        : $(this).data('create-url');
+
+    $.ajax({
+        url: url,
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: { 'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]', this).val() },
+        success: function(response) {
+            if (response.success) {
+                showMessage('success', response.message);
+                testimonioFormContainer.addClass('hidden');
+                if (editModeTestimonio) {
+                    updateTestimonioInList(response.testimonio);
+                } else {
+                    addTestimonioToList(response.testimonio);
+                }
+            } else {
+                showMessage('error', response.message);
+            }
+        },
+        error: function(xhr) {
+            showMessage('error', 'Error de conexión. Intenta nuevamente.');
+            console.error(xhr);
+        },
+        complete: function() {
+            showLoading(false);
+        }
+    });
+});
+
+function addTestimonioToList(testimonio) {
+    const newRow = `
+        <tr data-id="${testimonio.id}">
+            <td class="autor">${testimonio.autor}</td>
+            <td class="cita">${testimonio.cita.substring(0, 50)}...</td>
+            <td class="descripcion">${testimonio.descripcion_autor || 'N/A'}</td>
+            <td class="activo">${testimonio.activo ? '✅' : '❌'}</td>
+            <td class="orden">${testimonio.orden}</td>
+            <td class="actions">
+                <button class="btn btn-sm btn-warning btnEditarTestimonio" 
+                        data-id="${testimonio.id}"
+                        data-detail-url-template="{% url 'core:ajax_testimonio_detail' testimonio_id=0 %}">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                <button class="btn btn-sm btn-danger btnEliminarTestimonio" 
+                        data-id="${testimonio.id}"
+                        data-delete-url-template="{% url 'core:ajax_testimonio_delete' testimonio_id=0 %}">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+            </td>
+        </tr>
+    `;
+    listaTestimoniosBody.append(newRow);
+}
+
+function updateTestimonioInList(testimonio) {
+    const row = $(`tr[data-id="${testimonio.id}"]`);
+    row.find('.autor').text(testimonio.autor);
+    row.find('.cita').text(testimonio.cita.substring(0, 50) + '...');
+    row.find('.descripcion').text(testimonio.descripcion_autor || 'N/A');
+    row.find('.activo').html(testimonio.activo ? '✅' : '❌');
+    row.find('.orden').text(testimonio.orden);
+}
+
+// =======================================================
+// --- EVENTOS PARA EDITAR/ELIMINAR TESTIMONIOS ---
+// =======================================================
+listaTestimoniosBody.on('click', '.btnEditarTestimonio', function() {
+    const testimonioId = $(this).data('id');
+    const url = $(this).data('detail-url-template').replace('0', testimonioId);
+    showLoading(true);
+
+    $.ajax({
+        url: url,
+        type: 'GET',
+        success: function(response) {
+            if (response.success) {
+                testimonioFormTitulo.text('Editar Testimonio');
+                currentTestimonioIdInput.val(response.testimonio.id);
+                // Llena el formulario con los datos
+                $('#id_cita').val(response.testimonio.cita);
+                $('#id_autor').val(response.testimonio.autor);
+                $('#id_descripcion_autor').val(response.testimonio.descripcion_autor);
+                $('#id_activo').prop('checked', response.testimonio.activo);
+                $('#id_orden').val(response.testimonio.orden);
+                
+                editModeTestimonio = true;
+                testimonioFormContainer.removeClass('hidden');
+            }
+        },
+        complete: function() {
+            showLoading(false);
+        }
+    });
+});
+
+listaTestimoniosBody.on('click', '.btnEliminarTestimonio', function() {
+    const testimonioId = $(this).data('id');
+    const url = $(this).data('delete-url-template').replace('0', testimonioId);
+    
+    if (confirm('¿Eliminar este testimonio?')) {
+        showLoading(true);
+        $.ajax({
+            url: url,
+            type: 'POST',
+            headers: { 'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() },
+            success: function(response) {
+                if (response.success) {
+                    $(`tr[data-id="${testimonioId}"]`).fadeOut(400, function() {
+                        $(this).remove();
+                    });
+                    showMessage('success', response.message);
+                }
+            },
+            complete: function() {
+                showLoading(false);
+            }
+        });
+    }
+});
+listaHeroSlidesBody.on('click', '.btnEliminarHeroSlide', function() {
+    const slideId = $(this).data('id');
+    const url = $(this).data('delete-url-template').replace('0', slideId);
+    
+    if (confirm('¿Eliminar este slide?')) {
+        showLoading(true);
+        $.ajax({
+            url: url,
+            type: 'POST',
+            headers: { 'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() },
+            success: function(response) {
+                if (response.success) {
+                    $(`tr[data-id="${slideId}"]`).fadeOut(400, function() {
+                        $(this).remove();
+                    });
+                    showMessage('success', response.message);
+                }
+            },
+            complete: function() {
+                showLoading(false);
+            }
+        });
+    }
+});
+const proyectoFormContainer = $('#formProyectoContainer');
+    const proyectoForm = $('#proyectoForm');
+    const proyectoFormTitulo = $('#formProyectoTitulo');
+    const currentProyectoIdInput = $('#currentProyectoIdInput');
+    const listaProyectosBody = $('#listaProyectosBody');
+    let editModeProyecto = false;
+
+    function resetProyectoForm() {
+        proyectoForm[0].reset();
+        currentProyectoIdInput.val('');
+        proyectoFormTitulo.text('Agregar Nuevo Proyecto');
+        editModeProyecto = false;
+        // Definir la URL de creación en el formulario
+        proyectoForm.attr('action', "{% url 'core:ajax_proyecto_create_or_update' %}");
+    }
+
+    $('#btnMostrarFormProyecto').click(() => {
+        resetProyectoForm();
+        proyectoFormContainer.toggleClass('hidden');
+    });
+
+    $('#btnCancelarProyecto').click(() => proyectoFormContainer.addClass('hidden'));
+
+    proyectoForm.submit(function(e) {
+        e.preventDefault();
+        showLoading(true);
+        const url = $(this).attr('action');
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: url, type: 'POST', data: formData, processData: false, contentType: false,
+            headers: {'X-CSRFToken': formData.get('csrfmiddlewaretoken')},
+            success: function(response) {
+                if (response.success) {
+                    showMessage('success', response.message);
+                    setTimeout(() => location.reload(), 1500); // Recarga para ver cambios
+                } else {
+                    showMessage('error', JSON.stringify(response.errors));
+                }
+            },
+            error: (xhr) => showMessage('error', 'Error de conexión.'),
+            complete: () => showLoading(false)
+        });
+    });
+
+    listaProyectosBody.on('click', '.btnEditarProyecto', function() {
+        const proyectoId = $(this).data('id');
+        // Usamos la vista de detalle del admin de Django para obtener los datos
+        // Nota: Esta es una forma simple. Lo ideal sería un endpoint JSON de detalle.
+        // Por ahora, asumimos que recargarás el formulario.
+        alert(`Editar proyecto ID: ${proyectoId}. La edición requiere cargar los datos en el formulario.`);
+        // Aquí iría el código para rellenar el formulario
+    });
+
+    listaProyectosBody.on('click', '.btnEliminarProyecto', function() {
+        const proyectoId = $(this).data('id');
+        const url = `/admin/core/proyecto/${proyectoId}/delete/`; // URL de eliminación genérica
+        if (confirm('¿Estás seguro de eliminar este proyecto?')) {
+            // Lógica AJAX para eliminar...
+            // $.post(url, ...);
+            alert("Funcionalidad de eliminación pendiente de conectar a su URL AJAX.");
+        }
+    });
+
+    // =======================================================
+    // --- LÓGICA PARA DETALLES Y CAMBIO DE ESTADO ---
+    // =======================================================
+    const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+    
+    // Botón genérico para ver detalles
+    $('.content-panel').on('click', '.btnVerDetalle', function() {
+        const itemId = $(this).data('id');
+        const itemType = $(this).data('type'); // 'solicitud' o 'mensaje'
+        const url = `/ajax/details/${itemType}/${itemId}/`; // URL de detalle genérica
+        
+        showLoading(true);
+        $.get(url, function(response) {
+            if (response.success) {
+                $('#detailModalLabel').html(response.title);
+                $('#detailModalBody').html(response.body);
+                detailModal.show();
+            } else {
+                showMessage('error', 'No se pudieron cargar los detalles.');
+            }
+        }).always(() => showLoading(false));
+    });
+
+    // Botón para marcar solicitudes como atendidas
+    $('#panel-solicitudes').on('click', '.btnMarcarAtendida', function() {
+        const button = $(this);
+        const itemId = button.data('id');
+        const url = `/ajax/toggle_status/solicitud/${itemId}/`;
+
+        showLoading(true);
+        $.post(url, {'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()}, function(response) {
+            if(response.success) {
+                showMessage('success', response.message);
+                button.closest('tr').find('.atendida').html(response.new_status ? '✅' : '❌');
+            }
+        }).always(() => showLoading(false));
+    });
+    
+    // Botón para marcar mensajes como leídos
+    $('#panel-mensajes').on('click', '.btnMarcarLeido', function() {
+        const button = $(this);
+        const itemId = button.data('id');
+        const url = `/ajax/toggle_status/mensaje/${itemId}/`;
+
+        showLoading(true);
+        $.post(url, {'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()}, function(response) {
+            if(response.success) {
+                showMessage('success', response.message);
+                button.closest('tr').find('.leido').html(response.new_status ? '✅' : '❌');
+            }
+        }).always(() => showLoading(false));
+    });
+
+ // --- FIN DE $(document).ready ---
+

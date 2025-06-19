@@ -1,0 +1,215 @@
+/* --- Contenedor del Ícono del Carrito (Ajustado para ser idéntico al Chatbot) --- */
+.icono-carrito-contenedor {
+    position: fixed;
+    bottom: 20px;
+    right: 25px;
+    z-index: 1010;
+    background-color: #dc3545; /* Color de tu marca (btn-danger) */
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Misma sombra que el chatbot */
+    transition: transform 0.2s ease, background-color 0.3s ease; /* Misma transición que el chatbot */
+}
+
+/* Mismo efecto hover que el chatbot */
+.icono-carrito-contenedor:hover {
+    background-color: #c82333; /* Rojo más oscuro */
+    transform: scale(1.1);
+}
+
+.icono-carrito-contenedor i {
+    font-size: 24px; /* Mismo tamaño de ícono */
+}
+
+#contador-carrito {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: white;
+    color: #dc3545;
+    border: 2px solid #dc3545;
+    border-radius: 50%;
+    min-width: 25px;
+    height: 25px;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Panel Lateral del Carrito (sin cambios) --- */
+#panel-carrito {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 450px;
+    height: 100vh;
+    background-color: #fff;
+    box-shadow: -5px 0 20px rgba(0,0,0,0.25);
+    z-index: 1050; /* Por encima de la mayoría de los elementos */
+    transform: translateX(100%);
+    transition: transform 0.35s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+#panel-carrito.panel-visible {
+    transform: translateX(0);
+}
+
+.panel-carrito-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+}
+.panel-carrito-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+.panel-carrito-header .btn-close {
+    padding: 1rem;
+    margin: -1rem;
+}
+
+#panel-carrito-items {
+    overflow-y: auto;
+    flex-grow: 1;
+    padding: 1rem;
+}
+
+.panel-carrito-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+}
+
+/* --- Items dentro del Carrito (sin cambios) --- */
+.item-carrito {
+    display: flex;
+    gap: 15px;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f1f1f1;
+}
+.item-carrito:last-child {
+    border-bottom: none;
+}
+.item-carrito img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+.item-info {
+    flex-grow: 1;
+}
+.item-info h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 5px 0;
+}
+.item-info .precio-display {
+    font-weight: bold;
+    color: #dc3545;
+    margin-bottom: 10px;
+}
+.item-fechas {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+.item-fechas label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.item-fechas input[type="date"] {
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    /* Se ha modificado la línea de padding.
+       - Antes era "padding: 2px 5px;".
+       - Ahora se especifica un padding derecho mayor (15px) para mover el ícono.
+       - El formato es: arriba, derecha, abajo, izquierda.
+    */
+    padding: 2px 15px 2px 5px;
+    /* --- LÍNEAS PARA MOVER EL CAMPO VERTICALMENTE --- */
+    position: relative; /* Habilita el posicionamiento relativo para poder moverlo */
+    top: 8px;           
+}
+.item-dias-totales {
+    margin-top: 10px;
+    font-weight: bold;
+}
+.btn-eliminar-item {
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 1.2rem;
+    cursor: pointer;
+    align-self: flex-start;
+}
+.btn-eliminar-item:hover {
+    color: #dc3545;
+}
+
+.sync-fecha-control {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espacio entre el checkbox y el texto */
+    margin-top: 12px;
+    background-color: #f8f9fa;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+.sync-fecha-control label {
+    font-size: 0.85rem;
+    color: #555;
+    cursor: pointer;
+    margin: 0;
+}
+
+.sync-fecha-checkbox {
+    cursor: pointer;
+    /* Ajusta el tamaño del checkbox si es necesario */
+    width: 16px;
+    height: 16px;
+}
+.item-controles {
+    display: flex;
+    flex-direction: column; /* Apila los controles verticalmente */
+    gap: 8px; /* Espacio entre los controles */
+    margin-top: 15px; /* Espacio superior para separarlo de las fechas */
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0; /* Línea separadora sutil */
+}
+
+.control-individual {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espacio entre el checkbox y su texto */
+}
+
+.control-individual label {
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+    margin: 0; /* Resetea el margen por defecto */
+}
+
+.control-individual input[type="checkbox"] {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}

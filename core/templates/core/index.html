@@ -11,13 +11,41 @@
 
 {% block main_content %}
 
-    <section class="hero">
-        <div class="container text-center hero-content-wrapper">
-            <h1 class="fw-bold display-4 mb-3">Soluciones Profesionales para tu Evento</h1>
-            <p class="fs-5 lead mb-4">Cotiza, reserva y gestiona todo en un solo lugar.</p>
-            <a href="{% url 'core:lista_servicios' %}" class="btn btn-danger btn-lg mt-3 px-4 py-2">Ver Nuestros Servicios</a>
+    <!-- Hero Carousel -->
+<section id="hero" class="hero-full-height position-relative">
+    <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+        <div class="carousel-inner">
+            {% for slide in hero_slides %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %} hero-slide-item" style="background-image: url('{{ slide.background_image.url }}');">
+                <div class="hero-content-wrapper text-white text-center">
+                    <h1 class="fw-bold display-4 mb-3">{{ slide.title }}</h1>
+                    {% if slide.subtitle %}
+                        <p class="fs-5 lead mb-4">{{ slide.subtitle }}</p>
+                    {% endif %}
+                    {% if slide.button_link and slide.button_text %}
+                        <a href="{{ slide.button_link }}" class="btn btn-danger btn-lg mt-3 px-4 py-2">{{ slide.button_text }}</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
         </div>
-    </section>
+        <!-- Controles -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+        </button>
+        <!-- Indicadores -->
+        <div class="carousel-indicators">
+            {% for slide in hero_slides %}
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Slide {{ forloop.counter }}"></button>
+            {% endfor %}
+        </div>
+    </div>
+</section>
 
     <div class="bg-light py-5">
     <div class="container">
@@ -44,15 +72,44 @@
                                             <h5 class="card-title fw-bold">{{ servicio.nombre }}</h5>
                                             <p class="card-text flex-grow-1">{{ servicio.descripcion|truncatewords:20 }}</p>
                                             
-                                            {# --- 2. AÑADIDO: Bloque para mostrar el precio --- #}
-                                            {% if servicio.precio and servicio.precio > 0 %}
-                                                <h4 class="card-text text-danger fw-bold mt-auto pt-2">
-                                                    $ {{ servicio.precio|floatformat:"0"|intcomma }} CLP
-                                                </h4>
-                                            {% endif %}
-                                            {# --------------------------------------------- #}
+                                            {# --- INICIO: Nuevo bloque de lógica para precios y ofertas --- #}
+                                            <div class="precio-container mt-auto pt-2">
+                                                {% comment %}
+                                                    Primero, revisamos si existe una oferta activa para este servicio.
+                                                    La condición 'servicio.oferta' solo funciona porque hicimos 'select_related' en la vista.
+                                                {% endcomment %}
+                                                {% if servicio.oferta and servicio.oferta.activa %}
+                                                {# Hay una oferta activa: mostramos el precio de oferta y el original tachado #}
+                                                    <h5 class="card-text text-muted fw-normal">
+                                                        Antes: <del>${{ servicio.precio|intcomma }}</del>
+                                                    </h5>
+                                                    <h4 class="card-text text-danger fw-bold">
+                                                        ¡Oferta! ${{ servicio.oferta.precio_oferta|intcomma }} CLP
+                                                    </h4>
 
-                                            <a href="{% url 'core:solicitar_cotizacion_especifica' servicio_id=servicio.id %}" class="btn btn-outline-danger mt-auto">Cotizar este Servicio</a>
+                                                {% elif servicio.precio and servicio.precio > 0 %}
+                                                {# No hay oferta, pero sí hay un precio base: lo mostramos normal #}
+                                                    <h4 class="card-text text-danger fw-bold">
+                                                        $ {{ servicio.precio|intcomma }} CLP
+                                                    </h4>
+
+                                                {% else %}
+                                                    {# No hay ni oferta ni precio base: mostramos un texto #}
+                                                    <p class="card-text text-muted fw-bold">
+                                                        Precio a consultar
+                                                    </p>
+                                                {% endif %}
+                                            </div>
+                                            {# --- FIN: Nuevo bloque de lógica para precios y ofertas --- #}
+
+                                            <button class="btn btn-outline-danger mt-auto btn-agregar-carrito" 
+                                                    data-id="{{ servicio.id }}"
+                                                    data-nombre="{{ servicio.nombre }}"
+                                                    data-descripcion="{{ servicio.descripcion }}"
+                                                    data-imagen-url="{% if servicio.imagen %}{{ servicio.imagen.url }}{% else %}{% static 'img/placeholder_evento.jpg' %}{% endif %}"
+                                                    data-precio-display="{% if servicio.oferta and servicio.oferta.activa %}¡Oferta! ${{ servicio.oferta.precio_oferta|intcomma }} CLP{% elif servicio.precio and servicio.precio > 0 %}${{ servicio.precio|intcomma }} CLP{% else %}Precio a consultar{% endif %}">
+                                                Agregar a Cotización
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -77,56 +134,123 @@
     </div>
 </div>
 
-    <section id="testimonios" class="py-5">
-        <div class="container">
-            <h2 class="text-center fw-bold mb-5">Lo que Nuestros Clientes Opinan</h2>
-            <div class="row">
-                <div class="col-md-4 text-center mb-4">
-                    <img src="{% static 'img/cliente1.jpg' %}" alt="Cliente Satisfecho 1" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
-                    <blockquote class="blockquote">
-                        <p class="mb-2 fst-italic">"El servicio fue impecable, superaron todas nuestras expectativas. ¡El sonido en nuestra boda fue espectacular! Totalmente recomendados."</p>
-                    </blockquote>
-                    <h5 class="fw-bold mt-3 mb-0">- Ana y Juan</h5>
-                    <p class="text-muted small">Matrimonio, Enero 2025</p>
-                </div>
-                <div class="col-md-4 text-center mb-4">
-                    <img src="{% static 'img/cliente2.jpg' %}" alt="Cliente Satisfecho 2" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
-                     <blockquote class="blockquote">
-                        <p class="mb-2 fst-italic">"Profesionalismo de principio a fin. La organización del evento corporativo fue perfecta gracias a su excelente gestión y equipamiento."</p>
-                    </blockquote>
-                    <h5 class="fw-bold mt-3 mb-0">- Carlos Pérez</h5>
-                    <p class="text-muted small">Gerente de Marketing, Empresa XYZ</p>
-                </div>
-                <div class="col-md-4 text-center mb-4">
-                    <img src="{% static 'img/cliente3.jpg' %}" alt="Cliente Satisfecho 3" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
-                    <blockquote class="blockquote">
-                        <p class="mb-2 fst-italic">"¡La mejor decisión para nuestra fiesta de graduación! La iluminación y el ambiente que crearon fueron simplemente mágicos."</p>
-                    </blockquote>
-                    <h5 class="fw-bold mt-3 mb-0">- Sofía Rodriguez</h5>
-                    <p class="text-muted small">Comité de Graduación</p>
-                </div>
-            </div>
+    {% if proyectos %}
+<section id="proyectos-realizados" class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Nuestros Eventos Realizados</h2>
+            <p class="lead text-muted">Experiencias que hemos tenido el placer de producir.</p>
         </div>
-    </section>
 
-    <section id="sobre-nosotros" class="py-5 bg-white">
-        <div class="container">
-            <div class="row align-items-center g-5">
-                <div class="col-lg-6">
-                    <h2 class="fw-bold mb-3">Transformamos Tu Visión en un Evento Inolvidable</h2>
-                    <p class="text-muted">En MejíaEventos, contamos con más de 10 años de experiencia en la producción de eventos de todo tipo. Nuestra pasión es cuidar cada detalle para que tu celebración sea exactamente como la soñaste. Nos dedicamos a ofrecer un servicio de alta calidad, con profesionalismo, creatividad y un compromiso total con tu satisfacción.</p>
-                    <ul class="list-unstyled mt-4">
-                        <li class="mb-2"><i class="fas fa-check-circle text-danger me-2"></i> Equipamiento profesional de audio e iluminación.</li>
-                        <li class="mb-2"><i class="fas fa-check-circle text-danger me-2"></i> Asesoría personalizada para cada cliente.</li>
-                        <li class="mb-2"><i class="fas fa-check-circle text-danger me-2"></i> Puntualidad y compromiso en cada etapa del proyecto.</li>
-                    </ul>
+        <div class="swiper proyectos-slider">
+            <div class="swiper-wrapper">
+                {% for proyecto in proyectos %}
+                <div class="swiper-slide">
+                    <div class="proyecto-card">
+                        <div class="swiper imagenes-proyecto-slider">
+                            <div class="swiper-wrapper">
+                                {% for imagen in proyecto.imagenes.all %}
+                                <div class="swiper-slide">
+                                    <img src="{{ imagen.imagen.url }}" alt="{{ imagen.alt_text|default:proyecto.titulo }}">
+                                </div>
+                                {% empty %}
+                                <div class="swiper-slide">
+                                    <img src="{% static 'img/placeholder_evento.jpg' %}" alt="Placeholder">
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="proyecto-card-body">
+                            <h4 class="fw-bold">{{ proyecto.titulo }}</h4>
+                            <p class="text-muted">{{ proyecto.descripcion }}</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-lg-6 text-center">
-                    <img src="{% static 'img/sobre_nosotros_placeholder.jpg' %}" class="img-fluid rounded shadow-lg" alt="Equipo de MejíaEventos trabajando">
-                    {# SUGERENCIA: Reemplaza esta imagen por una foto real del equipo o de un evento. #}
+                {% endfor %}
+            </div>
+            <div class="swiper-button-next proyectos-nav-next"></div>
+            <div class="swiper-button-prev proyectos-nav-prev"></div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+{% if sobre_nosotros %}
+<section id="sobre-nosotros" class="py-5 bg-white">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-3">{{ sobre_nosotros.titulo }}</h2>
+                <p class="text-muted">{{ sobre_nosotros.descripcion }}</p>
+                <ul class="list-unstyled mt-4">
+                    {% for punto in sobre_nosotros.puntos_clave.all %}
+                    <li class="mb-2"><i class="fas fa-check-circle text-danger me-2"></i> {{ punto.texto }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="swiper sobre-nosotros-slider shadow-lg rounded">
+                    <div class="swiper-wrapper">
+                        {% for imagen in sobre_nosotros.imagenes.all %}
+                        <div class="swiper-slide">
+                            <img src="{{ imagen.imagen.url }}" class="img-fluid" alt="Sobre MejíaEventos">
+                        </div>
+                        {% empty %}
+                        <div class="swiper-slide">
+                             <img src="{% static 'img/sobre_nosotros_placeholder.jpg' %}" class="img-fluid" alt="Sobre MejíaEventos">
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+</section>
+{% endif %}
+
+
+{% if testimonios %}
+<section id="testimonios-slider-section" class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5">Lo que Nuestros Clientes Opinan</h2>
+        <div class="swiper testimonios-slider">
+            <div class="swiper-wrapper">
+                {% for testimonio in testimonios %}
+                <div class="swiper-slide">
+                    <div class="testimonio-card text-center">
+                        <div class="swiper imagenes-testimonio-slider">
+                            <div class="swiper-wrapper">
+                                {% for imagen in testimonio.imagenes.all %}
+                                <div class="swiper-slide">
+                                    <img src="{{ imagen.imagen.url }}" class="rounded-circle" alt="{{ imagen.alt_text|default:testimonio.autor }}">
+                                </div>
+                                {% empty %}
+                                 <div class="swiper-slide">
+                                    <img src="{% static 'img/cliente_placeholder.jpg' %}" class="rounded-circle" alt="Cliente Satisfecho">
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <i class="fas fa-quote-left fa-2x text-danger my-3"></i>
+                        <blockquote class="blockquote">
+                            <p class="mb-3 fst-italic">"{{ testimonio.cita }}"</p>
+                        </blockquote>
+                        <h5 class="fw-bold mt-3 mb-0">- {{ testimonio.autor }}</h5>
+                        {% if testimonio.descripcion_autor %}
+                        <p class="text-muted small">{{ testimonio.descripcion_autor }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<section id="cta" class="py-5 bg-dark text-white text-center">
     </section>
 
     <section id="cta" class="py-5 bg-dark text-white text-center">

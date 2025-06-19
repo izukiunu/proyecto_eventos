@@ -31,14 +31,44 @@
                             <h5 class="card-title fw-bold">{{ servicio.nombre }}</h5>
                             <p class="card-text flex-grow-1">{{ servicio.descripcion|truncatewords:25 }}</p>
                             
-                            {# --- 2. QUITAMOS 'mt-auto' DEL PRECIO PARA QUE NO COMPITA CON EL BOTÓN --- #}
-                            {% if servicio.precio and servicio.precio > 0 %}
-                                <h4 class="card-text text-danger fw-bold pt-2">
-                                    $ {{ servicio.precio|floatformat:"0"|intcomma }} CLP
-                                </h4>
-                            {% endif %}
+                            {# --- INICIO: Nuevo bloque de lógica para precios y ofertas --- #}
+                                            <div class="precio-container mt-auto pt-2">
+                                                {% comment %}
+                                                    Primero, revisamos si existe una oferta activa para este servicio.
+                                                    La condición 'servicio.oferta' solo funciona porque hicimos 'select_related' en la vista.
+                                                {% endcomment %}
+                                                {% if servicio.oferta and servicio.oferta.activa %}
+                                                {# Hay una oferta activa: mostramos el precio de oferta y el original tachado #}
+                                                    <h5 class="card-text text-muted fw-normal">
+                                                        Antes: <del>${{ servicio.precio|intcomma }}</del>
+                                                    </h5>
+                                                    <h4 class="card-text text-danger fw-bold">
+                                                        ¡Oferta! ${{ servicio.oferta.precio_oferta|intcomma }} CLP
+                                                    </h4>
+
+                                                {% elif servicio.precio and servicio.precio > 0 %}
+                                                {# No hay oferta, pero sí hay un precio base: lo mostramos normal #}
+                                                    <h4 class="card-text text-danger fw-bold">
+                                                        $ {{ servicio.precio|intcomma }} CLP
+                                                    </h4>
+
+                                                {% else %}
+                                                    {# No hay ni oferta ni precio base: mostramos un texto #}
+                                                    <p class="card-text text-muted fw-bold">
+                                                        Precio a consultar
+                                                    </p>
+                                                {% endif %}
+                                            </div>
+                                            {# --- FIN: Nuevo bloque de lógica para precios y ofertas --- #}
                             
-                            <a href="{% url 'core:solicitar_cotizacion_especifica' servicio_id=servicio.id %}" class="btn btn-danger mt-auto">Solicitar Cotización</a>
+                                            <button class="btn btn-outline-danger mt-auto btn-agregar-carrito" 
+                                                    data-id="{{ servicio.id }}"
+                                                    data-nombre="{{ servicio.nombre }}"
+                                                    data-descripcion="{{ servicio.descripcion }}"
+                                                    data-imagen-url="{% if servicio.imagen %}{{ servicio.imagen.url }}{% else %}{% static 'img/placeholder_evento.jpg' %}{% endif %}"
+                                                    data-precio-display="{% if servicio.oferta and servicio.oferta.activa %}¡Oferta! ${{ servicio.oferta.precio_oferta|intcomma }} CLP{% elif servicio.precio and servicio.precio > 0 %}${{ servicio.precio|intcomma }} CLP{% else %}Precio a consultar{% endif %}">
+                                                Agregar a Cotización
+                                            </button>
                         </div>
                     </div>
                 </div>

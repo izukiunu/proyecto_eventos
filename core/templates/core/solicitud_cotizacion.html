@@ -3,66 +3,70 @@
 
 {% block title %}Solicitar Cotización - MejíaEventos{% endblock title %}
 
-{% block extra_head %}
-    {# Estilos específicos para esta página de formulario.
-       Los he movido aquí desde el body de tu archivo original.
-       He añadido la clase .form-page-container que definimos en el CSS global
-       para una apariencia consistente en todas las páginas con formularios. #}
-    <style>
-        /* Puedes mantener estilos muy específicos aquí o moverlos a tu CSS global */
-        .form-page-container form p {
-            margin-bottom: 1rem;
-        }
-        .form-page-container form label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-        /* La clase .form-control de Bootstrap ya debería dar buen estilo a los inputs,
-           pero puedes añadir sobreescrituras aquí si es necesario. */
-        /* Si necesitas estilos específicos para el <select>, agrégalos aquí */
-    </style>
-{% endblock extra_head %}
-
-{% block main_classes %}main-content-with-padding{% endblock main_classes %}
 {% block content %}
-    {# Todo el contenido específico de esta página va dentro de este bloque #}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="form-page-container">
+                <h1 class="fw-bold">Solicitar Cotización</h1>
+                <p class="lead text-center mb-4">
+                    Revisa los servicios que has seleccionado y completa tus datos para recibir una cotización detallada.
+                </p>
 
-    <div class="form-page-container"> {# Usamos esta clase que definimos en estilos.css para consistencia #}
-        
-        <h1 class="fw-bold">Solicitar Cotización</h1>
-        
-        {% if servicio_seleccionado %}
-            <p class="lead text-center mb-4">
-                Estás solicitando una cotización para el servicio: <strong>{{ servicio_seleccionado.nombre }}</strong>
-            </p>
-        {% else %}
-             <p class="lead text-center mb-4">
-                Completa el formulario para recibir una cotización personalizada.
-            </p>
-        {% endif %}
+                <div id="resumen-cotizacion" class="mb-5">
+                    <h3 class="mb-3 border-bottom pb-2">Servicios a Cotizar</h3>
+                    </div>
 
-        {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+                <h3 class="text-center mb-3">Tus Datos de Contacto</h3>
+                
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|lower }}" role="alert">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
 
-        <form method="post" novalidate>
-            {% csrf_token %}
-            
-            {{ form.as_p }} {# Esto renderizará cada campo del formulario dentro de un <p> #}
-            
-            <div class="d-grid gap-2 mt-4">
-                <button type="submit" class="btn btn-danger btn-lg">Enviar Solicitud</button>
+                <form method="post" novalidate id="form-solicitud-cotizacion">
+                    {% csrf_token %}
+                    
+                    {{ form.cotizacion_detallada }}
+
+                    <div class="mb-3">
+                        <label for="{{ form.nombre_cliente.id_for_label }}" class="form-label">{{ form.nombre_cliente.label }}:</label>
+                        {{ form.nombre_cliente }}
+                        {% if form.nombre_cliente.errors %}<div class="text-danger small mt-1">{{ form.nombre_cliente.errors|first }}</div>{% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.email_cliente.id_for_label }}" class="form-label">{{ form.email_cliente.label }}:</label>
+                        {{ form.email_cliente }}
+                        
+                        <div id="email-validation-message" class="form-text" style="height: 1rem;"></div>
+                        
+                        {% if form.email_cliente.errors %}<div class="text-danger small mt-1">{{ form.email_cliente.errors|first }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.telefono_cliente.id_for_label }}" class="form-label">{{ form.telefono_cliente.label }}:</label>
+                        {{ form.telefono_cliente }}
+                        {% if form.telefono_cliente.errors %}<div class="text-danger small mt-1">{{ form.telefono_cliente.errors|first }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.descripcion_evento.id_for_label }}" class="form-label">{{ form.descripcion_evento.label }}:</label>
+                        {{ form.descripcion_evento }}
+                        {% if form.descripcion_evento.errors %}<div class="text-danger small mt-1">{{ form.descripcion_evento.errors|first }}</div>{% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-danger btn-lg">Enviar Solicitud</button>
+                    </div>
+                </form>
+
+                <p class="text-center mt-4">
+                    <a href="{% url 'core:lista_servicios' %}">o Volver a la lista de servicios</a>
+                </p>
             </div>
-        </form>
-
-        <p class="text-center mt-4">
-            <a href="{% url 'core:lista_servicios' %}">o Volver a la lista de servicios</a>
-        </p>
+        </div>
     </div>
-
+</div>
 {% endblock content %}
