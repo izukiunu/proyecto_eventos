@@ -1,0 +1,86 @@
+/* =============================================
+   Estilos para el Hero Section con Carrusel
+   ============================================= */
+
+/* * Contenedor principal del Hero Section.
+ * Define la altura para que ocupe toda la pantalla y sirve como
+ * referencia para elementos posicionados de forma absoluta en su interior.
+ * Se eliminó 'display: flex' para no interferir con el JavaScript del carrusel.
+*/
+.hero-full-height {
+  height: 100vh; /* Ocupa el 100% de la altura visible del viewport */
+  width: 100%;
+  overflow: hidden; /* Asegura que la imagen no se desborde */
+  position: relative; /* Necesario para posicionar el contenido y el carrusel */
+  /* La siguiente línea compensa la altura de un navbar fijo.
+     Ajusta el valor (135px) si la altura de tu navbar cambia. */
+  margin-top: -135px;
+}
+
+/* * Estilos para cada slide individual del carrusel.
+ * Aquí es donde se aplica la imagen de fondo y se utiliza Flexbox
+ * para centrar el contenido del slide.
+*/
+.hero-slide-item {
+  height: 100vh; /* Cada slide también ocupa el 100% de la altura */
+  width: 100%;
+  background-size: cover; /* Cubre todo el área sin distorsionar la imagen */
+  background-position: center center; /* Centra la imagen */
+  background-repeat: no-repeat;
+  
+  /* Flexbox para centrar el contenido del slide (el div .hero-content-wrapper) */
+  display: flex !important; /* !important puede ser necesario para sobreescribir estilos de Bootstrap */
+  align-items: center; /* Centra verticalmente */
+  justify-content: center; /* Centra horizontalmente */
+  
+  /* Necesario para posicionar el overlay oscuro ::before */
+  position: relative;
+}
+
+/* * Overlay oscuro.
+ * Se muestra encima de la imagen de fondo y debajo del texto para asegurar
+ * que el texto blanco siempre sea legible.
+*/
+.hero-slide-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* Overlay oscuro semitransparente */
+  z-index: 1; /* Se asegura que el overlay esté debajo del contenido */
+}
+
+/* * Contenedor para el texto (título, subtítulo) y el botón.
+*/
+.hero-content-wrapper {
+  position: relative; /* Asegura que el contenido esté por encima del overlay */
+  z-index: 2;
+  padding: 2rem 1rem; /* Padding para el contenido del slide */
+  max-width: 800px; /* Limita el ancho del texto para mejor legibilidad */
+  /* La clase 'text-center' de Bootstrap en el HTML se encarga de alinear el texto */
+}
+
+/* * Estilos responsivos para los textos del Hero.
+*/
+.hero-content-wrapper h1 {
+  font-size: calc(2rem + 1.5vw); /* Tamaño de fuente que se adapta al ancho de la pantalla */
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.hero-content-wrapper p {
+  font-size: calc(1rem + 0.5vw); /* Tamaño de fuente que se adapta al ancho de la pantalla */
+  margin-bottom: 2rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* * Ajustes para el botón dentro del carrusel.
+*/
+.hero-content-wrapper .btn-lg {
+  padding: 0.8rem 2rem;
+  font-size: 1.2rem;
+}

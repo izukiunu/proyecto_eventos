@@ -1,0 +1,62 @@
+/* --- Footer --- */
+.site-footer {
+    background-color: #000000; /* Fondo negro */
+    color: #ffffff; /* Texto blanco */
+    padding-top: 3rem;
+    padding-bottom: 1rem;
+    border-top: 3px solid #dc3545; /* Borde superior rojo */
+    font-size: 0.9rem; /* Tamaño de fuente base para el footer */
+}
+
+.site-footer h6 {
+    color: #ffffff;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.site-footer p, .site-footer .footer-text {
+    color: #ced4da; /* Gris claro para texto secundario */
+    margin-bottom: 0.5rem;
+}
+
+.site-footer .list-unstyled li { /* Para los elementos del menú en el footer */
+    margin-bottom: 0.5rem;
+}
+
+.site-footer a, .site-footer a:visited {
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+.site-footer a:hover {
+    color: #dc3545; /* Rojo al pasar el mouse */
+    text-decoration: none; /* O underline si prefieres */
+}
+
+.site-footer .footer-social-link i.fab { /* Iconos sociales */
+    font-size: 1.5rem;
+    color: #ffffff;
+    transition: color 0.2s ease-in-out;
+}
+
+.site-footer .footer-social-link i.fab:hover {
+    color: #dc3545; /* Rojo al pasar el mouse */
+}
+
+.site-footer hr.footer-hr { /* Si decides usar una etiqueta hr dentro del footer */
+    border-color: #495057; /* Gris más oscuro para la línea */
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.site-footer .copyright-text { /* Para el texto de copyright al final */
+    font-size: 0.85rem;
+    color: #adb5bd; /* Gris aún más claro */
+    padding-top: 1.5rem; /* Espacio después de la línea o contenido */
+}
+.site-footer .copyright-text strong {
+    color: #ffffff;
+}

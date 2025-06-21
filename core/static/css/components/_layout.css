@@ -1,0 +1,18 @@
+/* --- Globales y Tipografía (Ajuste para el main si el navbar es fijo) --- */
+main {
+    flex-grow: 1;
+}
+/* --- Globales y Tipografía (Ajuste para el main si el navbar es fijo) --- */
+main {
+    flex-grow: 1;
+}
+
+.main-content-with-padding {
+    /* Ajustado para la altura del navbar. Se mantiene para tu logo de 125px. */
+    padding-top: 155px; 
+}
+
+.main-content-with-padding {
+    /* Ajustado para la altura del navbar. Se mantiene para tu logo de 125px. */
+    padding-top: 155px; 
+}

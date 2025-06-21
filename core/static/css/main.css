@@ -1,0 +1,24 @@
+/* /css/main.css */
+/* IMPORTACIÓN DE ESTILOS POR TIPO DE COMPONENTE */
+
+/* 1. Estilos base y de estructura */
+@import url('components/_base.css');
+@import url('components/_layout.css');
+
+/* 2. Componentes estructurales de la página */
+@import url('components/_navbar.css');
+@import url('components/_hero.css');
+@import url('components/_footer.css');
+
+/* 3. Componentes reutilizables y secciones */
+@import url('components/_cards.css');
+@import url('components/_slider.css');
+@import url('components/_forms.css');
+
+/* 4. Elementos que se superponen a otros */
+@import url('components/_buttons_flotantes.css');
+@import url('components/_chatbot.css');
+@import url('components/_carrito.css');
+
+/* 5. (Opcional) Estilos del panel de administración si se usa en todas las páginas */
+/* @import url('components/_admin_panel.css'); */
