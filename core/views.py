@@ -224,6 +224,15 @@ class AdminServicioListView(UserPassesTestMixin, ListView):
         context['proyecto_form'] = ProyectoForm()
         context['solicitudes_cotizacion'] = SolicitudCotizacion.objects.order_by('-fecha_solicitud')
         context['mensajes_contacto'] = MensajeContacto.objects.order_by('-fecha_envio')
+
+        # --- AÑADE ESTAS LÍNEAS AQUÍ ---
+        try:
+            # Intentamos obtener la configuración del sitio
+            context['configuracion_sitio'] = ConfiguracionSitio.objects.first()
+        except ConfiguracionSitio.DoesNotExist:
+            # Si no existe, pasamos None para que no dé error en la plantilla
+            context['configuracion_sitio'] = None
+        # --- FIN DE LAS LÍNEAS A AÑADIR ---
         
         return context
 

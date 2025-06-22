@@ -44,24 +44,20 @@
     
     <div class="page-wrapper">
 
-        {# Incluimos el menú (navbar) desde un archivo parcial #}
         {% include 'core/partials/_navbar.html' %}
 
-        {# Contenedor principal que puede tener clases extra (como el padding) #}
         <main role="main" class="site-content {% block main_classes %}{% endblock main_classes %}">
             
-            {# Bloque principal de contenido que las plantillas hijas llenarán #}
             {% block main_content %}
                 <div class="container py-3">
                     {% block content %}
-                        {# El contenido específico de cada página irá aquí por defecto #}
+                        {# El contenido específico de cada página irá aquí #}
                     {% endblock content %}
                 </div>
             {% endblock main_content %}
 
         </main>
 
-        {# Incluimos el pie de página desde un archivo parcial #}
         {% include 'core/partials/_footer.html' %}
     
         {# Chatbot #}
@@ -95,10 +91,15 @@
     
     {{ chatbot_sugerencias|json_script:"chatbot-initial-suggestions" }}
     
-    <script src="{% static 'js/scripts.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
 
+    <script src="{% static 'js/components/chatbot.js' %}"></script>
+    <script src="{% static 'js/components/carrito.js' %}"></script>
+    <script src="{% static 'js/components/sliders.js' %}"></script>
+    <script src="{% static 'js/components/utilities.js' %}"></script>
+    
     {% block extra_scripts %}
-        <script src="{% static 'js/carrito_cotizaciones.js' %}"></script>
+        {# Este bloque está ahora disponible para scripts muy específicos de una página hija. #}
     {% endblock extra_scripts %}
 
 </body>

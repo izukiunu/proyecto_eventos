@@ -1,3 +1,5 @@
+// js/components/carrito.js
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- ESTADO Y CONSTANTES ---
@@ -13,15 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let carrito = JSON.parse(localStorage.getItem('carritoCotizaciones')) || [];
     const hoy = new Date().toISOString().split('T')[0];
 
-
-    // --- FUNCIÓN CENTRAL DE RENDERIZADO ---
+    // --- FUNCIÓN CENTRAL DE RENDERIZADO DE ITEMS ---
     const crearItemHTML = (item) => {
         const fechaInicio = item.fechaInicio || '';
         const fechaFin = item.fechaFin || '';
-        
         const esMultiDia = item.multidiaActivo;
         const estaSincronizado = item.sincronizar;
-
         const finVisibleClass = esMultiDia ? '' : 'd-none';
 
         return `
@@ -33,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     <div class="item-fechas">
                         <label><span>Fecha del Evento / Inicio:</span> <input type="date" class="fecha-inicio" value="${fechaInicio}" min="${hoy}"></label>
-
                         <label class="fecha-fin-wrapper mt-2 ${finVisibleClass}">
                             <span>Fecha de Término:</span> <input type="date" class="fecha-fin" value="${fechaFin}" min="${fechaInicio || hoy}">
                         </label>
@@ -55,60 +53,39 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     };
 
-
-    // --- FUNCIONES DE RENDERIZADO Y ESTADO ---
+    // --- FUNCIONES DE ACTUALIZACIÓN DE UI ---
     const renderizarTodo = () => {
+        // Renderizar panel lateral
         const panelItemsContainer = document.getElementById('panel-carrito-items');
         if (panelItemsContainer) {
             const scrollPosition = panelItemsContainer.scrollTop;
             panelItemsContainer.innerHTML = '';
             if (carrito.length === 0) {
-                const mensajeVacioHTML = `
-                    <div class="text-center p-4">
-                        <p class="text-muted mb-3">Tu carro de cotización está vacío.</p>
-                        <a href="/servicios/" class="btn btn-outline-danger">
-                            Ver Servicios Disponibles
-                        </a>
-                    </div>
-                `;
-                panelItemsContainer.innerHTML = mensajeVacioHTML;
+                panelItemsContainer.innerHTML = `<div class="text-center p-4"><p class="text-muted mb-3">Tu carro de cotización está vacío.</p><a href="/servicios/" class="btn btn-outline-danger">Ver Servicios Disponibles</a></div>`;
             } else {
                 carrito.forEach(item => panelItemsContainer.insertAdjacentHTML('beforeend', crearItemHTML(item)));
             }
             panelItemsContainer.scrollTop = scrollPosition;
         }
 
+        // Renderizar resumen en el formulario
         const resumenFormContainer = document.getElementById('resumen-cotizacion');
         if (resumenFormContainer) {
             const submitButton = document.querySelector('form button[type="submit"]');
-            const tituloHTML = '<h3 class="mb-3 border-bottom pb-2">Servicios a Cotizar</h3>';
-            
-            // Limpiamos solo el contenido dinámico, no el título.
-            while (resumenFormContainer.firstChild) {
-                resumenFormContainer.removeChild(resumenFormContainer.lastChild);
-            }
-            resumenFormContainer.insertAdjacentHTML('afterbegin', tituloHTML);
+            resumenFormContainer.innerHTML = '<h3 class="mb-3 border-bottom pb-2">Servicios a Cotizar</h3>';
             
             if (carrito.length === 0) {
-                resumenFormContainer.insertAdjacentHTML('beforeend', `
-                    <div class="alert alert-warning">
-                        No has seleccionado ningún servicio. 
-                        <a href="/servicios/">Vuelve a la lista de servicios</a> para añadir.
-                    </div>
-                `);
+                resumenFormContainer.insertAdjacentHTML('beforeend', `<div class="alert alert-warning">No has seleccionado ningún servicio. <a href="/servicios/">Vuelve a la lista de servicios</a> para añadir.</div>`);
                 if(submitButton) submitButton.disabled = true;
             } else {
                 let resumenTextoParaEmail = '';
                 carrito.forEach((item) => {
                     resumenFormContainer.insertAdjacentHTML('beforeend', crearItemHTML(item));
-                    
                     const fechaInicioTxt = item.fechaInicio ? new Date(item.fechaInicio + 'T00:00:00').toLocaleDateString('es-ES') : 'No especificada';
                     const fechaFinTxt = (item.multidiaActivo && item.fechaFin) ? new Date(item.fechaFin + 'T00:00:00').toLocaleDateString('es-ES') : 'No especificada';
                     let finDisplay = fechaFinTxt !== 'No especificada' ? `\n- Fin: ${fechaFinTxt}` : '';
-                    
                     resumenTextoParaEmail += `Servicio: ${item.nombre}\n- Precio Ref: ${item.precioDisplay}\n- Inicio: ${fechaInicioTxt}${finDisplay}\n-------------------------------------\n`;
                 });
-
                 const hiddenInput = document.querySelector('[name="cotizacion_detallada"]');
                 if (hiddenInput) hiddenInput.value = resumenTextoParaEmail;
                 if(submitButton) submitButton.disabled = false;
@@ -128,8 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
         contadorCarrito.classList.toggle('d-none', carrito.length === 0);
     };
     
-    // --- MANEJO DE EVENTOS ---
-    const agregarAlCarrito = (serviceData) => {
+    // --- MANEJO DE LÓGICA DEL CARRITO ---
+    window.agregarAlCarrito = (serviceData) => { // Lo exponemos a window para llamarlo desde otros scripts si fuera necesario
         const yaExiste = carrito.some(item => item.id === serviceData.id);
         if (yaExiste) {
             alert('Este servicio ya fue agregado a tu cotización.');
@@ -151,10 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const sincronizarFechas = (itemMaestro) => {
-        const fechaInicioMaestro = itemMaestro.fechaInicio;
-        const fechaFinMaestro = itemMaestro.fechaFin;
-        const multidiaMaestro = itemMaestro.multidiaActivo;
-
+        const { fechaInicio: fechaInicioMaestro, fechaFin: fechaFinMaestro, multidiaActivo: multidiaMaestro } = itemMaestro;
         carrito.forEach(item => {
             if (item.sincronizar) {
                 item.fechaInicio = fechaInicioMaestro;
@@ -166,14 +140,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- LISTENERS DE EVENTOS ---
-
     if (cotizacionForm) {
         cotizacionForm.addEventListener('submit', (event) => {
             for (const item of carrito) {
                 if (!item.fechaInicio) {
                     event.preventDefault(); 
                     alert(`Por favor, establece una fecha de inicio para el servicio: "${item.nombre}".`);
-
                     const itemElement = document.querySelector(`.item-carrito[data-id="${item.id}"]`);
                     if (itemElement) {
                         itemElement.style.border = '2px solid #dc3545';
@@ -190,20 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const cerrarPanel = () => panelCarrito?.classList.remove('panel-visible');
 
     body.addEventListener('click', (e) => {
-        // Delegación de eventos para agregar al carrito
         if (e.target.matches('.btn-agregar-carrito')) {
             e.preventDefault();
             const boton = e.target;
-            const serviceData = {
-                id: boton.dataset.id,
-                nombre: boton.dataset.nombre,
-                imagenUrl: boton.dataset.imagenUrl,
-                precioDisplay: boton.dataset.precioDisplay,
-            };
-            agregarAlCarrito(serviceData);
+            agregarAlCarrito(boton.dataset); // Pasamos todos los data-attributes como un objeto
         }
-
-        // Delegación para eliminar un item del carrito
         if (e.target.matches('.btn-eliminar-item')) {
             const itemContainer = e.target.closest('.item-carrito');
             if (itemContainer) {
@@ -222,78 +185,52 @@ document.addEventListener('DOMContentLoaded', () => {
         const itemEnCarrito = carrito.find(item => item.id === itemId);
         if (!itemEnCarrito) return;
 
-        if (e.target.matches('.multidia-checkbox')) {
-            itemEnCarrito.multidiaActivo = e.target.checked;
-            if (!itemEnCarrito.multidiaActivo) {
-                itemEnCarrito.fechaFin = itemEnCarrito.fechaInicio;
-            }
-            if (itemEnCarrito.sincronizar) {
-                sincronizarFechas(itemEnCarrito);
-            } else {
-                guardarYRenderizarTodo();
-            }
-        }
-        
-        else if (e.target.matches('.sync-fecha-checkbox')) {
-            itemEnCarrito.sincronizar = e.target.checked;
-            if (itemEnCarrito.sincronizar) {
-                sincronizarFechas(itemEnCarrito);
-            } else {
-                guardarYRenderizarTodo();
-            }
-        }
+        let debeSincronizar = false;
 
-        else if (e.target.matches('input[type="date"]')) {
-            const fechaInicioInput = itemContainer.querySelector('.fecha-inicio');
-            itemEnCarrito.fechaInicio = fechaInicioInput.value;
-
-            if (itemEnCarrito.multidiaActivo) {
-                const fechaFinInput = itemContainer.querySelector('.fecha-fin');
-                itemEnCarrito.fechaFin = fechaFinInput.value;
-            } else {
-                itemEnCarrito.fechaFin = itemEnCarrito.fechaInicio;
-            }
+        if (e.target.matches('.multidia-checkbox') || e.target.matches('input[type="date"]')) {
+            itemEnCarrito.multidiaActivo = itemContainer.querySelector('.multidia-checkbox').checked;
+            itemEnCarrito.fechaInicio = itemContainer.querySelector('.fecha-inicio').value;
+            itemEnCarrito.fechaFin = itemEnCarrito.multidiaActivo ? itemContainer.querySelector('.fecha-fin').value : itemEnCarrito.fechaInicio;
             
             if (itemEnCarrito.fechaInicio && itemEnCarrito.fechaFin && itemEnCarrito.fechaInicio > itemEnCarrito.fechaFin) {
                 itemEnCarrito.fechaFin = itemEnCarrito.fechaInicio;
             }
-            
-            if (itemEnCarrito.sincronizar) {
-                sincronizarFechas(itemEnCarrito);
-            } else {
-                guardarYRenderizarTodo();
-            }
+            debeSincronizar = itemEnCarrito.sincronizar;
+        }
+        else if (e.target.matches('.sync-fecha-checkbox')) {
+            itemEnCarrito.sincronizar = e.target.checked;
+            debeSincronizar = itemEnCarrito.sincronizar;
+        }
+
+        if(debeSincronizar){
+            sincronizarFechas(itemEnCarrito);
+        } else {
+            guardarYRenderizarTodo();
         }
     });
     
     iconoCarrito?.addEventListener('click', abrirPanel);
     cerrarPanelBtn?.addEventListener('click', cerrarPanel);
     
-    // VALIDACIÓN DE EMAIL EN TIEMPO REAL
-    if (emailInput && emailValidationMessage) {
+    if (emailInput) {
         emailInput.addEventListener('input', () => {
             const email = emailInput.value;
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
             if (email.length === 0) {
                 emailValidationMessage.textContent = '';
-                emailInput.classList.remove('is-valid', 'is-invalid');
+                emailInput.className = 'form-control';
             } else if (emailRegex.test(email)) {
                 emailValidationMessage.textContent = 'Formato de correo válido';
                 emailValidationMessage.className = 'form-text text-success';
-                emailInput.classList.remove('is-invalid');
-                emailInput.classList.add('is-valid');
+                emailInput.className = 'form-control is-valid';
             } else {
                 emailValidationMessage.textContent = 'Formato de correo inválido.';
                 emailValidationMessage.className = 'form-text text-danger';
-                emailInput.classList.remove('is-valid');
-                emailInput.classList.add('is-invalid');
+                emailInput.className = 'form-control is-invalid';
             }
         });
     }
 
-    // --- INICIALIZACIÓN ---
-    // Llamada inicial para renderizar el estado del carrito al cargar la página
+    // --- INICIALIZACIÓN AL CARGAR LA PÁGINA ---
     guardarYRenderizarTodo();
-
-}); // <-- FIN DEL LISTENER DOMCONTENTLOADED
+});

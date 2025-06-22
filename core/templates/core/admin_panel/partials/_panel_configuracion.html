@@ -1,0 +1,18 @@
+{# templates/core/admin_panel/partials/_panel_configuracion.html #}
+<div id="panel-configuracion" class="content-panel">
+    <h1>Configuración General</h1>
+    <hr>
+    <div id="configuracionContainer" class="p-3 mb-4 bg-light border rounded">
+        <h3 class="h5">Notificaciones del Sitio</h3>
+        <form id="configForm" data-url="{% url 'core:ajax_configuracion_update_email' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="emailNotificacionesAdminInput" class="form-label">Email para recibir notificaciones:</label>
+                <div class="d-flex align-items-center">
+                    <input type="email" id="emailNotificacionesAdminInput" name="email_notificaciones_admin" value="{{ configuracion_sitio.email_notificaciones_admin|default_if_none:'' }}" class="form-control me-2">
+                    <button type="submit" class="btn btn-info flex-shrink-0">Guardar Email</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

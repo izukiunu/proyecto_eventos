@@ -12,140 +12,34 @@
 {% block content %}
     <div class="dashboard-container">
         {# --- 1. BARRA LATERAL DE NAVEGACIÓN (MENÚ) --- #}
-        <div class="dashboard-sidebar">
-            <h3 class="h5">Panel</h3>
-            <ul class="list-unstyled">
-                {# CAMBIO 1: Configuración ahora es el primero y tiene la clase 'active' #}
-                <li><button class="sidebar-btn active" data-target="#panel-configuracion">Configuración General</button></li>
-                <li><button class="sidebar-btn" data-target="#panel-servicios">Gestión de Servicios</button></li>
-                <li><button class="sidebar-btn" data-target="#panel-chatbot">Gestión de Chatbot</button></li>
-            </ul>
-        </div>
+        {% include 'core/admin_panel/partials/_sidebar.html' %}
 
         {# --- 2. CONTENEDOR PRINCIPAL DEL CONTENIDO --- #}
         <div class="dashboard-content">
-            
-            {# CAMBIO 2: Panel de Configuración ahora está visible por defecto (sin la clase 'hidden') #}
-            <div id="panel-configuracion" class="content-panel">
-                <h1>Configuración General</h1>
-                <hr>
-                <div id="configuracionContainer" class="p-3 mb-4 bg-light border rounded">
-                    <h3 class="h5">Notificaciones del Sitio</h3>
-                    <form id="configForm" data-url="{% url 'core:ajax_configuracion_update_email' %}">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="emailNotificacionesAdminInput" class="form-label">Email para recibir notificaciones:</label>
-                            <div class="d-flex align-items-center">
-                                <input type="email" id="emailNotificacionesAdminInput" name="email_notificaciones_admin" value="{{ configuracion_sitio.email_notificaciones_admin|default_if_none:'' }}" class="form-control me-2">
-                                <button type="submit" class="btn btn-info flex-shrink-0">Guardar Email</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
 
-            {# CAMBIO 3: Panel de Servicios ahora está oculto por defecto (se añadió la clase 'hidden') #}
-            <div id="panel-servicios" class="content-panel hidden">
-                <h1>Gestión de Servicios</h1>
-                <hr>
-                <button id="btnMostrarFormularioCrear" class="btn btn-success mb-3">Agregar Nuevo Servicio</button>
+            {# Se incluye el panel de Configuración #}
+            {% include 'core/admin_panel/partials/_panel_configuracion.html' %}
 
-                {# Formulario oculto para Servicios #}
-                <div id="formServicioContainer" class="hidden p-3 mb-4 bg-light border rounded">
-                    <h3 id="formTitulo" class="h5">Agregar Nuevo Servicio</h3>
-                    <form id="servicioForm" data-create-url="{% url 'core:ajax_servicio_create' %}" data-update-url-template="{% url 'core:ajax_servicio_update' servicio_id=0 %}" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <input type="hidden" id="currentServicioIdInput"> 
-                        {{ servicio_form.as_p }} 
-                        <div class="text-end mt-3">
-                            <button type="button" id="btnCancelarForm" class="btn btn-secondary me-2">Cancelar</button>
-                            <button type="submit" id="btnSubmitForm" class="btn btn-primary">Guardar</button>
-                        </div>
-                    </form>
-                </div>
+            {# Se incluye el panel de Gestión de Servicios #}
+            {% include 'core/admin_panel/partials/_panel_servicios.html' %}
 
-                <h3 class="h5">Lista de Servicios Existentes</h3>
-                <div class="table-responsive">
-                    <table id="tablaServicios" class="table table-striped table-hover align-middle">
-                        <thead class="table-light">
-                            <tr><th>Nombre</th>
-                                <th>Descripción</th>
-                                <th>Imagen</th>
-                                <th>Precio</th>      <th>Acciones</th></tr>
-                        </thead>
-                        <tbody id="listaServiciosBody">
-                            {% for servicio in servicios %}
-                            <tr data-id="{{ servicio.id }}">
-                                <td class="nombre">{{ servicio.nombre }}</td>
-                                <td class="descripcion">{{ servicio.descripcion|truncatewords:10 }}</td>
-                                <td class="imagen">
-                                    {% if servicio.imagen %}<img src="{{ servicio.imagen.url }}" alt="{{ servicio.nombre }}" style="width: 100px; height: 70px; object-fit: cover; border-radius: 4px;">{% else %}Sin imagen{% endif %}
-                                </td>
-                                <td class="actions">
-                                    <button class="btn btn-sm btn-warning btnEditar" data-id="{{ servicio.id }}" data-detail-url-template="{% url 'core:ajax_servicio_detail' servicio_id=0 %}"><i class="fas fa-edit"></i> Editar</button>
-                                    <button class="btn btn-sm btn-danger btnEliminar" data-id="{{ servicio.id }}" data-delete-url-template="{% url 'core:ajax_servicio_delete' servicio_id=0 %}"><i class="fas fa-trash"></i> Eliminar</button>
-                                </td>
-                            </tr>
-                            {% empty %}
-                                <tr><td colspan="4" class="text-center text-muted py-4">No hay servicios registrados.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            {# Se incluye el panel de Gestión del Chatbot #}
+            {% include 'core/admin_panel/partials/_panel_chatbot.html' %}
 
-            {# --- Panel para Gestión de Chatbot (Oculto por defecto) --- #}
-            <div id="panel-chatbot" class="content-panel hidden">
-                <h1>Gestión de Preguntas y Respuestas del Chatbot</h1>
-                <hr>
-                <button id="btnMostrarFormularioQA" class="btn btn-success mb-3">Agregar Pregunta/Respuesta</button>
-
-                {# Formulario oculto para Q&A del Chatbot #}
-                <div id="formQAContainer" class="hidden p-3 mb-4 bg-light border rounded">
-                    <h3 id="formQATitulo" class="h5">Agregar Nueva P/R</h3>
-                    <form id="qaForm" data-create-url="{% url 'core:ajax_chatbot_qa_create' %}" data-update-url-template="{% url 'core:ajax_chatbot_qa_update' qa_id=0 %}">
-                        {% csrf_token %}
-                        <input type="hidden" id="currentQAIdInput"> 
-                        {{ chatbot_qa_form.as_p }} 
-                        <div class="text-end mt-3">
-                            <button type="button" id="btnCancelarFormQA" class="btn btn-secondary me-2">Cancelar</button>
-                            <button type="submit" id="btnSubmitFormQA" class="btn btn-primary">Guardar</button>
-                        </div>
-                    </form>
-                </div>
-
-                <h3 class="h5">Lista de Preguntas/Respuestas Existentes</h3>
-                <div class="table-responsive">
-                    <table id="tablaQA" class="table table-striped table-hover align-middle">
-                        <thead class="table-light">
-                            <tr><th>Palabras Clave</th><th>Respuesta</th><th>Acciones</th></tr>
-                        </thead>
-                        <tbody id="listaQABody">
-                            {% for qa in chatbot_qa_list %}
-                            <tr data-id="{{ qa.id }}">
-                                <td class="keywords">{{ qa.keywords }}</td>
-                                <td class="respuesta">{{ qa.respuesta|truncatewords:15 }}</td>
-                                <td class="actions">
-                                    <button class="btn btn-sm btn-warning btnEditarQA" data-id="{{ qa.id }}" data-detail-url-template="{% url 'core:ajax_chatbot_qa_detail' qa_id=0 %}"><i class="fas fa-edit"></i> Editar</button>
-                                    <button class="btn btn-sm btn-danger btnEliminarQA" data-id="{{ qa.id }}" data-delete-url-template="{% url 'core:ajax_chatbot_qa_delete' qa_id=0 %}"><i class="fas fa-trash"></i> Eliminar</button>
-                                </td>
-                            </tr>
-                            {% empty %}
-                                <tr id="noQAMensaje"><td colspan="3" class="text-center text-muted py-4">No hay preguntas/respuestas registradas.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            {# Contenedores globales para mensajes y spinner #}
+            {# Elementos globales para mensajes y carga #}
             <div id="messageArea" class="hidden"></div>
             <div id="loadingSpinner" class="hidden"></div>
         </div>
     </div>
 {% endblock content %}
 
-
 {% block extra_scripts %}
-    <script src="{% static 'js/admin_panel.js' %}"></script>
+    {# Tus scripts no necesitan cambios, ya que la estructura del DOM (IDs, clases) sigue siendo la misma #}
+    <script src="{% static 'js/admin/ui.js' %}"></script>
+    <script src="{% static 'js/admin/main.js' %}"></script>
+    <script src="{% static 'js/admin/crud_servicios.js' %}"></script>
+    <script src="{% static 'js/admin/crud_chatbot_qa.js' %}"></script>
+    <script src="{% static 'js/admin/crud_hero_slides.js' %}"></script>
+    <script src="{% static 'js/admin/crud_testimonios.js' %}"></script>
+    <script src="{% static 'js/admin/crud_proyectos.js' %}"></script>
 {% endblock extra_scripts %}
