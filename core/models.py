@@ -2,24 +2,125 @@
 # import uuid # Ya no es necesario para SolicitudCotizacion
 from django.db import models
 from django.core.exceptions import ValidationError
-
+from django.templatetags.static import static
+from django.utils.html import format_html
+import json
+# ==============================================================================
+# === MODELO SERVICIO EVOLUCIONADO ===
+# ==============================================================================
 class Servicio(models.Model):
+    """
+    Modelo evolucionado que puede representar un Pack, un Servicio Independiente,
+    o un Adicional exclusivo para Packs, manteniendo la compatibilidad.
+    """
+    # --- NUEVO: Enumeración para definir el tipo de servicio (colocada DENTRO de la clase) ---
+    class Tipo(models.TextChoices):
+        PACK = 'PACK', 'Pack Prediseñado'
+        INDEPENDIENTE = 'INDEPENDIENTE', 'Producto o Servicio Independiente'
+        ADICIONAL_PACK = 'ADICIONAL_PACK', 'Adicional exclusivo para Pack'
+
+    # --- CAMPOS PRINCIPALES (EXISTENTES Y MODIFICADOS) ---
     nombre = models.CharField(max_length=200)
-    descripcion = models.TextField()
-    imagen = models.ImageField(upload_to='servicios/', blank=True, null=True, help_text="Imagen opcional del servicio")
+    descripcion = models.TextField(
+    blank=True, 
+    null=True, 
+    verbose_name="Descripción (Opcional)"
+)    
+    # --- NUEVO: Campo para clasificar el servicio ---
+    tipo_servicio = models.CharField(
+        max_length=20,
+        choices=Tipo.choices,
+        default=Tipo.INDEPENDIENTE,
+        verbose_name="Tipo de Servicio",
+        help_text="Clasifica el ítem como un Pack o un servicio individual."
+    )
+    
+    # --- MODIFICADO: Cambiado a DecimalField para más consistencia ---
+    precio = models.DecimalField(
+        verbose_name="Precio Base",
+        max_digits=10,
+        decimal_places=0, # Usamos 0 decimales para CLP
+        default=0,
+        help_text="Precio base del ítem. Si usa precios por niveles, dejar en 0."
+    )
+    
     destacado = models.BooleanField(
         default=False,
         verbose_name="Servicio Destacado",
-        help_text="Marcar para que este servicio aparezca en la sección de destacados.")
-    precio = models.PositiveIntegerField(
-        verbose_name="Precio Base (Opcional)",
-        null=True,
-        blank=True,
-        help_text="Precio base del servicio."
+        help_text="Marcar para que aparezca en la sección de destacados."
     )
 
+    # --- NUEVO: Campo para manejar precios variables ---
+    has_tiered_pricing = models.BooleanField(
+        default=False, 
+        verbose_name="¿Usa Precios por Niveles?",
+        help_text="Marcar si este servicio tiene múltiples precios (ej. por horas)."
+    )
+
+    # --- NUEVO: Campos específicos para Packs ---
+    max_guests = models.PositiveIntegerField(
+        verbose_name="Máximo de Invitados (para Packs)",
+        null=True, blank=True,
+        help_text="Solo llenar si este ítem es un Pack."
+    )
+    duration_hours = models.PositiveIntegerField(
+        verbose_name="Duración en Horas (para Packs)",
+        null=True, blank=True,
+        help_text="Solo llenar si este ítem es un Pack."
+    )
+    permite_cantidad = models.BooleanField(
+        default=False,
+        verbose_name="¿Permite seleccionar cantidad?",
+        help_text="Marcar si este servicio es por unidades (ej: horas extra, sillas adicionales)."
+    )
+    servicios_compatibles = models.ManyToManyField(
+        'self',
+        blank=True,
+        symmetrical=False,
+        verbose_name="Servicios Principales Compatibles",
+        help_text="Si este es un servicio ADITIVO, selecciona a qué servicios principales se puede añadir."
+    )
+    def get_thumbnail_url(self):
+        """
+        Busca la primera IMAGEN en la galería del servicio y devuelve su URL.
+        Si no hay imágenes, devuelve la URL de una imagen genérica.
+        """
+        primera_imagen = self.media_gallery.filter(media_type='IMAGE').order_by('orden').first()
+        
+        if primera_imagen:
+            return primera_imagen.media_file.url
+        else:
+            return static('img/placeholder_evento.jpg')
+    
+
+    # --- MODIFICADO: __str__ más descriptivo ---
     def __str__(self):
-        return self.nombre
+        return f"{self.nombre} ({self.get_tipo_servicio_display()})"
+
+
+# ==============================================================================
+# === NUEVO MODELO PARA PRECIOS POR NIVELES ===
+# ==============================================================================
+class PriceTier(models.Model):
+    """
+    Permite definir múltiples precios para un único Servicio.
+    Ej: 1 hora $120.000, 2 horas $150.000
+    """
+    servicio = models.ForeignKey(Servicio, on_delete=models.CASCADE, related_name='price_tiers')
+    description = models.CharField(max_length=255, help_text="Ej: '2 horas', '2 Robot en zancos'")
+    price = models.DecimalField(max_digits=10, decimal_places=0, help_text="Precio para este nivel, sin decimales.")
+
+    class Meta:
+        verbose_name = "Nivel de Precio"
+        verbose_name_plural = "Niveles de Precio"
+
+    def __str__(self):
+        return f"{self.servicio.nombre} - {self.description} (${self.price})"
+
+
+# ==============================================================================
+# === MODELO OFERTA (Se mantiene sin cambios) ===
+# ==============================================================================
 class Oferta(models.Model):
     # Relación uno-a-uno: Un servicio solo puede tener una oferta a la vez.
     servicio = models.OneToOneField(
@@ -60,48 +161,166 @@ class Oferta(models.Model):
     class Meta:
         verbose_name = "Oferta"
         verbose_name_plural = "Ofertas"
+# ==============================================================================
+# === NUEVO MODELO PARA LA GALERÍA DE IMÁGENES Y VIDEOS ===
+# ==============================================================================
+class ServicioMedia(models.Model):
+    """
+    Modelo para asociar múltiples imágenes y videos a un único Servicio.
+    """
+    class MediaType(models.TextChoices):
+        IMAGE = 'IMAGE', 'Imagen'
+        VIDEO = 'VIDEO', 'Video'
+
+    servicio = models.ForeignKey(Servicio, on_delete=models.CASCADE, related_name='media_gallery')
+    
+    # Usamos FileField para que acepte tanto imágenes como videos
+    media_file = models.FileField(
+        upload_to='servicios_media/',
+        help_text="Sube una imagen o un video corto (MP4)."
+    )
+    
+    media_type = models.CharField(
+        max_length=10,
+        choices=MediaType.choices,
+        default=MediaType.IMAGE,
+        verbose_name="Tipo de Medio"
+    )
+    
+    orden = models.PositiveIntegerField(default=0, help_text="Orden de aparición en la galería.")
+
+    class Meta:
+        verbose_name = "Medio de Servicio"
+        verbose_name_plural = "Galería de Medios del Servicio"
+        ordering = ['orden']
+    
+
+    def __str__(self):
+        return f"Medio para {self.servicio.nombre}"
 
 class SolicitudCotizacion(models.Model):
-    # EL CAMPO ticket_id (UUIDField) HA SIDO ELIMINADO. Usaremos el 'id' automático.
+    """
+    Modelo para almacenar las solicitudes de cotización de los clientes.
+    """
     nombre_cliente = models.CharField(max_length=150)
     email_cliente = models.EmailField()
     telefono_cliente = models.CharField(max_length=20)
-    servicio_interesado = models.ForeignKey(
-        Servicio,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
+    
+    # Campo para la descripción libre del evento (modificado para ser blank/null)
     descripcion_evento = models.TextField(
-        help_text="Describe brevemente el servicio o evento que te interesa (si no seleccionaste uno específico arriba)"
+        blank=True,
+        null=True,
+        help_text="Descripción adicional del evento proporcionada por el cliente."
     )
-    fecha_solicitud = models.DateTimeField(auto_now_add=True)
-    atendida = models.BooleanField(default=False)
+    
+    # NUEVO CAMPO: Para almacenar el JSON completo del carrito
+    # Si usas PostgreSQL, puedes usar models.JSONField para un manejo nativo de JSON.
+    # cotizacion_detallada_json = models.JSONField(blank=True, null=True, verbose_name="Detalles de Cotización (JSON)")
+    # Para compatibilidad con otras bases de datos (SQLite, MySQL), usa TextField y maneja el JSON manualmente.
+    cotizacion_detallada_json = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Detalles de Cotización (JSON)",
+        help_text="Datos JSON serializados de los ítems del carrito."
+    )
 
-    def __str__(self):
-        # Ahora usamos self.id para el número de ticket.
-        # self.id no estará disponible hasta que el objeto se guarde por primera vez.
-        # Si se llama a __str__ antes de guardar, self.id podría ser None.
-        ticket_num = self.id if self.id else "Nuevo"
-        if self.servicio_interesado:
-            return f"Ticket #{ticket_num} - {self.nombre_cliente} para '{self.servicio_interesado.nombre}'"
-        return f"Ticket #{ticket_num} - {self.nombre_cliente} (general)"
+    fecha_solicitud = models.DateTimeField(auto_now_add=True)
+    
+    # NUEVO CAMPO: Estado de la solicitud
+    class EstadoSolicitud(models.TextChoices):
+        PENDIENTE = 'PENDIENTE', 'Pendiente'
+        EN_PROCESO = 'EN_PROCESO', 'En Proceso'
+        COTIZADO = 'COTIZADO', 'Cotizado'
+        COMPLETADO = 'COMPLETADO', 'Completado'
+        CANCELADO = 'CANCELADO', 'Cancelado'
+        RECHAZADO = 'RECHAZADO', 'Rechazado'
+
+    estado = models.CharField(
+        max_length=20,
+        choices=EstadoSolicitud.choices,
+        default=EstadoSolicitud.PENDIENTE,
+        verbose_name="Estado de la Solicitud"
+    )
 
     class Meta:
         verbose_name = "Solicitud de Cotización"
         verbose_name_plural = "Solicitudes de Cotización"
         ordering = ['-fecha_solicitud']
 
+    def __str__(self):
+        ticket_num = self.id if self.id else "Nuevo"
+        # El campo 'servicio_interesado' se elimina del __str__ ya que ahora tenemos 'cotizacion_detallada_json'
+        # y la descripción de evento, haciendo el `servicio_interesado` menos relevante para el resumen.
+        return f"Solicitud #{ticket_num} de {self.nombre_cliente} ({self.fecha_solicitud.strftime('%Y-%m-%d')})"
+
+    def get_cotizacion_detalles_list(self):
+        """Devuelve los detalles de la cotización como una lista de objetos Python."""
+        if self.cotizacion_detallada_json:
+            try:
+                return json.loads(self.cotizacion_detallada_json)
+            except json.JSONDecodeError:
+                return []
+        return []
+
+    def calcular_monto_total_estimado(self):
+        """Calcula el monto total estimado de la cotización a partir de los ítems en el JSON."""
+        total = 0
+        detalles = self.get_cotizacion_detalles_list()
+        for item in detalles:
+            precio_unitario = float(item.get('precioNumerico', 0))
+            cantidad = int(item.get('cantidad', 1))
+            total += precio_unitario * cantidad
+        return total
+
+    def display_cotizacion_details_html(self):
+        """Genera un HTML legible de los detalles de la cotización para el panel de administración."""
+        details = self.get_cotizacion_detalles_list()
+        if not details:
+            return "No se especificaron servicios."
+        
+        html = '<ul style="list-style-type: disc; margin-left: 20px;">'
+        for item in details:
+            item_html = f"<li><strong>{item.get('nombre', 'N/A')}</strong> (Cant: {item.get('cantidad', 1)})"
+            
+            precio_base = item.get('precioBaseOriginal', 0)
+            precio_oferta = item.get('precioOferta', 0)
+            precio_numerico = item.get('precioNumerico', 0)
+            
+            if precio_oferta and precio_oferta > 0 and precio_oferta < precio_base:
+                item_html += f" - P.U.: <del>${precio_base:,.0f}</del> <strong>${precio_oferta:,.0f} CLP</strong>"
+                if item.get('descripcionOferta'):
+                    item_html += f" <em>({item.get('descripcionOferta')})</em>"
+            else:
+                item_html += f" - P.U.: <strong>${precio_numerico:,.0f} CLP</strong>"
+            
+            if item.get('fechaInicio'):
+                item_html += f" - Fecha: {item['fechaInicio']}"
+            if item.get('tipo_servicio') and item['tipo_servicio'] != 'INDEPENDIENTE':
+                item_html += f" ({item['tipo_servicio'].replace('_', ' ').lower()})"
+            if item.get('max_guests'):
+                item_html += f" - Máx Invitados: {item['max_guests']}"
+            if item.get('duration_hours'):
+                item_html += f" - Duración: {item['duration_hours']} Hrs"
+            if item.get('descripcion'):
+                item_html += f"<br/><small><em>{item['descripcion'][:50]}...</em></small>" # Truncar descripción
+            
+            item_html += '</li>'
+            html += item_html
+        
+        html += f'</ul><p><strong>Total Estimado: ${self.calcular_monto_total_estimado():,.0f} CLP</strong></p>'
+        return format_html(html) # Usar format_html para renderizar como HTML en el admin
+    
+    display_cotizacion_details_html.short_description = "Detalles de Cotización"
+
 class MensajeContacto(models.Model):
     nombre_remitente = models.CharField(max_length=150)
     email_remitente = models.EmailField()
-    asunto = models.CharField(max_length=200, blank=True, null=True) # Asunto puede ser opcional
+    asunto = models.CharField(max_length=200, blank=True, null=True)
     mensaje = models.TextField()
     fecha_envio = models.DateTimeField(auto_now_add=True)
     leido = models.BooleanField(default=False)
 
     def __str__(self):
-        # Usamos self.id para el número de mensaje.
         mensaje_num = self.id if self.id else "Nuevo"
         return f"Mensaje #{mensaje_num} de {self.nombre_remitente} ({self.email_remitente})"
 
@@ -115,18 +334,13 @@ class ConfiguracionSitio(models.Model):
         verbose_name="Email para Notificaciones del Administrador",
         help_text="Correo donde se recibirán las notificaciones de nuevas solicitudes de cotización, mensajes de contacto, etc."
     )
-    # Aquí podrías añadir más campos de configuración global en el futuro si los necesitas.
-    # Por ejemplo:
-    # nombre_visible_sitio = models.CharField(max_length=100, default="El Nombre de Tu Página", blank=True)
-    # telefono_principal_contacto = models.CharField(max_length=20, blank=True, null=True)
+    # ... (Otros campos de ConfiguraciónSitio si los tienes) ...
 
     def __str__(self):
-        # Esto ayuda a identificar la única instancia en el admin.
         return "Configuración General del Sitio (Editar Única Entrada)"
 
     class Meta:
         verbose_name = "Configuración del Sitio"
-        # Usamos el mismo nombre en singular y plural para enfatizar que solo debe haber una.
         verbose_name_plural = "Configuración del Sitio"
 
 # --- NUEVO MODELO PARA EL CHATBOT ---

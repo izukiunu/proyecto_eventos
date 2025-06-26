@@ -13,60 +13,481 @@
                     Revisa los servicios que has seleccionado y completa tus datos para recibir una cotización detallada.
                 </p>
 
-                <div id="resumen-cotizacion" class="mb-5">
-                    <h3 class="mb-3 border-bottom pb-2">Servicios a Cotizar</h3>
-                    </div>
+                <div id="resumen-cotizacion" class="mb-5 p-3 border rounded bg-light">
+                    <h3 class="mb-3 border-bottom pb-2">
+                        <i class="bi bi-cart-check me-2"></i>Servicios a Cotizar
+                        <span id="cart-item-count" class="badge bg-primary float-end">0 items</span>
+                    </h3>
+                    {# El contenido del carrito se inyectará aquí dinámicamente #}
+                </div>
 
                 <h3 class="text-center mb-3">Tus Datos de Contacto</h3>
                 
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-{{ message.tags|lower }}" role="alert">{{ message }}</div>
+                        <div class="alert alert-{{ message.tags|lower }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
                     {% endfor %}
                 {% endif %}
 
                 <form method="post" novalidate id="form-solicitud-cotizacion">
                     {% csrf_token %}
                     
-                    {{ form.cotizacion_detallada }}
+                    <div style="display: none;">
+                        {{ form.cotizacion_detallada_json }}
+                    </div>
 
                     <div class="mb-3">
                         <label for="{{ form.nombre_cliente.id_for_label }}" class="form-label">{{ form.nombre_cliente.label }}:</label>
                         {{ form.nombre_cliente }}
-                        {% if form.nombre_cliente.errors %}<div class="text-danger small mt-1">{{ form.nombre_cliente.errors|first }}</div>{% endif %}
+                        {% if form.nombre_cliente.errors %}
+                            <div class="text-danger small mt-1">{{ form.nombre_cliente.errors|first }}</div>
+                        {% endif %}
                     </div>
                     
                     <div class="mb-3">
                         <label for="{{ form.email_cliente.id_for_label }}" class="form-label">{{ form.email_cliente.label }}:</label>
                         {{ form.email_cliente }}
-                        
                         <div id="email-validation-message" class="form-text" style="height: 1rem;"></div>
-                        
-                        {% if form.email_cliente.errors %}<div class="text-danger small mt-1">{{ form.email_cliente.errors|first }}</div>{% endif %}
+                        {% if form.email_cliente.errors %}
+                            <div class="text-danger small mt-1">{{ form.email_cliente.errors|first }}</div>
+                        {% endif %}
                     </div>
 
                     <div class="mb-3">
                         <label for="{{ form.telefono_cliente.id_for_label }}" class="form-label">{{ form.telefono_cliente.label }}:</label>
                         {{ form.telefono_cliente }}
-                        {% if form.telefono_cliente.errors %}<div class="text-danger small mt-1">{{ form.telefono_cliente.errors|first }}</div>{% endif %}
+                        {% if form.telefono_cliente.errors %}
+                            <div class="text-danger small mt-1">{{ form.telefono_cliente.errors|first }}</div>
+                        {% endif %}
                     </div>
 
                     <div class="mb-3">
                         <label for="{{ form.descripcion_evento.id_for_label }}" class="form-label">{{ form.descripcion_evento.label }}:</label>
                         {{ form.descripcion_evento }}
-                        {% if form.descripcion_evento.errors %}<div class="text-danger small mt-1">{{ form.descripcion_evento.errors|first }}</div>{% endif %}
+                        <small class="form-text text-muted">Describe cualquier detalle adicional sobre tu evento.</small>
+                        {% if form.descripcion_evento.errors %}
+                            <div class="text-danger small mt-1">{{ form.descripcion_evento.errors|first }}</div>
+                        {% endif %}
                     </div>
                     
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-danger btn-lg">Enviar Solicitud</button>
+                        <button type="submit" id="btn-enviar-solicitud" class="btn btn-danger btn-lg">
+                            <span id="btn-text">Enviar Solicitud</span>
+                            <span id="btn-loading" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        </button>
                     </div>
                 </form>
 
                 <p class="text-center mt-4">
-                    <a href="{% url 'core:lista_servicios' %}">o Volver a la lista de servicios</a>
+                    <a href="{% url 'core:lista_servicios' %}" class="btn btn-outline-secondary">Volver a la lista de servicios</a>
                 </p>
             </div>
         </div>
     </div>
 </div>
 {% endblock content %}
+
+{% block extra_scripts %}
+<script>
+// Declarar variables y funciones en un ámbito superior para que sean accesibles.
+let cartContainer;
+let hoy; 
+
+// --- FUNCIONES CORE DEL CARRITO (Accesibles por otras funciones en este script) ---
+
+function getCartData() {
+    try {
+        console.log('[DEBUG 3] Obteniendo datos del localStorage.');
+        const cartData = localStorage.getItem('carritoCotizaciones');
+        
+        if (!cartData) {
+            console.warn('[DEBUG 4] No hay datos en carritoCotizaciones.');
+            return [];
+        }
+        
+        const parsed = JSON.parse(cartData); 
+        console.log('[DEBUG 5] Datos parseados:', parsed);
+        return parsed;
+    } catch (e) {
+        console.error('[ERROR] Fallo al parsear carrito en solicitud_cotizacion:', e);
+        localStorage.removeItem('carritoCotizaciones'); // Limpia datos corruptos
+        return [];
+    }
+}
+
+function saveCartData(cartItems) {
+    localStorage.setItem('carritoCotizaciones', JSON.stringify(cartItems));
+    console.log('[DEBUG] Carrito guardado en localStorage desde solicitud_cotizacion.html');
+}
+
+function renderCart() {
+    console.log('[DEBUG 6] Iniciando renderizado de cotización.');
+    let cartItems = getCartData(); 
+    
+    const cartItemCountSpan = document.getElementById('cart-item-count');
+    if (cartItemCountSpan) {
+        cartItemCountSpan.textContent = `${cartItems.length} items`;
+    }
+
+    if (!cartItems.length) {
+        cartContainer.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="bi bi-cart-x"></i> Tu lista de cotización está vacía.
+                <a href="{% url 'core:lista_servicios' %}" class="btn btn-sm btn-outline-primary ms-2">
+                    Ver servicios
+                </a>
+            </div>
+        `;
+        const cotizacionDetalladaField = document.querySelector('input[name="cotizacion_detallada_json"]'); 
+        if (cotizacionDetalladaField) {
+            cotizacionDetalladaField.value = '';
+        }
+        console.log('[DEBUG 7] Renderizado de cotización: Carrito vacío');
+        return;
+    }
+
+    const serviciosPrincipales = cartItems.filter(item => item.parentId === null);
+    const adicionales = cartItems.filter(item => item.parentId !== null);
+
+    let sortedCartItems = [];
+    serviciosPrincipales.forEach(principal => {
+        sortedCartItems.push(principal);
+        adicionales.filter(ad => ad.parentId === principal.id).forEach(ad => {
+            sortedCartItems.push(ad);
+        });
+    });
+
+    let html = `
+        <div class="cart-header bg-light p-3 rounded-top">
+            <h4 class="m-0">
+                <i class="bi bi-cart-check"></i> Resumen de Cotización
+                <span id="cart-item-count-dynamic" class="badge bg-primary float-end">${cartItems.length} items</span>
+            </h4>
+        </div>
+        <div class="cart-body p-3">
+    `;
+
+    let total = 0;
+    
+    sortedCartItems.forEach(item => {
+        const precioActualParaCalculo = item.precioNumerico || 0; 
+        const precioTotalItem = precioActualParaCalculo * (item.cantidad || 1);
+        total += precioTotalItem;
+        const isAdicional = item.parentId !== null;
+        const isPack = item.tipo_servicio === 'PACK';
+
+        let precioUnitarioHTML;
+        if (item.precioOferta && item.precioOferta > 0 && item.precioOferta < item.precioBaseOriginal) {
+            precioUnitarioHTML = `
+                <del class="text-muted small">$${(item.precioBaseOriginal || 0).toLocaleString('es-CL')}</del> 
+                <strong class="text-danger ms-1">$${(item.precioOferta || 0).toLocaleString('es-CL')}</strong>
+            `;
+        } else {
+            precioUnitarioHTML = `<strong>$${(item.precioNumerico || 0).toLocaleString('es-CL')}</strong>`;
+        }
+
+        const controlesCantidadHTML = item.permite_cantidad ?
+            `<div class="cantidad-controles d-flex align-items-center mt-2">
+                <button class="btn btn-sm btn-outline-secondary btn-cantidad me-1" data-accion="restar" data-id="${item.id}">-</button>
+                <input type="number" class="form-control form-control-sm quantity-input text-center" value="${item.cantidad}" min="1" data-id="${item.id}" style="width: 60px;">
+                <button class="btn btn-sm btn-outline-secondary btn-cantidad ms-1" data-accion="sumar" data-id="${item.id}">+</button>
+            </div>` :
+            `<span class="quantity-fixed mt-2">Cantidad: ${item.cantidad}</span>`;
+
+        html += `
+            <div class="cart-item d-flex align-items-start mb-3 pb-3 border-bottom ${isAdicional ? 'item-adicional ps-4 border-left border-2' : ''}" data-id="${item.id}">
+                ${item.imagenUrl ? `<img src="${item.imagenUrl}" alt="${item.nombre}" class="item-imagen me-3 rounded">` : ''}
+                <div class="item-info flex-grow-1">
+                    <h5 class="mb-1 d-flex align-items-center">
+                        ${item.nombre}
+                        ${item.destacado ? '<span class="badge bg-warning text-dark ms-2" title="Servicio Destacado"><i class="bi bi-star-fill"></i></span>' : ''}
+                        ${item.tipo_servicio ? `<span class="badge bg-info ms-2">${item.tipo_servicio.replace('_', ' ')}</span>` : ''}
+                    </h5>
+                    
+                    ${item.descripcion ? `<p class="text-muted small mb-1">${item.descripcion}</p>` : ''}
+
+                    <div class="item-details-row d-flex flex-wrap align-items-center mb-1">
+                        <span class="text-muted small me-3">
+                            ${precioUnitarioHTML}
+                        </span>
+                        ${item.has_tiered_pricing ? '<span class="badge bg-secondary me-3">Precio por Nivel</span>' : ''}
+                    </div>
+                    
+                    ${item.descripcionOferta ? `<p class="text-success small mb-1 mt-1">${item.descripcionOferta}</p>` : ''}
+
+                    ${!isAdicional ? `
+                        <div class="item-fecha-selector mt-2">
+                            <label class="form-label mb-0 small">Fecha Preferente:</label>
+                            <input type="date" class="form-control form-control-sm date-input" 
+                                   value="${item.fechaInicio || ''}" min="${hoy}" 
+                                   data-id="${item.id}" title="Seleccionar fecha para ${item.nombre}">
+                        </div>
+                    ` : ''}
+
+                    ${isPack ? `
+                        <div class="pack-details mt-2 small text-muted">
+                            ${item.max_guests ? `<span class="me-3"><i class="bi bi-people-fill me-1"></i>Máx. ${item.max_guests} Invitados</span>` : ''}
+                            ${item.duration_hours ? `<span><i class="bi bi-clock-fill me-1"></i>${item.duration_hours} Horas</span>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="item-controls text-end d-flex flex-column justify-content-between align-items-end ms-3">
+                    <button class="btn btn-sm btn-outline-danger btn-remove" data-id="${item.id}" title="Eliminar servicio"><i class="bi bi-trash"></i></button>
+                    <div>
+                        <div class="fw-bold text-nowrap fs-5">$${precioTotalItem.toLocaleString('es-CL')}</div>
+                        ${controlesCantidadHTML}
+                        ${item.parentId ? '<span class="badge bg-secondary mt-1">Adicional</span>' : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `</div>`; // Cierre cart-body
+    
+    html += `
+        <div class="cart-footer bg-light p-3 rounded-bottom border-top">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold fs-5">Total Estimado:</span>
+                <span class="fw-bold fs-4 text-danger">$${total.toLocaleString('es-CL')}</span>
+            </div>
+            <small class="text-muted">
+                <i class="bi bi-info-circle"></i> No incluye traslados ni impuestos
+            </small>
+        </div>
+    `;
+
+    cartContainer.innerHTML = html;
+    console.log('[DEBUG 8] Renderizado completado con éxito en solicitud_cotizacion.');
+
+    const cotizacionDetalladaField = document.querySelector('input[name="cotizacion_detallada_json"]'); 
+    if (cotizacionDetalladaField) {
+        cotizacionDetalladaField.value = JSON.stringify(cartItems);
+        console.log('[DEBUG] Campo cotizacion_detallada_json actualizado:', cotizacionDetalladaField.value);
+    }
+
+    attachEventListenersToCartItems();
+}
+
+function attachEventListenersToCartItems() {
+    const cartItemsContainer = document.getElementById('resumen-cotizacion'); 
+    if (!cartItemsContainer) return;
+
+    cartItemsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-cantidad');
+        if (btn) {
+            e.stopPropagation(); 
+            const itemId = btn.dataset.id;
+            let carrito = getCartData();
+            const item = carrito.find(i => i.id === itemId);
+            if (item) {
+                if (btn.dataset.accion === 'sumar') {
+                    item.cantidad++;
+                } else if (btn.dataset.accion === 'restar' && item.cantidad > 1) {
+                    item.cantidad--;
+                }
+                saveCartData(carrito);
+                renderCart(); 
+            }
+        } else if (e.target.closest('.btn-remove')) {
+            e.stopPropagation(); 
+            const removeBtn = e.target.closest('.btn-remove');
+            const itemId = removeBtn.dataset.id;
+            let carrito = getCartData();
+            const itemToRemove = carrito.find(i => i.id === itemId);
+            
+            if (itemToRemove) {
+                if (itemToRemove.parentId === null) { 
+                    carrito = carrito.filter(i => i.id !== itemId && i.parentId !== itemId);
+                } else {
+                    carrito = carrito.filter(i => i.id !== itemId);
+                }
+                saveCartData(carrito);
+                renderCart(); 
+            }
+        }
+    });
+
+    cartItemsContainer.addEventListener('change', (e) => {
+        const target = e.target;
+        if (target.matches('.quantity-input')) {
+            e.stopPropagation(); 
+            const itemId = target.dataset.id;
+            const nuevaCantidad = parseInt(target.value);
+            let carrito = getCartData();
+            const item = carrito.find(i => i.id === itemId);
+            if (item) {
+                item.cantidad = isNaN(nuevaCantidad) || nuevaCantidad < 1 ? 1 : nuevaCantidad;
+                saveCartData(carrito);
+                renderCart(); 
+            }
+        } else if (target.matches('.date-input')) {
+            e.stopPropagation(); 
+            const itemId = target.dataset.id;
+            const nuevaFecha = target.value;
+            let carrito = getCartData();
+            const item = carrito.find(i => i.id === itemId);
+            if (item) {
+                item.fechaInicio = nuevaFecha;
+                saveCartData(carrito);
+                renderCart(); 
+            }
+        }
+    });
+}
+
+// --- LÓGICA DE INICIALIZACIÓN Y ENVÍO DE FORMULARIO (AJAX) ---
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('[DEBUG INICIALIZACIÓN] DOMContentLoaded disparado.');
+    cartContainer = document.getElementById('resumen-cotizacion');
+    hoy = new Date().toISOString().split('T')[0];
+
+    if (cartContainer) {
+        renderCart(); 
+    } else {
+        console.error('[ERROR CRÍTICO] #resumen-cotizacion no encontrado al inicializar la página de cotización.');
+    }
+
+    const formSolicitud = document.getElementById('form-solicitud-cotizacion');
+    const btnEnviar = document.getElementById('btn-enviar-solicitud');
+    const btnText = document.getElementById('btn-text');
+    const btnLoading = document.getElementById('btn-loading');
+
+    if (formSolicitud) {
+        formSolicitud.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevenir el envío normal del formulario
+
+            const currentCartItems = getCartData();
+            if (currentCartItems.length === 0) {
+                displayMessage('Tu carrito de cotizaciones está vacío. Por favor, agrega servicios antes de enviar la solicitud.', 'danger');
+                return;
+            }
+
+            // Mostrar spinner y deshabilitar botón
+            if (btnEnviar && btnText && btnLoading) {
+                btnText.classList.add('d-none');
+                btnLoading.classList.remove('d-none');
+                btnEnviar.disabled = true;
+            }
+
+            const formData = new FormData(formSolicitud);
+            try {
+                // PRIMERA PETICIÓN: Enviar datos del formulario a tu backend de Django (vía AJAX)
+                const response = await fetch(formSolicitud.action, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json(); 
+
+                if (response.ok && data.success) {
+                    displayMessage(data.message, 'success'); 
+                    localStorage.removeItem('carritoCotizaciones'); 
+                    renderCart(); // Re-renderizar el carrito para mostrarlo vacío
+                    
+                    // SEGUNDA ACCIÓN: Abrir WhatsApp en una nueva pestaña/ventana (sin usar fetch, para evitar CORS)
+                    if (data.whatsapp_url) {
+                        window.open(data.whatsapp_url, '_blank'); 
+                    }
+                    
+                    // TERCERA ACCIÓN: Redirigir a la página de éxito de Django en la pestaña actual
+                    setTimeout(() => {
+                        window.location.href = `{% url 'core:solicitud_cotizacion_success' 0 %}`.replace('0', data.solicitud_id);
+                    }, 1500); // Dar un tiempo prudente para la apertura de WhatsApp
+                    
+                } else {
+                    // Limpiar clases 'is-invalid' y mensajes de error previos
+                    document.querySelectorAll('.form-field-error').forEach(el => el.remove());
+                    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                        
+                    if (data.errors) {
+                        for (const fieldName in data.errors) {
+                            const errorList = data.errors[fieldName];
+                            const inputElement = formSolicitud.querySelector(`[name="${fieldName}"]`);
+                            if (inputElement) {
+                                const errorDiv = document.createElement('div');
+                                errorDiv.className = 'text-danger small mt-1 form-field-error'; 
+                                errorDiv.textContent = errorList[0]; 
+                                inputElement.parentNode.insertBefore(errorDiv, inputElement.nextSibling);
+                                inputElement.classList.add('is-invalid'); 
+                            } else if (fieldName === '__all__') {
+                                displayMessage(errorList[0], 'danger');
+                            }
+                        }
+                    } else if (data.message) {
+                        displayMessage(data.message, 'danger');
+                    } else {
+                        displayMessage('Error desconocido al enviar la solicitud.', 'danger');
+                    }
+                }
+            } catch (error) {
+                console.error('Error al enviar la solicitud:', error);
+                displayMessage('Ocurrió un problema de conexión. Por favor, inténtalo de nuevo más tarde.', 'danger');
+            } finally {
+                if (btnEnviar && btnText && btnLoading) {
+                    btnText.classList.remove('d-none');
+                    btnLoading.classList.add('d-none');
+                    btnEnviar.disabled = false;
+                }
+            }
+        });
+    }
+
+    function displayMessage(message, type) {
+        const messageContainer = document.querySelector('.form-page-container');
+        if (!messageContainer) return;
+
+        const oldAlert = messageContainer.querySelector('.alert-floating-js');
+        if (oldAlert) oldAlert.remove();
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3 alert-floating-js`;
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        messageContainer.prepend(alertDiv); 
+    }
+
+});
+
+window.addEventListener('storage', function(e) {
+    if (e.key === 'carritoCotizaciones') {
+        console.log('[DEBUG 9] Cambios detectados en el carrito via storage event, re-renderizando cotización.');
+        if (cartContainer) {
+            renderCart();
+        } else {
+            document.addEventListener('DOMContentLoaded', renderCart, { once: true }); 
+        }
+    }
+});
+
+window.addEventListener('load', function() {
+    console.log('[DEBUG 10] Evento load disparado en solicitud_cotizacion.');
+    if (cartContainer && !cartContainer.innerHTML.includes('cart-item') && getCartData().length > 0) {
+        console.warn('[WARNING] Contenedor de cotización vacío después de load, forzando re-render.');
+        renderCart();
+    }
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock extra_scripts %}

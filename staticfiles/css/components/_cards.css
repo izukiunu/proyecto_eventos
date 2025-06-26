@@ -1,0 +1,105 @@
+/* --- Product Card (Tus estilos existentes) --- */
+.product-card.animate-hover {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Añadida transición para sombra */
+    background-color: #fff;
+    z-index: 0;
+}
+.product-card.animate-hover:hover {
+    transform: scale(1.02) translateY(-5px); /* Ligero levantamiento y escala */
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15); /* Sombra más pronunciada al hacer hover */
+}
+/* El efecto de borde animado que tenías es genial, pero puede ser intensivo.
+   Lo mantengo, pero asegúrate de que el rendimiento sea bueno. */
+.product-card.animate-hover::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    background: linear-gradient(270deg, #dc3545, #ff6b6b, #dc3545); /* Cambiado a tonos rojos */
+    background-size: 600% 600%;
+    border-radius: 14px; /* Un poco más que el border-radius de la card */
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+}
+.product-card.animate-hover:hover::before {
+    opacity: 1;
+    animation: borderFlow 3s linear infinite;
+}
+@keyframes borderFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.product-card .card-img-top.object-fit-cover { /* Tus clases */
+    /* object-fit: cover; ya lo tienes */
+    height: 200px; /* Ejemplo de altura fija para las imágenes de las cards */
+}
+
+
+/* Glow Hover (Tu estilo existente) */
+.glow-hover {
+    position: relative;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    z-index: 0;
+}
+.glow-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px rgba(220, 53, 69, 0.6); /* Sombra roja (usando el color danger de Bootstrap) */
+}
+/* --- Estilos para Tarjetas de Servicio Uniformes --- */
+.servicio-card {
+    width: 100%;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.servicio-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.servicio-card .card-img-top {
+  height: 220px;      /* <-- ALTURA FIJA. Esta es la clave. */
+  object-fit: cover;  /* <-- Hace que la imagen se adapte sin estirarse. */
+}
+
+.servicio-card .card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.servicio-card .card-text {
+    flex-grow: 1; /* Esto alinea los botones en la parte inferior */
+}
+.proyecto-card {
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden; /* Clave para que el borde redondeado afecte a la imagen */
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.testimonio-card {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    border-top: 4px solid #dc3545;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.proyecto-card-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+}

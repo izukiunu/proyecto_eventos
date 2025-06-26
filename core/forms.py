@@ -1,21 +1,20 @@
 # core/forms.py
 from django import forms
-from .models import SolicitudCotizacion, Servicio, MensajeContacto, ChatbotQA 
+from .models import SolicitudCotizacion, Servicio, MensajeContacto, ChatbotQA, Proyecto # Asegúrate de importar Proyecto aquí
 import re
 
-from .models import Proyecto
-
-
 class SolicitudCotizacionForm(forms.ModelForm):
-    cotizacion_detallada = forms.CharField(
+    # Cambiamos el nombre a cotizacion_detallada_json para que coincida con el modelo.
+    # El widget HiddenInput y required=False ya están correctos para el frontend.
+    cotizacion_detallada_json = forms.CharField( 
         widget=forms.HiddenInput(), 
         required=False
     )
 
     class Meta:
         model = SolicitudCotizacion
-        # El campo 'telefono_cliente' ahora es requerido por el cambio en models.py
-        fields = ['nombre_cliente', 'email_cliente', 'telefono_cliente', 'descripcion_evento']
+        # Añade 'cotizacion_detallada_json' a los fields de Meta para que el ModelForm lo maneje.
+        fields = ['nombre_cliente', 'email_cliente', 'telefono_cliente', 'descripcion_evento', 'cotizacion_detallada_json']
         widgets = {
             'nombre_cliente': forms.TextInput(attrs={'placeholder': 'Tu nombre completo', 'class': 'form-control'}),
             'email_cliente': forms.EmailInput(attrs={'placeholder': 'tu_correo@ejemplo.com', 'class': 'form-control'}),
@@ -29,20 +28,15 @@ class SolicitudCotizacionForm(forms.ModelForm):
             'descripcion_evento': 'Describe tu Evento o Solicitud Adicional',
         }
 
-    # --- NUEVA VALIDACIÓN PARA EL NOMBRE ---
+    # Validación para el nombre
     def clean_nombre_cliente(self):
         nombre = self.cleaned_data.get('nombre_cliente')
         # Esta expresión regular permite letras (incluyendo acentos y ñ) y espacios.
         if not re.match(r'^[a-zA-Z\sÁÉÍÓÚáéíóúÑñ]+$', nombre):
             raise forms.ValidationError("El nombre solo puede contener letras y espacios.")
         return nombre
-class ProyectoForm(forms.ModelForm):
-    class Meta:
-        model = Proyecto
-        fields = '__all__'
 
-
-    # --- NUEVA VALIDACIÓN PARA EL TELÉFONO ---
+    # Validación para el teléfono
     def clean_telefono_cliente(self):
         telefono = self.cleaned_data.get('telefono_cliente')
         # Esta expresión regular permite un signo '+' opcional al inicio, seguido de números y espacios.
@@ -50,21 +44,30 @@ class ProyectoForm(forms.ModelForm):
             raise forms.ValidationError("El teléfono solo puede contener números, espacios y el signo '+' al inicio.")
         return telefono
 
+    # No se necesita un clean() extra para mapear si el nombre del campo del formulario y del modelo coinciden.
+    # ModelForm ya hace ese mapeo automáticamente.
+
+class ProyectoForm(forms.ModelForm):
+    class Meta:
+        model = Proyecto
+        fields = '__all__'
+
 class ServicioForm(forms.ModelForm): # Para el panel de admin personalizado
     class Meta:
         model = Servicio
-        fields = ['nombre', 'descripcion', 'imagen', 'destacado','precio']
+        fields = ['nombre', 'descripcion', 'destacado','precio']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del servicio'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Descripción detallada del servicio'}),
-            'imagen': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
+            # 'imagen' ya no es un campo directo de Servicio, se maneja con ServicioMedia
+            # 'imagen': forms.ClearableFileInput(attrs={'class': 'form-control-file'}), 
             'destacado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'precio': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 250000.00'}),
         }
         labels = {
             'nombre': 'Nombre del Servicio',
             'descripcion': 'Descripción',
-            'imagen': 'Imagen del Servicio',
+            # 'imagen': 'Imagen del Servicio', # Ya no es un campo directo aquí
             'destacado': 'Marcar como Servicio Destacado',
         }
 
@@ -84,6 +87,7 @@ class MensajeContactoForm(forms.ModelForm):
             'asunto': 'Asunto',
             'mensaje': 'Mensaje',
         }
+
 class ChatbotQAForm(forms.ModelForm):
     class Meta:
         model = ChatbotQA

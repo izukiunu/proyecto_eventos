@@ -11,8 +11,7 @@
 
 {% block main_content %}
 
-    <!-- Hero Carousel -->
-<section id="hero" class="hero-full-height position-relative">
+    <section id="hero" class="hero-full-height position-relative">
     <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
         <div class="carousel-inner">
             {% for slide in hero_slides %}
@@ -29,7 +28,6 @@
             </div>
             {% endfor %}
         </div>
-        <!-- Controles -->
         <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Anterior</span>
@@ -38,7 +36,6 @@
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Siguiente</span>
         </button>
-        <!-- Indicadores -->
         <div class="carousel-indicators">
             {% for slide in hero_slides %}
             <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Slide {{ forloop.counter }}"></button>
@@ -56,60 +53,35 @@
             </div>
 
             <div class="slider-contenedor">
-
                 <div class="swiper servicios-slider">
                     <div class="swiper-wrapper pb-5">
                         {% if servicios_destacados %}
                             {% for servicio in servicios_destacados %}
                                 <div class="swiper-slide h-auto">
                                     <div class="card h-100 servicio-card">
-                                        {% if servicio.imagen %}
-                                            <img src="{{ servicio.imagen.url }}" class="card-img-top" alt="{{ servicio.nombre }}">
-                                        {% else %}
-                                            <img src="{% static 'img/placeholder_evento.jpg' %}" class="card-img-top" alt="Servicio Placeholder">
-                                        {% endif %}
+                                        {# Usar get_thumbnail_url para la imagen #}
+                                        <img src="{{ servicio.get_thumbnail_url }}" class="card-img-top" alt="{{ servicio.nombre }}">
+                                        
                                         <div class="card-body d-flex flex-column">
                                             <h5 class="card-title fw-bold">{{ servicio.nombre }}</h5>
                                             <p class="card-text flex-grow-1">{{ servicio.descripcion|truncatewords:20 }}</p>
                                             
-                                            {# --- INICIO: Nuevo bloque de lógica para precios y ofertas --- #}
                                             <div class="precio-container mt-auto pt-2">
-                                                {% comment %}
-                                                    Primero, revisamos si existe una oferta activa para este servicio.
-                                                    La condición 'servicio.oferta' solo funciona porque hicimos 'select_related' en la vista.
-                                                {% endcomment %}
                                                 {% if servicio.oferta and servicio.oferta.activa %}
-                                                {# Hay una oferta activa: mostramos el precio de oferta y el original tachado #}
-                                                    <h5 class="card-text text-muted fw-normal">
-                                                        Antes: <del>${{ servicio.precio|intcomma }}</del>
-                                                    </h5>
-                                                    <h4 class="card-text text-danger fw-bold">
-                                                        ¡Oferta! ${{ servicio.oferta.precio_oferta|intcomma }} CLP
-                                                    </h4>
-
-                                                {% elif servicio.precio and servicio.precio > 0 %}
-                                                {# No hay oferta, pero sí hay un precio base: lo mostramos normal #}
-                                                    <h4 class="card-text text-danger fw-bold">
-                                                        $ {{ servicio.precio|intcomma }} CLP
-                                                    </h4>
-
+                                                    <h5 class="card-text text-muted fw-normal">Antes: <del>${{ servicio.precio|intcomma }}</del></h5>
+                                                    <h4 class="card-text text-danger fw-bold">¡Oferta! ${{ servicio.oferta.precio_oferta|intcomma }} CLP</h4>
+                                                {% elif servicio.precio > 0 %}
+                                                    <h4 class="card-text text-danger fw-bold">$ {{ servicio.precio|intcomma }} CLP</h4>
+                                                {% elif servicio.has_tiered_pricing %}
+                                                     <p class="card-text text-muted fw-bold">Ver opciones de precios</p>
                                                 {% else %}
-                                                    {# No hay ni oferta ni precio base: mostramos un texto #}
-                                                    <p class="card-text text-muted fw-bold">
-                                                        Precio a consultar
-                                                    </p>
+                                                    <p class="card-text text-muted fw-bold">Precio a consultar</p>
                                                 {% endif %}
                                             </div>
-                                            {# --- FIN: Nuevo bloque de lógica para precios y ofertas --- #}
-
-                                            <button class="btn btn-outline-danger mt-auto btn-agregar-carrito" 
-                                                    data-id="{{ servicio.id }}"
-                                                    data-nombre="{{ servicio.nombre }}"
-                                                    data-descripcion="{{ servicio.descripcion }}"
-                                                    data-imagen-url="{% if servicio.imagen %}{{ servicio.imagen.url }}{% else %}{% static 'img/placeholder_evento.jpg' %}{% endif %}"
-                                                    data-precio-display="{% if servicio.oferta and servicio.oferta.activa %}¡Oferta! ${{ servicio.oferta.precio_oferta|intcomma }} CLP{% elif servicio.precio and servicio.precio > 0 %}${{ servicio.precio|intcomma }} CLP{% else %}Precio a consultar{% endif %}">
-                                                Agregar a Cotización
-                                            </button>
+                                            {# CORRECCIÓN CLAVE: Apuntar a servicio_detail #}
+                                            <a href="{% url 'core:servicio_detail' pk=servicio.id %}" class="btn btn-outline-danger mt-auto">
+                                                Ver Detalles
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -226,8 +198,8 @@
                                     <img src="{{ imagen.imagen.url }}" class="rounded-circle" alt="{{ imagen.alt_text|default:testimonio.autor }}">
                                 </div>
                                 {% empty %}
-                                 <div class="swiper-slide">
-                                    <img src="{% static 'img/cliente_placeholder.jpg' %}" class="rounded-circle" alt="Cliente Satisfecho">
+                                <div class="swiper-slide">
+                                     <img src="{% static 'img/cliente_placeholder.jpg' %}" class="rounded-circle" alt="Cliente Satisfecho">
                                 </div>
                                 {% endfor %}
                             </div>
@@ -251,14 +223,11 @@
 
 
 <section id="cta" class="py-5 bg-dark text-white text-center">
-    </section>
-
-    <section id="cta" class="py-5 bg-dark text-white text-center">
-        <div class="container">
-            <h2 class="fw-bold">¿Listo para Planificar tu Evento Perfecto?</h2>
-            <p class="lead my-4">Contáctanos hoy mismo y déjanos ayudarte a hacer realidad tu visión.</p>
-            <a href="{% url 'core:solicitar_cotizacion_general' %}" class="btn btn-danger btn-lg">¡Solicita tu Cotización Ahora!</a>
-        </div>
-    </section>
+    <div class="container">
+        <h2 class="fw-bold">¿Listo para Planificar tu Evento Perfecto?</h2>
+        <p class="lead my-4">Contáctanos hoy mismo y déjanos ayudarte a hacer realidad tu visión.</p>
+        <a href="{% url 'core:solicitar_cotizacion_general' %}" class="btn btn-danger btn-lg">¡Solicita tu Cotización Ahora!</a>
+    </div>
+</section>
 
 {% endblock main_content %}

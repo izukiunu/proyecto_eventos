@@ -1,0 +1,60 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Solicitud Enviada - MejíaEventos{% endblock title %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card p-5 shadow-lg rounded" style="
+                border: 2px solid #28a745; /* Borde verde para éxito */
+                box-shadow: 0 0 20px rgba(40,167,69,0.2); /* Sombra suave verde */
+                background-color: #ffffff;
+            ">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem; margin-bottom: 20px;"></i>
+                <h1 class="mt-4 fw-bold text-success" style="color: #28a745 !important;">¡Solicitud Enviada con Éxito!</h1>
+                
+                {# Destacar el número de solicitud #}
+                <p class="lead mb-3" style="font-size: 1.35rem; color: #555;">
+                    Hemos recibido tu solicitud de cotización número 
+                    <span style="
+                        font-weight: bold; 
+                        color: #dc3545; /* Color rojo para el número */
+                        font-size: 1.5em; /* Más grande */
+                        display: block; /* Para que esté en su propia línea si es muy largo */
+                        margin-top: 5px;
+                    ">#{{ solicitud.id }}</span>
+                </p>
+
+                <p style="color: #666;">Hemos enviado una confirmación a <strong>{{ solicitud.email_cliente }}</strong> con los detalles de tu solicitud. Por favor, revisa tu bandeja de entrada (y la carpeta de spam).</p>
+                <p style="color: #666;">Nuestro equipo revisará tu solicitud y se pondrá en contacto contigo a la brevedad para ofrecerte una cotización detallada y personalizada.</p>
+                
+                <hr class="my-4" style="border-top: 1px solid #eee;">
+                
+                <div class="d-grid gap-2 col-md-8 mx-auto mt-4">
+                    <a href="{% url 'core:lista_servicios' %}" class="btn btn-danger btn-lg" style="
+                        background-color: #dc3545; 
+                        border-color: #dc3545; 
+                        font-weight: bold;
+                    ">Volver a los Servicios</a>
+                    <a href="{% url 'core:index' %}" class="btn btn-outline-secondary" style="
+                        border-color: #6c757d; 
+                        color: #6c757d; 
+                        font-weight: bold;
+                    ">Ir a la Página Principal</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_scripts %}
+<script>
+    // Limpiar el carrito del localStorage una vez que la solicitud se ha enviado exitosamente
+    // Esto se ejecuta al cargar la página de éxito.
+    localStorage.removeItem('carritoCotizaciones');
+    console.log('Carrito limpiado de localStorage al llegar a la página de éxito.');
+</script>
+{% endblock extra_scripts %}

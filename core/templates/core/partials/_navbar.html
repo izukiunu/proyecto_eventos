@@ -1,9 +1,9 @@
-{% comment %} core/templates/core/partials/_navbar.html - VERSIÓN FINAL CORREGIDA {% endcomment %}
+{% comment %} core/templates/core/partials/_navbar.html {% endcomment %}
 {% load static %}
 
-<nav class="navbar navbar-expand-lg fixed-top">
+{# Se añade la variable {{ navbar_class }} para controlar el estilo (transparente/sólido) #}
+<nav class="navbar navbar-expand-lg fixed-top {{ navbar_class|default:'navbar-solid' }}">
     <div class="container-fluid">
-        {# El logo ahora es un enlace a la página principal 'index'. Si esto no funciona, el problema está en tu archivo urls.py #}
         <a class="navbar-brand d-flex align-items-center ms-3" href="{% url 'core:index' %}">
             <img src="{% static 'img/majiaeventoslogo.png' %}" alt="Logo MejíaEventos" class="img-fluid me-2 logo-responsive">
         </a>
@@ -13,8 +13,6 @@
         <div class="collapse navbar-collapse justify-content-end" id="navMenu">
             <ul class="navbar-nav align-items-center">
                 
-                {# --- INICIO: NUEVO ORDEN LÓGICO DE BOTONES --- #}
-
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'core:index' %}">Inicio</a>
                 </li>
@@ -42,7 +40,6 @@
                             </a>
                         </li>
                         <li>
-                            {# --- CORREO CON ASUNTO Y MENSAJE PREDEFINIDOS --- #}
                             <a class="dropdown-item" 
                                 href="https://mail.google.com/mail/?view=cm&fs=1&to=sebastianaguirremundaca@gmail.com&su=Solicitud%20de%20Información%20-%20Contacto%20Web&body=Hola%20Sebastián,%0A%0AMe%20gustar%C3%ADa%20saber%20m%C3%A1s%20sobre%20los%20servicios%20de%20Mej%C3%ADaEventos.%0A%0A%C2%A1Gracias!" 
                                 target="_blank" 
@@ -53,9 +50,6 @@
                     </ul>
                 </li>
 
-                {# --- FIN: NUEVO ORDEN --- #}
-
-                {# --- MENÚ DE ADMINISTRADOR (Sin cambios) --- #}
                 {% if user.is_authenticated and user.is_staff %}
                 <li class="nav-item dropdown ms-lg-2">
                     <a class="nav-link dropdown-toggle fw-bold" href="#" id="navbarDropdownAdmin" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -79,11 +73,12 @@
             </ul>
         </div>
     </div>
-    {# Script para ocultar/mostrar el navbar (Sin cambios) #}
+    
+    <!-- Script para ocultar/mostrar el navbar al hacer scroll -->
     <script>
         let prevScrollpos = window.pageYOffset;
         const navbar = document.querySelector('.navbar.fixed-top');
-        const scrollThreshold = 300; 
+        const scrollThreshold = 150; // Umbral reducido para ocultar más rápido
 
         window.onscroll = function() {
             let currentScrollPos = window.pageYOffset;
@@ -94,5 +89,16 @@
             }
             prevScrollpos = currentScrollPos;
         }
+    </script>
+    
+    <!-- Script para añadir padding al body en páginas con navbar sólido -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbar = document.querySelector('.navbar.fixed-top');
+            // Si el navbar tiene la clase 'navbar-solid', añade una clase al body
+            if (navbar && navbar.classList.contains('navbar-solid')) {
+                document.body.classList.add('body-with-solid-navbar');
+            }
+        });
     </script>
 </nav>

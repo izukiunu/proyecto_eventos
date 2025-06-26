@@ -1,0 +1,243 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load humanize %} {# Asegúrate de tener 'django.contrib.humanize' en INSTALLED_APPS si usas |intcomma #}
+
+{% block title %}{{ servicio.nombre }} - MejíaEventos{% endblock title %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row g-5">
+        <div class="col-lg-7">
+            <div id="mediaCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+                <div class="carousel-inner shadow-lg rounded">
+                    {% for media in servicio.media_gallery.all %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        {% if media.media_type == 'VIDEO' %}
+                            <video class="d-block w-100" style="aspect-ratio: 16 / 9; object-fit: cover; border-radius: .375rem;" autoplay loop muted playsinline>
+                                <source src="{{ media.media_file.url }}" type="video/mp4">
+                            </video>
+                        {% else %}
+                            <img src="{{ media.media_file.url }}" class="d-block w-100" style="aspect-ratio: 16 / 9; object-fit: cover; border-radius: .375rem;" alt="{{ servicio.nombre }}">
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                        <div class="carousel-item active">
+                            <img src="{{ servicio.get_thumbnail_url }}" class="d-block w-100" style="aspect-ratio: 16 / 9; object-fit: cover; border-radius: .375rem;" alt="Servicio sin imagen">
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <h1 class="fw-bold">{{ servicio.nombre }}</h1>
+            
+            {# Mostrar precio normal y precio de oferta #}
+            {% if servicio.oferta and servicio.oferta.activa %}
+            <h2 class="text-danger fw-bold display-5 my-3" id="servicio-base-price" data-precio-base="{{ servicio.precio }}">
+                <del class="text-muted fs-4 me-2">$ {{ servicio.precio|intcomma }} CLP</del>
+                $ {{ servicio.oferta.precio_oferta|intcomma }} CLP
+            </h2>
+            {# Se añade la descripción de la oferta para el servicio principal #}
+            {% if servicio.oferta.descripcion_oferta %}
+                <p class="alert alert-success d-inline-block p-2 rounded-3 small fw-bold">{{ servicio.oferta.descripcion_oferta }}</p>
+            {% endif %}
+            {% else %}
+            <h2 class="text-danger fw-bold display-5 my-3" id="servicio-base-price" data-precio-base="{{ servicio.precio }}">
+                $ {{ servicio.precio|intcomma }} CLP
+            </h2>
+            {% endif %}
+            
+            {% if servicio.descripcion %}
+                <p class="lead text-muted">{{ servicio.descripcion }}</p>
+            {% endif %}
+
+            {# Detalles específicos de Packs #}
+            {% if servicio.tipo_servicio == 'PACK' %}
+            <div class="card bg-light border-0 my-4">
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        {% if servicio.max_guests %}
+                        <li class="d-flex align-items-center mb-2">
+                            <i class="fas fa-users fa-lg text-muted me-3" style="width: 20px;"></i>
+                            <span>Para hasta <strong>{{ servicio.max_guests }} invitados</strong></span>
+                        </li>
+                        {% endif %}
+                        {% if servicio.duration_hours %}
+                        <li class="d-flex align-items-center">
+                            <i class="fas fa-clock fa-lg text-muted me-3" style="width: 20px;"></i>
+                            <span>Duración de <strong>{{ servicio.duration_hours }} horas</strong></span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+            <hr>
+            
+            {# Sección de Adicionales #}
+            {% if servicios_adicionales %}
+            <h4 class="mt-4 mb-3">Personaliza tu Servicio:</h4>
+            <ul class="list-group" id="lista-adicionales">
+                {% for adicional in servicios_adicionales %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ adicional.get_thumbnail_url }}" class="rounded me-3" alt="{{ adicional.nombre }}" width="50" height="50" style="object-fit: cover;">
+                        <div>
+                            <label for="adicional_{{ adicional.id }}" class="form-check-label fw-bold">{{ adicional.nombre }}</label>
+                            <small class="text-muted d-block">(+ ${{ adicional.precio|intcomma }} c/u)</small>
+                            {% if adicional.has_tiered_pricing %}
+                                <span class="badge bg-secondary ms-1">Precio por Nivel</span>
+                            {% endif %}
+                            {# Se añade la descripción de la oferta para el adicional #}
+                            {% if adicional.oferta and adicional.oferta.activa and adicional.oferta.descripcion_oferta %}
+                                <p class="text-success small fw-bold mb-0">{{ adicional.oferta.descripcion_oferta }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if adicional.permite_cantidad %}
+                        {# Input numérico para cantidad #}
+                        <input type="number" name="cantidad_{{ adicional.id }}" id="adicional_{{ adicional.id }}" 
+                               class="form-control form-control-sm input-adicional" style="width: 70px;" 
+                               min="0" value="0" 
+                               data-precio="{{ adicional.precio }}" 
+                               data-nombre="{{ adicional.nombre }}"
+                               data-tipo-servicio="{{ adicional.tipo_servicio }}"
+                               data-destacado="{{ adicional.destacado }}"
+                               data-has-tiered-pricing="{{ adicional.has_tiered_pricing }}"
+                               data-max-guests="{{ adicional.max_guests|default:'' }}"
+                               data-duration-hours="{{ adicional.duration_hours|default:'' }}"
+                               data-precio-oferta="{{ adicional.oferta.precio_oferta|default:'' }}"
+                               data-descripcion="{{ adicional.descripcion|escapejs }}"
+                               data-imagen-url="{{ adicional.get_thumbnail_url }}"
+                               data-descripcion-oferta="{{ adicional.oferta.descripcion_oferta|default:''|escapejs }}" {# Añadido data-descripcion-oferta #}
+                               >
+                    {% else %}
+                        {# Checkbox para selección simple #}
+                        <input class="form-check-input input-adicional" type="checkbox" 
+                               name="servicios_seleccionados" value="{{ adicional.id }}" 
+                               id="adicional_{{ adicional.id }}" 
+                               data-precio="{{ adicional.precio }}" 
+                               data-nombre="{{ adicional.nombre }}"
+                               data-tipo-servicio="{{ adicional.tipo_servicio }}"
+                               data-destacado="{{ adicional.destacado }}"
+                               data-has-tiered-pricing="{{ adicional.has_tiered_pricing }}"
+                               data-max-guests="{{ adicional.max_guests|default:'' }}"
+                               data-duration-hours="{{ adicional.duration_hours|default:'' }}"
+                               data-precio-oferta="{{ adicional.oferta.precio_oferta|default:'' }}"
+                               data-descripcion="{{ adicional.descripcion|escapejs }}"
+                               data-imagen-url="{{ adicional.get_thumbnail_url }}"
+                               data-descripcion-oferta="{{ adicional.oferta.descripcion_oferta|default:''|escapejs }}" {# Añadido data-descripcion-oferta #}
+                               >
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <div class="d-grid gap-2 mt-4">
+                <button type="button" id="btn-anadir-a-cotizacion" class="btn btn-danger btn-lg">
+                    <i class="fas fa-shopping-cart me-2"></i> Añadir a la Cotización
+                </button>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{% url 'core:lista_servicios' %}" class="btn btn-link text-secondary">
+                    &larr; Volver a la lista de servicios
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const botonAnadir = document.getElementById('btn-anadir-a-cotizacion');
+
+    if (botonAnadir) {
+        botonAnadir.addEventListener('click', function() {
+            // 1. Preparamos el servicio principal
+            const servicioPrincipal = {
+                id: "{{ servicio.id }}",
+                nombre: "{{ servicio.nombre|escapejs }}",
+                imagenUrl: "{{ servicio.get_thumbnail_url }}",
+                // Usar el precio de oferta si está activo, de lo contrario el precio base
+                precioNumerico: parseFloat("{% if servicio.oferta and servicio.oferta.activa %}{{ servicio.oferta.precio_oferta }}{% else %}{{ servicio.precio }}{% endif %}"),
+                // Para mostrar precio_oferta y precio_base_original en la cotización
+                precioBaseOriginal: parseFloat("{{ servicio.precio }}"),
+                precioOferta: parseFloat("{% if servicio.oferta and servicio.oferta.activa %}{{ servicio.oferta.precio_oferta }}{% else %}0{% endif %}"),
+                
+                cantidad: 1, // Siempre se añade 1 unidad del servicio principal
+                permite_cantidad: {{ servicio.permite_cantidad|yesno:"true,false" }},
+                parentId: null,
+                fechaInicio: null, // Se establecerá en la página de cotización si es un servicio principal
+
+                // Añadir todos los campos relevantes del modelo Servicio
+                descripcion: "{{ servicio.descripcion|escapejs }}",
+                tipo_servicio: "{{ servicio.tipo_servicio }}",
+                destacado: {{ servicio.destacado|yesno:"true,false" }},
+                has_tiered_pricing: {{ servicio.has_tiered_pricing|yesno:"true,false" }},
+                max_guests: {{ servicio.max_guests|default:"null" }},
+                duration_hours: {{ servicio.duration_hours|default:"null" }},
+                // Añadir la descripción de la oferta para el servicio principal
+                descripcionOferta: "{% if servicio.oferta and servicio.oferta.activa %}{{ servicio.oferta.descripcion_oferta|escapejs }}{% else %}{% endif %}"
+            };
+            
+            // 2. Añadimos el servicio principal al carrito
+            // Asumimos que window.agregarAlCarrito maneja la lógica de si ya existe y si permite_cantidad
+            window.agregarAlCarrito(servicioPrincipal);
+
+            // 3. Recopilamos y añadimos los adicionales seleccionados
+            const inputsAdicionales = document.querySelectorAll('.input-adicional');
+            inputsAdicionales.forEach(input => {
+                let cantidad = 0;
+                let isPermiteCantidad = input.type === 'number'; // Determinar si el adicional permite cantidad
+
+                if (isPermiteCantidad) {
+                    cantidad = parseInt(input.value) || 0;
+                } else if (input.type === 'checkbox' && input.checked) {
+                    cantidad = 1;
+                }
+
+                if (cantidad > 0) {
+                    const adicional = {
+                        id: input.id.replace('adicional_', ''),
+                        nombre: input.dataset.nombre,
+                        imagenUrl: input.dataset.imagenUrl,
+                        // Usar el precio de oferta del adicional si está activo, de lo contrario el precio base
+                        // Nota: Tu modelo 'Oferta' está relacionado con 'Servicio', por lo que necesitas cargar la oferta del adicional
+                        // Si 'data-precio-oferta' no viene, asume que no hay oferta para este adicional.
+                        precioNumerico: parseFloat(input.dataset.precioOferta || input.dataset.precio),
+                        precioBaseOriginal: parseFloat(input.dataset.precio), // Precio base del adicional
+                        precioOferta: parseFloat(input.dataset.precioOferta || '0'), // Precio de oferta del adicional
+                        
+                        cantidad: cantidad,
+                        permite_cantidad: isPermiteCantidad,
+                        parentId: "{{ servicio.id }}", // Vinculamos este adicional al servicio principal actual
+                        fechaInicio: null, // Los adicionales no tienen fecha propia
+
+                        // Añadir todos los campos relevantes del modelo Servicio para el adicional
+                        descripcion: input.dataset.descripcion,
+                        tipo_servicio: input.dataset.tipoServicio,
+                        destacado: input.dataset.destacado === 'True', // Convertir a booleano
+                        has_tiered_pricing: input.dataset.hasTieredPricing === 'True', // Convertir a booleano
+                        max_guests: input.dataset.maxGuests ? parseInt(input.dataset.maxGuests) : null,
+                        duration_hours: input.dataset.durationHours ? parseInt(input.dataset.durationHours) : null,
+                        // Añadir la descripción de la oferta para el adicional
+                        descripcionOferta: input.dataset.descripcionOferta // Esto ya vendría del data-atributo
+                    };
+                    window.agregarAlCarrito(adicional);
+                }
+            });
+            
+            // 4. Notificamos al usuario y abrimos el panel del carrito
+            alert('¡Servicios añadidos a tu cotización!');
+            window.abrirPanelCarrito(); // Esta función debe existir en tu carrito.js para mostrar el panel
+        });
+    }
+});
+</script>
+{% endblock extra_scripts %}

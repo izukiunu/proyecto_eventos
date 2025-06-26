@@ -1,0 +1,82 @@
+/* Estilos para formularios dentro de main (ej. solicitud_cotizacion.html, contacto.html) */
+/* Puedes crear una clase contenedora para estos formularios, ej: .form-page-container */
+.form-page-container {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 700px; /* O el ancho que prefieras */
+    margin-left: auto;
+    margin-right: auto;
+}
+.form-page-container h1 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+/* Si usas {{ form.as_p }}, los campos vendrán en <p> */
+.form-page-container form p {
+    margin-bottom: 1rem;
+}
+.form-page-container form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+.form-page-container form .form-control { /* Aplicar a tus inputs de formulario */
+    width: 100%; /* Ocupar todo el ancho del contenedor del campo */
+    /* padding, border, etc. ya heredados o definidos por Bootstrap */
+}
+.form-page-container form textarea.form-control {
+    min-height: 120px; /* Más altura para textareas */
+}
+.form-page-container form button[type="submit"] {
+    background-color: #dc3545; /* Botón de envío principal en rojo */
+    border-color: #dc3545;
+}
+.form-page-container form button[type="submit"]:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+/* Mensajes de Django (success, error, etc.) */
+.messages {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1.5rem;
+}
+.messages li {
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+}
+.messages li.success {
+    color: #0f5132;
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+}
+.messages li.error {
+    color: #842029;
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+}
+.messages li.warning {
+    color: #664d03;
+    background-color: #fff3cd;
+    border-color: #ffecb5;
+}
+.messages li.info {
+    color: #055160;
+    background-color: #cff4fc;
+    border-color: #b6effb;
+}
+
+/* Utilidades de color */
+.text-rojo {
+    color: #dc3545 ;
+}
+.bg-negro {
+    background-color: #000000 ;
+}
+.text-blanco {
+    color: #ffffff ;
+}

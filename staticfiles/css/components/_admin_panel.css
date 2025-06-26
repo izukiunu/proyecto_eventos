@@ -1,0 +1,184 @@
+/* core/static/core/css/admin_panel.css */
+
+/* --- Estilos para el Layout del Dashboard --- */
+.dashboard-container {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.dashboard-sidebar {
+    flex-shrink: 0;
+    width: 240px;
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.dashboard-sidebar h3 {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.sidebar-btn {
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    background-color: transparent;
+    border: 1px solid #ccc;
+    color: #333;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.sidebar-btn:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.sidebar-btn.active {
+    background-color: #dc3545; /* Rojo para el botón activo */
+    color: white;
+    border-color: #c82333;
+    font-weight: 600;
+}
+
+.dashboard-content {
+    flex-grow: 1;
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.content-panel.hidden {
+    display: none; /* Oculta los paneles inactivos */
+}
+
+
+/* --- Estilos Generales dentro de los Paneles --- */
+.dashboard-content h1, .dashboard-content h2, .dashboard-content h3.h5 {
+    color: #333;
+}
+
+.dashboard-content h2 {
+    margin-top: 0; /* Quitar margen superior si es el primer elemento */
+}
+
+.dashboard-content h3.h5 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+/* Estilos para la tabla de servicios y Q&A */
+.table-responsive {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+.table {
+    margin-bottom: 0;
+}
+.table th {
+    background-color: #f8f9fa;
+}
+.table .actions button {
+    margin-right: 5px;
+}
+.table .imagen img {
+    width: 100px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* --- ESTILOS MEJORADOS PARA LA ANIMACIÓN DE FORMULARIOS --- */
+#formServicioContainer, #formQAContainer {
+    /* Estado por defecto: Oculto y colapsado */
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0 20px; /* Mantenemos padding horizontal para evitar que el contenido salte */
+    margin: 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    
+    /* La animación de transición suave */
+    transition: all 0.5s ease-in-out;
+}
+
+/* Clase que se añadirá con JavaScript para mostrar el formulario */
+#formServicioContainer.form-visible,
+#formQAContainer.form-visible {
+    /* Estado visible: se expande a su altura y se vuelve opaco */
+    max-height: 1000px; /* Un valor alto para asegurar que quepa todo el contenido */
+    opacity: 1;
+    padding: 20px;
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+/* Estilos para los campos de formulario generados por {{ form.as_p }} */
+#servicioForm p, #configForm p, #qaForm p {
+    margin-bottom: 1rem;
+}
+#servicioForm p label, #configForm p label, #qaForm p label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+#servicioForm p textarea {
+    resize: vertical;
+}
+
+
+/* --- Clases para mensajes y spinner --- */
+#messageArea {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1040;
+    width: auto;
+    max-width: 90%;
+}
+#messageArea div {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.success-message { color: #0f5132; background-color: #d1e7dd; border-color: #badbcc; }
+.error-message { color: #842029; background-color: #f8d7da; border-color: #f5c2c7; }
+
+#loadingSpinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 5px solid #f3f3f3;
+    border-top-color: #dc3545; /* Rojo para que combine con el tema */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 0.8s linear infinite;
+    z-index: 1060;
+}
+#loadingSpinner.hidden { /* Necesario para que JavaScript lo pueda ocultar */
+    display: none;
+}
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+

@@ -1,0 +1,20 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa; 
+    color: #212529;
+    margin: 0;
+}
+
+/* Botones (Tu estilo existente, ajustado para consistencia) */
+.btn-primary { /* Este es el azul de Bootstrap por defecto, puedes mantenerlo o cambiarlo */
+    background-color: #0d6efd;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #0b5ed7; /* Un azul más oscuro */
+}
+/* Object fit (Tu clase de utilidad) */
+.object-fit-cover {
+    object-fit: cover;
+}
+
