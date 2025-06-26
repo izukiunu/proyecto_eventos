@@ -684,3 +684,22 @@ def chatbot_qa_detail_json(request, qa_id):
     qa = get_object_or_404(ChatbotQA, pk=qa_id)
     print(f"DEBUG: Detalles de QA de chatbot ID {qa_id} generados.") # DEBUG
     return JsonResponse({'status': 'success', 'qa': {'id': qa.id, 'keywords': qa.keywords, 'respuesta': qa.respuesta}})
+
+def solicitud_cotizacion_success_view(request, solicitud_id):
+    """
+    Vista para la página de éxito de la solicitud de cotización.
+    Carga el objeto SolicitudCotizacion completo y lo pasa a la plantilla.
+    """
+    solicitud = get_object_or_404(SolicitudCotizacion, id=solicitud_id)
+    print(f"DEBUG: solicitud_cotizacion_success_view - Cargada solicitud ID: {solicitud.id}") # DEBUG
+
+    # Puedes añadir lógica aquí para limpiar el carrito de localStorage
+    # si la redirección a esta página debe ser el punto final de la sesión de carrito.
+    # El JS en la plantilla ya lo hace, pero si quieres una garantía en el backend:
+    # messages.success(request, 'Carrito limpiado con éxito desde el backend.') # Esto no funcionará bien con JS redireccionado
+
+    context = {
+        'solicitud': solicitud,
+        'navbar_class': 'navbar-solid' # O el tipo de navbar que quieras para esta página
+    }
+    return render(request, 'core/solicitud_cotizacion_success.html', context)

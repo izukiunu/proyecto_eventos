@@ -4,6 +4,7 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic import TemplateView # Asegúrate de que TemplateView esté importado
+from .views import solicitud_cotizacion_success_view
 
 # --- Importaciones de Vistas de la App 'core' ---
 from .views import (
@@ -60,7 +61,7 @@ urlpatterns = [
     
     # URL para la página de éxito de la solicitud de cotización
     # Ahora usa TemplateView directamente, ya que la lógica de procesamiento está en la vista AJAX.
-    path('solicitud-cotizacion/exito/<int:solicitud_id>/', TemplateView.as_view(template_name='core/solicitud_cotizacion_success.html'), name='solicitud_cotizacion_success'),
+    path('solicitud-cotizacion/exito/<int:solicitud_id>/', solicitud_cotizacion_success_view, name='solicitud_cotizacion_success'),
     
     # Si 'solicitud_enviada_exito' es una página de éxito genérica antigua, puedes mantenerla o eliminarla.
     path('solicitud-enviada/', TemplateView.as_view(template_name='core/solicitud_enviada_exito.html'), name='solicitud_enviada_exito'),

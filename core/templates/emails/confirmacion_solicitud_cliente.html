@@ -103,10 +103,10 @@
     <div class="container">
         <h1>¡Hola, {{ solicitud.nombre_cliente }}!</h1>
         <p>Gracias por tu solicitud de cotización en MejíaEventos.</p>
-        <p>Hemos recibido tu solicitud número <strong>#{{ solicitud.id }}</strong> con fecha {{ solicitud.fecha_solicitud|date:"d/m/Y H:i" }}.</p>
-
-        {# Si decidiéramos hacer la fecha del evento obligatoria en el formulario principal #}
-        {# <p><strong>Fecha General del Evento:</strong> {{ solicitud.fecha_evento|date:"d/m/Y" }}</p> #} 
+        <p>Hemos recibido tu solicitud número 
+            <strong style="color: #dc3545; font-size: 1.1em;">#{{ solicitud.id }}</strong> 
+            con fecha {{ solicitud.fecha_solicitud|date:"d/m/Y H:i" }}.
+        </p>
 
         <h2>Detalles de tu Solicitud:</h2>
         {% if solicitud.descripcion_evento %}
