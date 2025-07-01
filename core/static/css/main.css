@@ -19,6 +19,7 @@
 @import url('components/_buttons_flotantes.css');
 @import url('components/_chatbot.css');
 @import url('components/_carrito.css');
+@import url('components/carrito_cotizacion.css');
 
 /* 5. (Opcional) Estilos del panel de administración si se usa en todas las páginas */
 /* @import url('components/_admin_panel.css'); */

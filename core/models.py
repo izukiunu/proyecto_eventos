@@ -18,6 +18,9 @@ class Servicio(models.Model):
         PACK = 'PACK', 'Pack Prediseñado'
         INDEPENDIENTE = 'INDEPENDIENTE', 'Producto o Servicio Independiente'
         ADICIONAL_PACK = 'ADICIONAL_PACK', 'Adicional exclusivo para Pack'
+    class DurationUnit(models.TextChoices):
+        MINUTES = 'MINUTOS', 'Minutos'
+        HOURS = 'HORAS', 'Horas'
 
     # --- CAMPOS PRINCIPALES (EXISTENTES Y MODIFICADOS) ---
     nombre = models.CharField(max_length=200)
@@ -63,15 +66,29 @@ class Servicio(models.Model):
         null=True, blank=True,
         help_text="Solo llenar si este ítem es un Pack."
     )
-    duration_hours = models.PositiveIntegerField(
-        verbose_name="Duración en Horas (para Packs)",
+    # --- CAMBIADO: 'duration_hours' se reemplaza por 'duration' y 'duration_unit' ---
+    duration = models.PositiveIntegerField(
+        verbose_name="Duración (valor)",
         null=True, blank=True,
-        help_text="Solo llenar si este ítem es un Pack."
+        help_text="El valor numérico de la duración (ej: 30, 2, 5)."
+    )
+    duration_unit = models.CharField(
+        max_length=10,
+        choices=DurationUnit.choices,
+        default=DurationUnit.HOURS,
+        verbose_name="Unidad de Duración",
+        null=True, blank=True,
+        help_text="La unidad para el valor de duración (Horas o Minutos)."
     )
     permite_cantidad = models.BooleanField(
         default=False,
         verbose_name="¿Permite seleccionar cantidad?",
         help_text="Marcar si este servicio es por unidades (ej: horas extra, sillas adicionales)."
+    )
+    max_cantidad = models.PositiveIntegerField(
+        null=True, blank=True,
+        verbose_name="Cantidad Máxima (Opcional)",
+        help_text="Si permite cantidad, establece un límite. Déjalo vacío para no tener límite."
     )
     servicios_compatibles = models.ManyToManyField(
         'self',
@@ -80,6 +97,14 @@ class Servicio(models.Model):
         verbose_name="Servicios Principales Compatibles",
         help_text="Si este es un servicio ADITIVO, selecciona a qué servicios principales se puede añadir."
     )
+    @property
+    def display_duration(self):
+        """Devuelve un string formateado para la duración, ej: '30 minutos'."""
+        if self.duration and self.duration_unit:
+            # get_duration_unit_display() obtiene el valor legible de las choices (ej: "Minutos")
+            return f"{self.duration} {self.get_duration_unit_display().lower()}"
+        return None
+    
     def get_thumbnail_url(self):
         """
         Busca la primera IMAGEN en la galería del servicio y devuelve su URL.

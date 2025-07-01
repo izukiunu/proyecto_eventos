@@ -12,10 +12,10 @@ from django.conf import settings # Para acceder a las configuraciones de Django 
 from django.template.loader import render_to_string, get_template # <-- CORRECCIÓN: AÑADIDO get_template
 from django.utils.html import strip_tags, escape # Para procesar HTML en emails y escapar texto en AJAX
 from django.views.decorators.http import require_http_methods # Para restringir métodos HTTP
-
+from django.urls import reverse
 from django.contrib.admin.views.decorators import staff_member_required # Para vistas de administración
 from django.contrib.auth.mixins import UserPassesTestMixin # Para Mixins de autorización en clases basadas en vistas
-
+import re
 # Importa todos tus modelos
 from .models import (
     Servicio, SolicitudCotizacion, MensajeContacto, ConfiguracionSitio, 
@@ -172,9 +172,29 @@ def solicitar_cotizacion_view(request, servicio_id=None):
                 else:
                     print("DEBUG: cotizacion_detallada_json está vacía o nula.") # DEBUG
 
-                servicios_ids = [item.get('id') for item in items_carrito if item.get('id')]
-                print(f"DEBUG: IDs de servicios en carrito: {servicios_ids}") # DEBUG
-                servicios_en_carrito_tipos = Servicio.objects.filter(id__in=servicios_ids).values_list('tipo_servicio', flat=True)
+                 # 1. Extrae los IDs tal cual vienen del frontend
+                ids_desde_carrito = [item.get('id') for item in items_carrito if item.get('id')]
+                print(f"DEBUG: IDs brutos desde el carrito: {ids_desde_carrito}")
+
+                # 2. Procesa la lista para obtener solo los IDs numéricos base
+                ids_numericos_limpios = []
+                for item_id in ids_desde_carrito:
+                    # Usamos una expresión regular para encontrar el primer número en el string del ID.
+                    # Esto funciona para '5', '3-tier-2' y 'adicional-20-tier-16'
+                    numeros_encontrados = re.findall(r'\d+', str(item_id))
+                    if numeros_encontrados:
+                        # Añade el primer número encontrado a nuestra lista de IDs limpios
+                        ids_numericos_limpios.append(int(numeros_encontrados[0]))
+                
+                # 3. Crea una lista de IDs únicos para evitar consultas duplicadas
+                ids_finales_unicos = list(set(ids_numericos_limpios))
+                print(f"DEBUG: IDs limpios y únicos para la consulta: {ids_finales_unicos}")
+                
+                # 4. Ahora, usa la lista limpia y única para la consulta a la base de datos
+                servicios_en_carrito_tipos = Servicio.objects.filter(id__in=ids_finales_unicos).values_list('tipo_servicio', flat=True)
+                
+                # --- FIN DE LA CORRECCIÓN ---
+
                 tipos_de_servicio = set(servicios_en_carrito_tipos)
                 print(f"DEBUG: Tipos de servicio en carrito: {tipos_de_servicio}") # DEBUG
                 
@@ -257,10 +277,6 @@ def solicitar_cotizacion_view(request, servicio_id=None):
                         precio_base_original = float(item.get('precioBaseOriginal', 0))
                         precio_oferta = float(item.get('precioOferta', 0))
 
-                        # --- ESTA LÍNEA ES CLAVE: CREA EL CAMPO FORMATEADO EN EL DICCIONARIO 'ITEM' ---
-                        item['tipo_servicio_display'] = _format_tipo_servicio(item.get('tipo_servicio'))
-                        # --- FIN DE LA LÍNEA CRÍTICA ---
-
                         precio_display = ""
                         if precio_oferta and precio_oferta > 0 and precio_oferta < precio_base_original:
                             precio_display = f"Antes: ${precio_base_original:,.0f} Ahora: *${precio_oferta:,.0f} CLP*"
@@ -279,10 +295,8 @@ def solicitar_cotizacion_view(request, servicio_id=None):
                             item_block.append(f"  - Máx. Invitados: {item['max_guests']}")
                         if item.get('duration_hours'):
                             item_block.append(f"  - Duración: {item['duration_hours']} Hrs")
-                        # --- ESTA LÍNEA USA EL CAMPO YA FORMATEADO PARA WHATSAPP ---
-                        if item.get('tipo_servicio_display'): # Usar el campo ya formateado
-                            item_block.append(f"  - Tipo: {item['tipo_servicio_display']}")
-                        # --- FIN DE LA LÍNEA CRÍTICA ---
+                        if item.get('parentId'):
+                            item_block.append(f"  - Tipo: Adicional")
                         if item.get('descripcion'):
                              item_block.append(f"  - Desc.: {item['descripcion'][:70]}...") 
                         
@@ -303,12 +317,13 @@ def solicitar_cotizacion_view(request, servicio_id=None):
                 numero_whatsapp = "56952046511" 
                 whatsapp_url = f"https://api.whatsapp.com/send?phone={numero_whatsapp}&text={mensaje_codificado}"
                 print(f"DEBUG: WhatsApp URL generada: {whatsapp_url[:100]}...") # DEBUG
-
+                success_url = reverse('core:solicitud_cotizacion_success', kwargs={'solicitud_id': solicitud.id})
                 return JsonResponse({
                     'success': True,
                     'message': '¡Tu solicitud de cotización ha sido enviada con éxito! Revisa tu correo para la confirmación.',
                     'whatsapp_url': whatsapp_url,
-                    'solicitud_id': solicitud.id
+                    'solicitud_id': solicitud.id,
+                    'redirect_url': success_url
                 })
 
             except Exception as e:

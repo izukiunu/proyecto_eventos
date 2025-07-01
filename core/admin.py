@@ -53,7 +53,7 @@ class ServicioAdmin(admin.ModelAdmin):
             'fields': ('nombre', 'tipo_servicio', 'descripcion')
         }),
         ('2. Configuración de Precios', {
-            'fields': ('precio', 'has_tiered_pricing', 'permite_cantidad'),
+            'fields': ('precio', 'has_tiered_pricing', ('permite_cantidad', 'max_cantidad')),
             'description': "Los 'Precios por Niveles' y las 'Ofertas' se gestionan en las secciones de abajo, después de guardar por primera vez."
         }),
         ('3. Vinculación de Adicionales (Opcional)', {
@@ -61,9 +61,9 @@ class ServicioAdmin(admin.ModelAdmin):
             'fields': ('servicios_compatibles',),
             'description': 'Si este es un servicio Aditivo, selecciona aquí los servicios base a los que se puede añadir.'
         }),
-        ('4. Detalles para Packs (Opcional)', {
+        ('4. Detalles Adicionales (Opcional)', {
             'classes': ('collapse',),
-            'fields': ('max_guests', 'duration_hours')
+            'fields': ('max_guests', ('duration', 'duration_unit')) 
         }),
         ('5. Visibilidad en el Sitio', {
             'fields': ('destacado',)

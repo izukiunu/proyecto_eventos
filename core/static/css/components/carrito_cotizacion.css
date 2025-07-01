@@ -1,0 +1,118 @@
+/* static/css/carrito_cotizacion.css */
+
+/* --- Contenedor Principal del Resumen --- */
+#resumen-cotizacion {
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease;
+}
+
+#resumen-cotizacion:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Cabecera y Pie del Carrito --- */
+.cart-header, .cart-footer {
+    background-color: #f8f9fa !important; /* Un fondo suave */
+}
+
+.cart-footer .text-danger {
+    font-weight: 700 !important; /* Hacer el precio total más audaz */
+}
+
+/* --- Estilos para cada Ítem del Carrito --- */
+.cart-item {
+    transition: background-color 0.2s ease;
+}
+
+.cart-item:hover {
+    background-color: #f8f9fa; /* Resaltado sutil al pasar el mouse */
+}
+
+/* --- Imagen del Servicio --- */
+.item-imagen {
+    width: 90px;
+    height: 90px;
+    object-fit: cover; /* Evita que la imagen se deforme */
+    border-radius: 0.5rem; /* Bordes redondeados */
+    border: 1px solid #dee2e6;
+    flex-shrink: 0; /* Evita que la imagen se encoja */
+}
+
+/* --- Información del Servicio (Nombre, Descripción) --- */
+.item-info h5 {
+    font-weight: 600;
+    color: #343a40;
+}
+
+/* --- Controles del Ítem (Cantidad, Precio, Eliminar) --- */
+.item-controls {
+    min-width: 150px; /* Asegura espacio suficiente para los controles */
+    text-align: right;
+}
+
+.item-total-price {
+    font-size: 1.1rem; /* Precio del ítem más visible */
+    font-weight: 600;
+    color: #212529;
+}
+
+/* --- Estilo para los Ítems Adicionales (Clave Visual) --- */
+.item-adicional {
+    margin-left: 2rem; /* Indentación para mostrar anidación */
+    padding-left: 1rem !important;
+    border-left: 3px solid #0d6efd !important; /* Línea azul para indicar que es un "hijo" */
+    background-color: #fcfdff; /* Un fondo ligeramente distinto */
+}
+
+/* --- Controles de Cantidad (+/-) --- */
+.cantidad-controles {
+    max-width: 120px; /* Limita el ancho del contenedor de botones */
+    margin-left: auto; /* Alinea a la derecha dentro de su contenedor */
+}
+
+.cantidad-controles .quantity-input {
+    border-left: none;
+    border-right: none;
+    text-align: center;
+    box-shadow: none !important;
+}
+.cantidad-controles .btn-cantidad {
+    border-color: #ced4da;
+}
+
+/* --- Botón de Eliminar --- */
+.btn-remove {
+    border-radius: 50%; /* Botón redondo */
+    width: 32px;
+    height: 32px;
+    line-height: 1;
+    font-size: 1.2rem;
+}
+
+/* --- Responsividad para Móviles --- */
+@media (max-width: 767px) {
+    .cart-item {
+        flex-direction: column;
+        align-items: stretch !important; /* Alinea los elementos al ancho completo */
+    }
+
+    .item-controls {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        min-width: unset;
+    }
+
+    .item-adicional {
+        margin-left: 1rem;
+    }
+
+    .item-imagen {
+        width: 100%;
+        height: 150px; /* Imagen más grande en móviles */
+        margin-bottom: 1rem;
+    }
+}
