@@ -1,233 +1,54 @@
 {% extends 'core/base.html' %}
 {% load static %}
-{% load humanize %} {# <-- 1. AÑADIDO: Carga de la librería para formatear números #}
 
-{% block title %}Inicio - MejíaEventos Web{% endblock title %}
+{% block title %}Inicio - MejíaEventos{% endblock title %}
 
-{% block meta_description %}Bienvenido a MejíaEventos, tu solución integral para la gestión y cotización de servicios para eventos inolvidables.{% endblock meta_description %}
+{# Este bloque asegura que el navbar sea transparente en la página de inicio #}
+{% block navbar_class %}navbar-transparent{% endblock navbar_class %}
 
-{# Esta página no necesita padding superior porque el Hero se muestra detrás del menú #}
-{% comment %} No definimos el bloque 'main_classes' {% endcomment %}
 
-{% block main_content %}
+{# ==================================================================== #}
+{# MEJORA ESTRUCTURAL: El Hero Slider ahora va en su propio bloque     #}
+{# para ocupar el 100% del ancho de la pantalla.                      #}
+{# ==================================================================== #}
+{% block hero_content %}
+    {% include 'core/partials/_hero_slider.html' %}
+{% endblock hero_content %}
 
-    <section id="hero" class="hero-full-height position-relative">
-    <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
-        <div class="carousel-inner">
-            {% for slide in hero_slides %}
-            <div class="carousel-item {% if forloop.first %}active{% endif %} hero-slide-item" style="background-image: url('{{ slide.background_image.url }}');">
-                <div class="hero-content-wrapper text-white text-center">
-                    <h1 class="fw-bold display-4 mb-3">{{ slide.title }}</h1>
-                    {% if slide.subtitle %}
-                        <p class="fs-5 lead mb-4">{{ slide.subtitle }}</p>
-                    {% endif %}
-                    {% if slide.button_link and slide.button_text %}
-                        <a href="{{ slide.button_link }}" class="btn btn-danger btn-lg mt-3 px-4 py-2">{{ slide.button_text }}</a>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Anterior</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Siguiente</span>
-        </button>
-        <div class="carousel-indicators">
-            {% for slide in hero_slides %}
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Slide {{ forloop.counter }}"></button>
-            {% endfor %}
-        </div>
+
+{# ==================================================================== #}
+{# MEJORA ESTRUCTURAL: El resto del contenido de la página va en el   #}
+{# bloque 'content', que ya está dentro de un .container en base.html.#}
+{# ==================================================================== #}
+{% block content %}
+    <div class="page-content">
+
+        {# 2. Servicios Destacados #}
+        {% include 'core/partials/_featured_services.html' %}
+        
+        {# 3. Galería de Inspiración / Nuestros Eventos #}
+        {% include 'core/partials/_projects.html' %}
+
+        {# 4. Testimonios #}
+        {% include 'core/partials/_testimonials.html' %}
+        
+        {# 5. Sobre Nosotros #}
+        {% include 'core/partials/_about_us.html' %}
+
     </div>
-</section>
 
-    <div class="bg-light py-5">
-    <div class="container">
-        <section id="servicios-destacados">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold">Nuestros Servicios Destacados</h2>
-                <p class="lead text-muted">Soluciones a medida para cada ocasión especial.</p>
-            </div>
-
-            <div class="slider-contenedor">
-                <div class="swiper servicios-slider">
-                    <div class="swiper-wrapper pb-5">
-                        {% if servicios_destacados %}
-                            {% for servicio in servicios_destacados %}
-                                <div class="swiper-slide h-auto">
-                                    <div class="card h-100 servicio-card">
-                                        {# Usar get_thumbnail_url para la imagen #}
-                                        <img src="{{ servicio.get_thumbnail_url }}" class="card-img-top" alt="{{ servicio.nombre }}">
-                                        
-                                        <div class="card-body d-flex flex-column">
-                                            <h5 class="card-title fw-bold">{{ servicio.nombre }}</h5>
-                                            <p class="card-text flex-grow-1">{{ servicio.descripcion|truncatewords:20 }}</p>
-                                            
-                                            <div class="precio-container mt-auto pt-2">
-                                                {% if servicio.oferta and servicio.oferta.activa %}
-                                                    <h5 class="card-text text-muted fw-normal">Antes: <del>${{ servicio.precio|intcomma }}</del></h5>
-                                                    <h4 class="card-text text-danger fw-bold">¡Oferta! ${{ servicio.oferta.precio_oferta|intcomma }} CLP</h4>
-                                                {% elif servicio.precio > 0 %}
-                                                    <h4 class="card-text text-danger fw-bold">$ {{ servicio.precio|intcomma }} CLP</h4>
-                                                {% elif servicio.has_tiered_pricing %}
-                                                     <p class="card-text text-muted fw-bold">Ver opciones de precios</p>
-                                                {% else %}
-                                                    <p class="card-text text-muted fw-bold">Precio a consultar</p>
-                                                {% endif %}
-                                            </div>
-                                            {# CORRECCIÓN CLAVE: Apuntar a servicio_detail #}
-                                            <a href="{% url 'core:servicio_detail' pk=servicio.id %}" class="btn btn-outline-danger mt-auto">
-                                                Ver Detalles
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="swiper-slide">
-                               <p class="text-center text-muted">No hay servicios destacados en este momento.</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="swiper-pagination"></div>
-                </div>
-                
-                <div class="swiper-button-prev"></div>
-                <div class="swiper-button-next"></div>
-
-            </div>
-            <div class="text-center mt-5">
-                <a href="{% url 'core:lista_servicios' %}" class="btn btn-danger btn-lg">Ver Todos los Servicios</a>
-            </div>
-        </section>
+    {# 6. Llamada a la Acción Final #}
+    <div class="cta-general-section text-center">
+        <hr>
+        <p class="mt-4 fs-5">¿Tienes una idea diferente o necesitas algo a tu medida?</p>
+        <p class="text-muted">¡Conversemos directamente! Haz clic aquí para enviarnos un WhatsApp y cotizar tu idea.</p>
+        {% with "Hola, me gustaría cotizar una idea personalizada para mi evento." as mensaje_wa %}
+            <a href="https://wa.me/56952046511?text={{ mensaje_wa|urlencode }}" 
+               target="_blank" 
+               class="btn btn-success btn-lg mt-2">
+                <i class="fab fa-whatsapp me-2"></i> Cotizar por WhatsApp
+            </a>
+        {% endwith %}
     </div>
-</div>
 
-    {% if proyectos %}
-<section id="proyectos-realizados" class="py-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold">Nuestros Eventos Realizados</h2>
-            <p class="lead text-muted">Experiencias que hemos tenido el placer de producir.</p>
-        </div>
-
-        <div class="swiper proyectos-slider">
-            <div class="swiper-wrapper">
-                {% for proyecto in proyectos %}
-                <div class="swiper-slide">
-                    <div class="proyecto-card">
-                        <div class="swiper imagenes-proyecto-slider">
-                            <div class="swiper-wrapper">
-                                {% for imagen in proyecto.imagenes.all %}
-                                <div class="swiper-slide">
-                                    <img src="{{ imagen.imagen.url }}" alt="{{ imagen.alt_text|default:proyecto.titulo }}">
-                                </div>
-                                {% empty %}
-                                <div class="swiper-slide">
-                                    <img src="{% static 'img/placeholder_evento.jpg' %}" alt="Placeholder">
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="proyecto-card-body">
-                            <h4 class="fw-bold">{{ proyecto.titulo }}</h4>
-                            <p class="text-muted">{{ proyecto.descripcion }}</p>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            <div class="swiper-button-next proyectos-nav-next"></div>
-            <div class="swiper-button-prev proyectos-nav-prev"></div>
-        </div>
-    </div>
-</section>
-{% endif %}
-
-
-{% if sobre_nosotros %}
-<section id="sobre-nosotros" class="py-5 bg-white">
-    <div class="container">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-6">
-                <h2 class="fw-bold mb-3">{{ sobre_nosotros.titulo }}</h2>
-                <p class="text-muted">{{ sobre_nosotros.descripcion }}</p>
-                <ul class="list-unstyled mt-4">
-                    {% for punto in sobre_nosotros.puntos_clave.all %}
-                    <li class="mb-2"><i class="fas fa-check-circle text-danger me-2"></i> {{ punto.texto }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <div class="col-lg-6 text-center">
-                <div class="swiper sobre-nosotros-slider shadow-lg rounded">
-                    <div class="swiper-wrapper">
-                        {% for imagen in sobre_nosotros.imagenes.all %}
-                        <div class="swiper-slide">
-                            <img src="{{ imagen.imagen.url }}" class="img-fluid" alt="Sobre MejíaEventos">
-                        </div>
-                        {% empty %}
-                        <div class="swiper-slide">
-                             <img src="{% static 'img/sobre_nosotros_placeholder.jpg' %}" class="img-fluid" alt="Sobre MejíaEventos">
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-{% endif %}
-
-
-{% if testimonios %}
-<section id="testimonios-slider-section" class="py-5 bg-light">
-    <div class="container">
-        <h2 class="text-center fw-bold mb-5">Lo que Nuestros Clientes Opinan</h2>
-        <div class="swiper testimonios-slider">
-            <div class="swiper-wrapper">
-                {% for testimonio in testimonios %}
-                <div class="swiper-slide">
-                    <div class="testimonio-card text-center">
-                        <div class="swiper imagenes-testimonio-slider">
-                            <div class="swiper-wrapper">
-                                {% for imagen in testimonio.imagenes.all %}
-                                <div class="swiper-slide">
-                                    <img src="{{ imagen.imagen.url }}" class="rounded-circle" alt="{{ imagen.alt_text|default:testimonio.autor }}">
-                                </div>
-                                {% empty %}
-                                <div class="swiper-slide">
-                                     <img src="{% static 'img/cliente_placeholder.jpg' %}" class="rounded-circle" alt="Cliente Satisfecho">
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <i class="fas fa-quote-left fa-2x text-danger my-3"></i>
-                        <blockquote class="blockquote">
-                            <p class="mb-3 fst-italic">"{{ testimonio.cita }}"</p>
-                        </blockquote>
-                        <h5 class="fw-bold mt-3 mb-0">- {{ testimonio.autor }}</h5>
-                        {% if testimonio.descripcion_autor %}
-                        <p class="text-muted small">{{ testimonio.descripcion_autor }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</section>
-{% endif %}
-
-
-<section id="cta" class="py-5 bg-dark text-white text-center">
-    <div class="container">
-        <h2 class="fw-bold">¿Listo para Planificar tu Evento Perfecto?</h2>
-        <p class="lead my-4">Contáctanos hoy mismo y déjanos ayudarte a hacer realidad tu visión.</p>
-        <a href="{% url 'core:solicitar_cotizacion_general' %}" class="btn btn-danger btn-lg">¡Solicita tu Cotización Ahora!</a>
-    </div>
-</section>
-
-{% endblock main_content %}
+{% endblock content %}

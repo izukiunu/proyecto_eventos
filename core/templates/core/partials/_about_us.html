@@ -1,0 +1,36 @@
+{% load static %} {# ADD THIS LINE #}
+{% if sobre_nosotros %}
+<section id="sobre-nosotros" class="homepage-section noise-background">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="section-header text-center">
+                    <h2 class="section-title">{{ sobre_nosotros.titulo }}</h2>
+                    <p class="about-us-description">{{ sobre_nosotros.descripcion }}</p>
+                </div>
+                <ul class="list-unstyled mt-4">
+                    {% for punto in sobre_nosotros.puntos_clave.all %}
+                        <li class="mb-2 fs-5"><i class="fas fa-check-circle text-danger me-2"></i>{{ punto.texto }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-lg-6">
+                <div class="swiper sobre-nosotros-slider">
+                    <div class="swiper-wrapper">
+                        {% for imagen in sobre_nosotros.imagenes.all %}
+                        <div class="swiper-slide">
+                            <img src="{{ imagen.imagen.url }}" class="img-fluid rounded shadow-lg" alt="{{ sobre_nosotros.titulo }}">
+                        </div>
+                        {% empty %}
+                        <div class="swiper-slide">
+                            <img src="{% static 'img/placeholder_about_us.jpg' %}" class="img-fluid rounded shadow-lg" alt="Imagen por defecto de Sobre Nosotros">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="swiper-pagination"></div> 
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}

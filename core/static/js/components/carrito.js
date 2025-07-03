@@ -1,78 +1,111 @@
-// js/components/carrito.js (Versión Final Actualizada)
+// js/components/carrito.js (Versión Final Actualizada: FIX DEFINITIVO para abrir/cerrar panel + DEBUG logs)
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DEBUG: carrito.js - DOMContentLoaded event fired. (Versión con FIX de panel)');
 
     // --- ELEMENTOS DEL DOM ---
+    // Estas definiciones deben estar dentro de DOMContentLoaded para asegurar que los elementos existen.
     const panelCarrito = document.getElementById('panel-carrito');
     const iconoCarrito = document.getElementById('icono-carrito-contenedor');
     const cerrarPanelBtn = document.getElementById('cerrar-panel');
     const contadorCarrito = document.getElementById('contador-carrito');
     const hoy = new Date().toISOString().split('T')[0];
 
+    console.log('DEBUG: carrito.js - panelCarrito encontrado:', panelCarrito);
+    console.log('DEBUG: carrito.js - iconoCarrito encontrado:', iconoCarrito);
+    console.log('DEBUG: carrito.js - contadorCarrito encontrado:', contadorCarrito);
+
     // --- ESTADO DEL CARRITO ---
     let carrito = JSON.parse(localStorage.getItem('carritoCotizaciones')) || [];
+    console.log('DEBUG: carrito.js - Carrito cargado de localStorage:', carrito);
 
-    // --- FUNCIONES GLOBALES ---
-    window.abrirPanelCarrito = () => panelCarrito?.classList.add('panel-visible');
-    window.cerrarPanelCarrito = () => panelCarrito?.classList.remove('panel-visible');
-
-    // --- CAMBIADO: Lógica de 'agregarAlCarrito' mejorada para manejar límites y tiers ---
-    window.agregarAlCarrito = (itemData) => {
-        const itemExistente = carrito.find(item => item.id === itemData.id);
-        
-        if (itemExistente && itemExistente.permite_cantidad) {
-            const max = itemExistente.max_cantidad;
-            const cantidadPropuesta = itemExistente.cantidad + (parseInt(itemData.cantidad) || 1);
-
-            // Verifica si se excede el límite
-            if (max && cantidadPropuesta > max) {
-                alert(`Lo sentimos, solo puedes agregar un máximo de ${max} unidades de este servicio.`);
-                abrirPanelCarrito();
-                return; // Detiene la ejecución si se excede el límite
-            }
-            itemExistente.cantidad = cantidadPropuesta;
-
-        } else if (itemExistente) {
-            alert('Este servicio u opción ya fue agregado a tu cotización.');
-            abrirPanelCarrito();
-            return;
-
+    // --- FUNCIONES GLOBALES (DEFINIDAS AQUI, DESPUES DE QUE LOS ELEMENTOS DOM SE HAN OBTENIDO) ---
+    window.abrirPanelCarrito = () => {
+        console.log('DEBUG: carrito.js - Función window.abrirPanelCarrito() llamada.');
+        if (panelCarrito) {
+            panelCarrito.classList.add('panel-visible');
+            console.log('DEBUG: carrito.js - Clase "panel-visible" añadida al panel.');
+            // Opcional: Asegúrate de que el body no haga scroll cuando el panel esté abierto
+            document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = 'var(--bs-gutter-x)'; // Para evitar salto de página
         } else {
-            // Añade el nuevo ítem
+            console.error("Error: carrito.js - El panel del carrito (panelCarrito) es null o no se encontró en el DOM para abrir.");
+        }
+    };
+    window.cerrarPanelCarrito = () => {
+        console.log('DEBUG: carrito.js - Función window.cerrarPanelCarrito() llamada.');
+        if (panelCarrito) {
+            panelCarrito.classList.remove('panel-visible');
+            console.log('DEBUG: carrito.js - Clase "panel-visible" removida del panel.');
+            // Opcional: Restaura el scroll del body
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+    };
+
+    // --- Lógica de 'agregarAlCarrito' mejorada ---
+    window.agregarAlCarrito = (itemData) => {
+        console.log('DEBUG: carrito.js - agregarAlCarrito() llamado para:', itemData.nombre);
+        const itemExistente = carrito.find(item => item.id === itemData.id);
+        let message = '';
+        let itemSuccessfullyAddedOrUpdated = false;
+
+        if (itemExistente) {
+            console.log('DEBUG: carrito.js - Ítem existente:', itemData.nombre);
+            if (itemExistente.permite_cantidad) {
+                const max = itemExistente.max_cantidad;
+                const cantidadPropuesta = itemExistente.cantidad + (parseInt(itemData.cantidad) || 1);
+
+                if (max && cantidadPropuesta > max) {
+                    message = `Lo sentimos, solo puedes agregar un máximo de ${max} unidades de este servicio: ${itemData.nombre}.`;
+                } else {
+                    itemExistente.cantidad = cantidadPropuesta;
+                    itemSuccessfullyAddedOrUpdated = true;
+                    message = `Cantidad de "${itemData.nombre}" actualizada.`;
+                }
+            } else {
+                message = `"${itemData.nombre}" ya está en tu cotización.`;
+            }
+        } else {
             const precio = parseFloat(itemData.precioNumerico);
-            if (!itemData.id || !itemData.nombre) {
-                console.warn('Intento de agregar un ítem incompleto al carrito:', itemData);
-                return;
+            if (!itemData.id || !itemData.nombre || isNaN(precio)) {
+                console.warn('Intento de agregar un ítem incompleto o con precio no válido al carrito:', itemData);
+                return { added: false, message: 'Datos de ítem no válidos.' };
             }
             carrito.push({
                 id: itemData.id,
                 nombre: itemData.nombre,
                 imagenUrl: itemData.imagenUrl,
-                precioNumerico: isNaN(precio) ? 0 : precio,
+                precioNumerico: precio,
                 precioBaseOriginal: itemData.precioBaseOriginal || 0,
                 precioOferta: itemData.precioOferta || 0,
                 cantidad: parseInt(itemData.cantidad) || 1,
-                // --- NUEVOS CAMPOS AÑADIDOS ---
                 permite_cantidad: itemData.permite_cantidad || false,
                 max_cantidad: itemData.max_cantidad || null,
-                // ---
                 parentId: itemData.parentId || null,
                 fechaInicio: itemData.fechaInicio || null,
                 descripcion: itemData.descripcion || '',
                 tipo_servicio: itemData.tipo_servicio || 'INDEPENDIENTE',
                 descripcionOferta: itemData.descripcionOferta || ''
             });
+            itemSuccessfullyAddedOrUpdated = true;
+            message = `"${itemData.nombre}" añadido a tu cotización.`;
         }
+
         guardarYRenderizarTodo();
+        
+        return { added: itemSuccessfullyAddedOrUpdated, message: message };
     };
 
     // --- LÓGICA DE RENDERIZADO ---
     const renderizarPanelCompleto = () => {
-        if (!panelCarrito) return;
+        console.log('DEBUG: carrito.js - renderizarPanelCompleto() llamado.');
+        if (!panelCarrito) { console.error("Error: panelCarrito es null en renderizarPanelCompleto."); return; }
         const panelItemsContainer = panelCarrito.querySelector('#panel-carrito-items');
-        if (!panelItemsContainer) return;
+        if (!panelItemsContainer) { console.error("Error: panel-carrito-items no encontrado en renderizarPanelCompleto."); return; }
 
         panelItemsContainer.innerHTML = generarItemsHTML();
+        console.log('DEBUG: carrito.js - Ítems HTML generados y actualizados.');
 
         let footer = document.getElementById('panel-carrito-footer');
         if (footer) {
@@ -81,29 +114,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const footerHTML = generarFooterHTML();
         if (footerHTML) {
             panelItemsContainer.insertAdjacentHTML('afterend', footerHTML);
+            console.log('DEBUG: carrito.js - Footer HTML generado y añadido.');
         }
     };
     
+    // CAMBIADO: 'generarItemsHTML' para agrupar ítems principales y sus adicionales
     const generarItemsHTML = () => {
         if (carrito.length === 0) {
             return `<div class="carrito-vacio"><i class="bi bi-cart-x"></i><p>Tu carrito está vacío.</p><span>Agrega servicios para cotizar.</span></div>`;
         }
-        return carrito.map(item => crearItemHTML(item)).join('');
+
+        let htmlContent = '';
+        const mainServices = carrito.filter(item => item.parentId === null).sort((a, b) => {
+            return a.id.localeCompare(b.id); 
+        });
+
+        mainServices.forEach(mainItem => {
+            htmlContent += crearItemHTML(mainItem);
+
+            const additionalItems = carrito.filter(item => item.parentId === mainItem.id)
+                                          .sort((a, b) => a.id.localeCompare(b.id));
+            additionalItems.forEach(adicional => {
+                htmlContent += crearItemHTML(adicional, true); 
+            });
+        });
+
+        return htmlContent;
     };
 
-    // --- CAMBIADO: 'crearItemHTML' mejorado para reflejar el nombre del tier y los límites de cantidad ---
-    const crearItemHTML = (item) => {
+    // CAMBIADO: 'crearItemHTML' ahora acepta un parámetro para indicar si es un adicional
+    const crearItemHTML = (item, isNestedAddon = false) => {
         const precioTotalItem = (item.precioNumerico || 0) * (item.cantidad || 1);
         let precioUnitarioHTML;
 
-        // Muestra precio tachado si hay oferta (solo para servicios de precio único)
         if (item.precioOferta && item.precioOferta > 0 && item.precioOferta < item.precioBaseOriginal) {
              precioUnitarioHTML = `<del class="text-muted small">$${(item.precioBaseOriginal).toLocaleString('es-CL')}</del> <strong class="text-danger ms-1">$${(item.precioOferta).toLocaleString('es-CL')}</strong>`;
         } else {
             precioUnitarioHTML = `<strong>$${(item.precioNumerico || 0).toLocaleString('es-CL')}</strong>`;
         }
 
-        // Lógica de Controles de Cantidad Mejorada
         let controlesCantidadHTML = '';
         if (item.permite_cantidad) {
             const maxAttr = item.max_cantidad ? `max="${item.max_cantidad}"` : '';
@@ -117,17 +166,17 @@ document.addEventListener('DOMContentLoaded', () => {
             controlesCantidadHTML = `<span class="cantidad-fija mt-2">x ${item.cantidad}</span>`;
         }
         
-        const esAditivo = item.parentId !== null;
-        const claseAditivo = esAditivo ? 'item-aditivo ps-3 border-start border-2 ms-2' : '';
+        const claseAditivoVisual = isNestedAddon ? 'item-aditivo-visual ps-3 border-start border-2 ms-2' : '';
+        const badgeAdicional = item.parentId !== null ? '<span class="badge bg-info mt-1">Adicional</span>' : '';
 
         return `
-            <div class="item-carrito d-flex align-items-start mb-3 pb-3 border-bottom ${claseAditivo}" data-id="${item.id}">
+            <div class="item-carrito d-flex align-items-start mb-3 pb-3 border-bottom ${claseAditivoVisual}" data-id="${item.id}">
                 ${item.imagenUrl ? `<img src="${item.imagenUrl}" alt="${item.nombre}" class="item-imagen me-3 rounded">` : ''}
                 <div class="item-info flex-grow-1">
                     <p class="item-nombre fw-bold mb-1">${item.nombre}</p>
                     <div class="text-muted small"> ${precioUnitarioHTML} </div>
                     ${item.descripcionOferta ? `<p class="text-success small mb-1 mt-1">${item.descripcionOferta}</p>` : ''}
-                    ${esAditivo ? '<span class="badge bg-info mt-1">Adicional</span>' : ''}
+                    ${badgeAdicional}
                 </div>
                 <div class="item-controles text-end d-flex flex-column justify-content-between align-items-end" style="min-height: 70px;">
                     <button class="btn btn-sm btn-outline-danger btn-eliminar" data-id="${item.id}" title="Eliminar">&times;</button>
@@ -154,8 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const actualizarContadorIcono = () => {
         if (!contadorCarrito) return;
-        contadorCarrito.textContent = carrito.length;
-        contadorCarrito.style.display = carrito.length > 0 ? 'flex' : 'none';
+        const numItemsPrincipales = carrito.filter(item => item.parentId === null).length;
+        contadorCarrito.textContent = numItemsPrincipales; 
+        contadorCarrito.style.display = numItemsPrincipales > 0 ? 'flex' : 'none';
     };
 
     const guardarYRenderizarTodo = () => {
@@ -164,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarContadorIcono();
     };
 
-    // --- CAMBIADO: 'manejarEventosPanel' mejorado para respetar los límites de cantidad ---
+    // --- Manejar eventos del panel ---
     const manejarEventosPanel = (e) => {
         const target = e.target;
         const itemContainer = target.closest('.item-carrito');
@@ -204,7 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Eliminar ítem
         else if (target.matches('.btn-eliminar')) {
             e.stopPropagation();
-            // Si el item es un servicio principal, elimina también sus adicionales
             if(item.parentId === null) {
                 carrito = carrito.filter(i => i.id !== itemId && i.parentId !== itemId);
             } else {
@@ -219,11 +268,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LISTENERS GENERALES ---
     iconoCarrito?.addEventListener('click', (e) => {
+        console.log('DEBUG: carrito.js - Click en icono carrito.');
         e.stopPropagation();
-        abrirPanelCarrito();
+        window.abrirPanelCarrito();
     });
 
-    cerrarPanelBtn?.addEventListener('click', cerrarPanelCarrito);
+    cerrarPanelBtn?.addEventListener('click', () => {
+        console.log('DEBUG: carrito.js - Click en cerrar panel.');
+        window.cerrarPanelCarrito();
+    });
 
     document.addEventListener('click', (e) => {
         if (!panelCarrito || !iconoCarrito) return;
@@ -231,10 +284,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const isClickOnCartIcon = iconoCarrito.contains(e.target);
         
         if (panelCarrito.classList.contains('panel-visible') && !isClickInsidePanel && !isClickOnCartIcon) {
-            cerrarPanelCarrito();
+            console.log('DEBUG: carrito.js - Click fuera del panel, cerrando.');
+            window.cerrarPanelCarrito();
         }
     });
     
     // --- INICIALIZACIÓN ---
+    console.log('DEBUG: carrito.js - Iniciando script, llamando a guardarYRenderizarTodo().');
     guardarYRenderizarTodo();
 });

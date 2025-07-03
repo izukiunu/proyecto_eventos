@@ -1,0 +1,120 @@
+/* static/css/servicio_detail.css (Versión Final Definitiva con Responsividad) */
+
+#mediaCarousel {
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+    background-color: #f0f2f5;
+    /* MEJORA: Transición suave para los controles */
+    transition: all 0.3s ease;
+}
+
+#mediaCarousel .carousel-item img,
+#mediaCarousel .carousel-item video {
+    /* Proporción 4/3, ideal para el layout de 2 columnas */
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+}
+
+/* MEJORA: Ocultar controles del carrusel por defecto */
+#mediaCarousel .carousel-control-prev,
+#mediaCarousel .carousel-control-next {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* MEJORA: Mostrar controles al pasar el mouse sobre el carrusel */
+#mediaCarousel:hover .carousel-control-prev,
+#mediaCarousel:hover .carousel-control-next {
+    opacity: 1;
+}
+
+/* MEJORA: Estilo de los indicadores (puntos) */
+.carousel-indicators [data-bs-target] {
+    background-color: #dc3545; /* Color rojo de la marca */
+}
+
+/* --- Columna de Información --- */
+.servicio-info-container h1 {
+    font-weight: 700;
+}
+.servicio-info-container .lead {
+    font-size: 1.1rem;
+    color: #6c757d;
+}
+.servicio-info-container hr {
+    margin: 1.5rem 0;
+}
+.servicio-info-container .opcion-title {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.25rem; /* Título de opción más grande */
+}
+
+.precio-display {
+    font-size: 2.8rem;
+    font-weight: 700;
+}
+
+/* --- Adicionales --- */
+#lista-adicionales-container .list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+#lista-adicionales-container .list-group-item:hover {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+}
+
+.adicional-info-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-grow: 1;
+    min-width: 0;
+}
+.adicional-info-wrapper img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 0.375rem;
+    flex-shrink: 0;
+}
+
+.adicional-input-wrapper {
+    flex-shrink: 0;
+}
+
+/* --- Botón Principal --- */
+#btn-anadir-a-cotizacion {
+    padding: 0.8rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+#btn-anadir-a-cotizacion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+
+/* --- MEJORA CLAVE: REGLAS PARA DISPOSITIVOS MÓVILES --- */
+/* Se aplica a pantallas más pequeñas que 992px (donde Bootstrap apila las columnas) */
+@media (max-width: 991.98px) {
+    .servicio-info-container h1 {
+        font-size: 2.2rem; /* Título más pequeño para móviles */
+    }
+
+    .row.g-5 > .col-lg-7 {
+        margin-bottom: 1.5rem; /* Añade espacio entre la imagen y el texto cuando se apilan */
+    }
+}

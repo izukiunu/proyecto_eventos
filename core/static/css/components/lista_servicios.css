@@ -1,0 +1,138 @@
+/* static/css/lista_servicios.css (Versión Final Definitiva) */
+
+/* --- Títulos de la Página --- */
+.page-title-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+.page-title-container h1 {
+    font-weight: 700;
+    font-size: 3rem;
+    color: #2c3e50;
+}
+.page-title-container .lead {
+    font-size: 1.25rem;
+    color: #5a6a7b;
+}
+
+.section-title {
+    font-weight: 600;
+    font-size: 2.2rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e0e0e0;
+    display: inline-block;
+}
+
+/* --- Estilo de la Tarjeta de Servicio --- */
+.servicio-card-v2 {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.servicio-card-v2:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Contenedor de la Imagen --- */
+.card-img-container {
+    position: relative;
+    /* MEJORA FINAL: Fondo sutil para el espacio sobrante de las imágenes */
+    background-color: #f0f2f5; 
+}
+
+/* --- Estilo para la Imagen/Video de la Tarjeta --- */
+.servicio-card-v2 .card-img-top {
+    /* MEJORA FINAL: Proporción 3:2, el estándar de fotografía, para el mejor balance. */
+    aspect-ratio: 3 / 2;
+
+    /* MEJORA FINAL: 'contain' muestra la imagen completa, nunca la recorta ni la deforma. */
+    object-fit: contain;
+
+    /* Propiedades necesarias para que 'object-fit' funcione correctamente */
+    width: 100%;
+    height: 100%;
+    
+    transition: transform 0.4s ease;
+}
+
+.servicio-card-v2:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* --- Insignia de Oferta --- */
+.offer-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #dc3545;
+    color: #fff;
+    padding: 0.35rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 10;
+}
+
+/* --- Cuerpo de la Tarjeta y Alineación de Contenido --- */
+.servicio-card-v2 .card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; 
+}
+
+.card-content-wrapper {
+    flex-grow: 1; /* Empuja el precio y el botón hacia abajo */
+}
+
+.servicio-card-v2 .card-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: #2c3e50;
+    min-height: 3em; /* Reserva espacio para 2 líneas de texto */
+}
+
+.servicio-card-v2 .card-text {
+    color: #6c757d;
+    min-height: 4.5em; /* Reserva espacio para 3 líneas de texto */
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Limita el texto a 3 líneas */
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+}
+
+/* --- Contenedor del Precio --- */
+.precio-container {
+    padding-top: 1rem;
+    margin-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+}
+.precio-container h4, .precio-container h5 {
+    margin-bottom: 0.25rem;
+}
+
+/* --- Botón de la Tarjeta --- */
+.servicio-card-v2 .btn {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+/* --- Sección Final de CTA --- */
+.cta-general-section {
+    padding: 3rem 0;
+    margin-top: 2rem;
+    border-top: 1px solid #e9ecef;
+}

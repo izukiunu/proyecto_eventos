@@ -93,6 +93,17 @@
     flex-direction: column;
 }
 .testimonio-card {
+    /* --- MEJORA CLAVE PARA EL CENTRADO --- */
+    
+    /* 1. Definimos un ancho máximo. Puedes ajustar este valor si las quieres más anchas o angostas. */
+    max-width: 380px; 
+    
+    /* 2. Estas dos líneas centran la tarjeta DENTRO de su columna (el borde verde) */
+    margin-left: auto;
+    margin-right: auto;
+    
+    /* --- Estilos visuales que ya tenías --- */
+    width: 100%; /* Importante para que sea responsive en móviles */
     background-color: #ffffff;
     padding: 2rem;
     border-radius: 8px;

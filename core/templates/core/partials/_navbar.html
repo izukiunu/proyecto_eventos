@@ -1,11 +1,11 @@
 {% comment %} core/templates/core/partials/_navbar.html {% endcomment %}
 {% load static %}
 
-{# Se añade la variable {{ navbar_class }} para controlar el estilo (transparente/sólido) #}
-<nav class="navbar navbar-expand-lg fixed-top {{ navbar_class|default:'navbar-solid' }}">
+{# The navbar will dynamically get transparent/solid classes from JS #}
+<nav class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center ms-3" href="{% url 'core:index' %}">
-            <img src="{% static 'img/majiaeventoslogo.png' %}" alt="Logo MejíaEventos" class="img-fluid me-2 logo-responsive">
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'core:index' %}">
+            <img src="{% static 'img/majiaeventoslogo.png' %}" alt="Logo MejíaEventos" class="img-fluid logo-responsive">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -35,17 +35,25 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="navbarDropdownContacto">
                         <li>
-                            <a class="dropdown-item" href="https://wa.me/56952046511" target="_blank">
-                                <i class="fab fa-whatsapp fa-fw me-2"></i>WhatsApp
-                            </a>
+                            {% with "Hola Mejía Eventos, vengo desde su página web y me gustaría recibir más información." as mensaje_wa %}
+                                <a class="dropdown-item" 
+                                   href="https://wa.me/56952046511?text={{ mensaje_wa|urlencode }}" 
+                                   target="_blank">
+                                    <i class="fab fa-whatsapp fa-fw me-2"></i>WhatsApp
+                                </a>
+                            {% endwith %}
                         </li>
                         <li>
-                            <a class="dropdown-item" 
-                                href="https://mail.google.com/mail/?view=cm&fs=1&to=sebastianaguirremundaca@gmail.com&su=Solicitud%20de%20Información%20-%20Contacto%20Web&body=Hola%20Sebastián,%0A%0AMe%20gustar%C3%ADa%20saber%20m%C3%A1s%20sobre%20los%20servicios%20de%20Mej%C3%ADaEventos.%0A%0A%C2%A1Gracias!" 
-                                target="_blank" 
-                                rel="noopener noreferrer">
-                                <i class="far fa-envelope fa-fw me-2"></i>Correo vía Gmail
-                            </a>
+                            {% with "Solicitud de Información - Contacto Web" as asunto_correo %}
+                            {% with "Hola Mejía Eventos,"|add:"%0A%0A"|add:"Me gustaría consultar sobre sus servicios."|add:"%0A%0A"|add:"Saludos," as cuerpo_correo %}
+                                <a class="dropdown-item" 
+                                   href="https://mail.google.com/mail/?view=cm&fs=1&to=sebastianaguirremundaca@gmail.com&su={{ asunto_correo|urlencode }}&body={{ cuerpo_correo }}"
+                                   target="_blank" 
+                                   rel="noopener noreferrer">
+                                    <i class="far fa-envelope fa-fw me-2"></i>Correo vía Gmail
+                                </a>
+                            {% endwith %}
+                            {% endwith %}
                         </li>
                     </ul>
                 </li>
@@ -74,30 +82,76 @@
         </div>
     </div>
     
-    <!-- Script para ocultar/mostrar el navbar al hacer scroll -->
-    <script>
-        let prevScrollpos = window.pageYOffset;
-        const navbar = document.querySelector('.navbar.fixed-top');
-        const scrollThreshold = 150; // Umbral reducido para ocultar más rápido
-
-        window.onscroll = function() {
-            let currentScrollPos = window.pageYOffset;
-            if (prevScrollpos > currentScrollPos || currentScrollPos < scrollThreshold) {
-                navbar.classList.remove("hidden");
-            } else if (currentScrollPos > scrollThreshold) {
-                navbar.classList.add("hidden");
-            }
-            prevScrollpos = currentScrollPos;
-        }
-    </script>
-    
-    <!-- Script para añadir padding al body en páginas con navbar sólido -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const navbar = document.querySelector('.navbar.fixed-top');
-            // Si el navbar tiene la clase 'navbar-solid', añade una clase al body
-            if (navbar && navbar.classList.contains('navbar-solid')) {
-                document.body.classList.add('body-with-solid-navbar');
+            const heroSection = document.getElementById('hero-section'); // Hero section is only on index page
+            const isIndexPage = heroSection !== null;
+
+            if (navbar) {
+                let prevScrollpos = window.pageYOffset;
+                const getNavbarHeight = () => {
+                    return navbar.offsetHeight; 
+                };
+                
+                function updateNavbarState() {
+                    const currentScrollPos = window.pageYOffset;
+                    const navbarHeight = getNavbarHeight();
+                    const navbarBottomScrollPos = currentScrollPos + navbarHeight; 
+
+                    if (isIndexPage) {
+                        const heroOffsetTop = heroSection.offsetTop;
+                        const heroOffsetBottom = heroOffsetTop + heroSection.offsetHeight;
+
+                        const isOverHero = (navbarBottomScrollPos > heroOffsetTop && currentScrollPos < heroOffsetBottom);
+                        
+                        // Lógica para cambiar de transparente a sólido negro al pasar el Hero
+                        if (isOverHero) {
+                            navbar.classList.remove('navbar-scrolled'); // Elimina la clase sólida
+                            navbar.classList.add('navbar-transparent'); // Mantiene transparente
+                        } else {
+                            // Cuando se desplaza fuera del Hero, aplica la clase sólida (navbar-scrolled)
+                            navbar.classList.add('navbar-scrolled');
+                            navbar.classList.remove('navbar-transparent');
+                        }
+                        
+                        // Lógica de ocultar/mostrar en scroll (aplica SIEMPRE en Index, después de un umbral)
+                        const scrollThresholdForHiding = 150; 
+
+                        if (currentScrollPos > scrollThresholdForHiding) {
+                            if (prevScrollpos > currentScrollPos) { 
+                                navbar.classList.remove("navbar-hidden");
+                            } else if (prevScrollpos < currentScrollPos) { 
+                                navbar.classList.add("navbar-hidden");
+                            }
+                        } else { 
+                            navbar.classList.remove("navbar-hidden");
+                        }
+
+                        document.body.classList.remove('navbar-solid-padding');
+
+                    } else {
+                        // Para otras páginas: siempre sólido negro, y hide/show on scroll
+                        const scrollThreshold = 150;
+                        navbar.classList.remove('navbar-transparent'); // Asegura que nunca sea transparente
+                        navbar.classList.remove('navbar-scrolled'); // Asegura que no tenga la clase de index scrolled
+                        navbar.classList.add('navbar-solid'); // Siempre sólido para otras páginas
+
+                        // Lógica de ocultar/mostrar para otras páginas
+                        if (prevScrollpos > currentScrollPos || currentScrollPos < scrollThreshold) {
+                            navbar.classList.remove("navbar-hidden");
+                            document.body.classList.add('navbar-solid-padding');
+                        } else if (currentScrollPos > scrollThreshold) {
+                            navbar.classList.add("navbar-hidden");
+                            document.body.classList.remove('navbar-solid-padding');
+                        }
+                    }
+                    prevScrollpos = currentScrollPos;
+                }
+
+                updateNavbarState();
+                window.onscroll = updateNavbarState;
+                window.onresize = updateNavbarState;
             }
         });
     </script>

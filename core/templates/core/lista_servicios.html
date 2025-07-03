@@ -5,55 +5,69 @@
 {% block title %}Nuestros Servicios - MejíaEventos{% endblock title %}
 
 {% block content %}
+<div class="container py-5">
     <div class="row">
-        <div class="col-12 text-center mb-5">
-            <h1 class="fw-bold">Nuestros Packs y Servicios</h1>
-            <p class="lead text-muted">Elige un pack base o explora nuestras soluciones individuales para tu evento.</p>
+        <div class="col-12 text-center page-title-container">
+            <h1>Nuestros Packs y Servicios</h1>
+            <p class="lead">Elige un pack base o explora nuestras soluciones individuales para tu evento soñado.</p>
         </div>
     </div>
     
-    <h2 class="fw-bold mb-4">Packs Prediseñados</h2>
+    {# START: Centered H2 for "Packs Prediseñados" #}
+    <div class="row">
+        <div class="col-12 text-center">
+            <h2 class="section-title">Packs Prediseñados</h2>
+        </div>
+    </div>
+    {# END: Centered H2 #}
+
     <div class="row g-4 justify-content-center">
         {% for pack in packs %}
             <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
-                <div class="card h-100 servicio-card">
-                    <div id="carousel-{{ pack.id }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
-                        <div class="carousel-inner">
-                            {% for media in pack.media_gallery.all %}
-                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                {% if media.media_type == 'VIDEO' %}
-                                    <video class="d-block w-100 card-img-top" loop muted playsinline>
-                                        <source src="{{ media.media_file.url }}" type="video/mp4">
-                                    </video>
-                                {% else %}
-                                    <img src="{{ media.media_file.url }}" class="d-block w-100 card-img-top" alt="{{ pack.nombre }}">
-                                {% endif %}
-                            </div>
-                            {% empty %}
+                <div class="card servicio-card-v2">
+                    <div class="card-img-container">
+                        {% if pack.oferta and pack.oferta.activa %}
+                            <span class="offer-badge">¡Oferta!</span>
+                        {% endif %}
+                        <div id="carousel-{{ pack.id }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+                            <div class="carousel-inner">
+                                {% for media in pack.media_gallery.all %}
+                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                    {% if media.media_type == 'VIDEO' %}
+                                        <video class="d-block w-100 card-img-top" loop muted playsinline>
+                                            <source src="{{ media.media_file.url }}" type="video/mp4">
+                                        </video>
+                                    {% else %}
+                                        <img src="{{ media.media_file.url }}" class="d-block w-100 card-img-top" alt="{{ pack.nombre }}">
+                                    {% endif %}
+                                </div>
+                                {% empty %}
                                 <div class="carousel-item active">
                                     <img src="{{ pack.get_thumbnail_url }}" class="card-img-top" alt="{{ pack.nombre }}">
                                 </div>
-                            {% endfor %}
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title fw-bold">{{ pack.nombre }}</h5>
-                        <p class="card-text flex-grow-1">{{ pack.descripcion|truncatewords:25 }}</p>
-                        <div class="precio-container mt-auto pt-2">
-                            {# Añadir descripción de oferta para Packs si aplica #}
+                    <div class="card-body">
+                        {# MEJORA: Wrapper para el contenido principal que crecerá y empujará lo demás hacia abajo #}
+                        <div class="card-content-wrapper">
+                            <h5 class="card-title">{{ pack.nombre }}</h5>
+                            {# NOTA: El CSS ahora se encarga de truncar el texto si es muy largo #}
+                            <p class="card-text">{{ pack.descripcion }}</p>
+                        </div>
+                        <div class="precio-container">
                             {% if pack.oferta and pack.oferta.activa %}
-                                <h5 class="card-text text-muted fw-normal">Antes: <del>${{ pack.precio|intcomma }}</del></h5>
-                                <h4 class="card-text text-danger fw-bold">¡Oferta! ${{ pack.oferta.precio_oferta|intcomma }} CLP</h4>
-                                {% if pack.oferta.descripcion_oferta %}
-                                    <p class="text-success small fw-bold mb-0">{{ pack.oferta.descripcion_oferta }}</p>
-                                {% endif %}
+                                <h5 class="text-muted fw-normal"><del>${{ pack.precio|intcomma }}</del></h5>
+                                <h4 class="text-danger fw-bold">${{ pack.oferta.precio_oferta|intcomma }}</h4>
                             {% else %}
-                                <h4 class="card-text text-danger fw-bold">$ {{ pack.precio|intcomma }} CLP</h4>
+                                <h4 class="text-danger fw-bold">$ {{ pack.precio|intcomma }} CLP</h4>
                             {% endif %}
                         </div>
-                        <a href="{% url 'core:servicio_detail' pk=pack.id %}" class="btn btn-danger mt-auto">
-                            Ver Detalles
+                        {# MEJORA: Texto del botón unificado #}
+                        <a href="{% url 'core:servicio_detail' pk=pack.id %}" class="btn btn-danger">
+                            Ver Más Detalles
                         </a>
                     </div>
                 </div>
@@ -65,56 +79,63 @@
 
     <hr class="my-5">
 
-    <h2 class="fw-bold mb-4">Servicios y Atracciones Principales</h2>
+    {# START: Centered H2 for "Servicios y Atracciones Individuales" #}
+    <div class="row">
+        <div class="col-12 text-center">
+            <h2 class="section-title">Servicios y Atracciones Individuales</h2>
+        </div>
+    </div>
+    {# END: Centered H2 #}
+
     <div class="row g-4 justify-content-center">
         {% for servicio in servicios_independientes %}
             <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
-                <div class="card h-100 servicio-card">
-                    <div id="carousel-{{ servicio.id }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500">
-                        <div class="carousel-inner">
-                            {% for media in servicio.media_gallery.all %}
-                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                {% if media.media_type == 'VIDEO' %}
-                                    <video class="d-block w-100 card-img-top" loop muted playsinline>
-                                        <source src="{{ media.media_file.url }}" type="video/mp4">
-                                    </video>
-                                {% else %}
-                                    <img src="{{ media.media_file.url }}" class="d-block w-100 card-img-top" alt="{{ servicio.nombre }}">
-                                {% endif %}
-                            </div>
-                            {% empty %}
+                <div class="card servicio-card-v2">
+                    <div class="card-img-container">
+                        {% if servicio.oferta and servicio.oferta.activa %}
+                            <span class="offer-badge">¡Oferta!</span>
+                        {% endif %}
+                        <div id="carousel-{{ servicio.id }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500">
+                            <div class="carousel-inner">
+                                {% for media in servicio.media_gallery.all %}
+                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                    {% if media.media_type == 'VIDEO' %}
+                                        <video class="d-block w-100 card-img-top" loop muted playsinline>
+                                            <source src="{{ media.media_file.url }}" type="video/mp4">
+                                        </video>
+                                    {% else %}
+                                        <img src="{{ media.media_file.url }}" class="d-block w-100 card-img-top" alt="{{ servicio.nombre }}">
+                                    {% endif %}
+                                </div>
+                                {% empty %}
                                 <div class="carousel-item active">
                                     <img src="{{ servicio.get_thumbnail_url }}" class="card-img-top" alt="{{ servicio.nombre }}">
                                 </div>
-                            {% endfor %}
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title fw-bold">{{ servicio.nombre }}</h5>
-                        <p class="card-text flex-grow-1">{{ servicio.descripcion|truncatewords:25 }}</p>
-                        
-                        <div class="precio-container mt-auto pt-2">
+                    <div class="card-body">
+                        <div class="card-content-wrapper">
+                            <h5 class="card-title">{{ servicio.nombre }}</h5>
+                            <p class="card-text">{{ servicio.descripcion }}</p>
+                        </div>
+                        <div class="precio-container">
                             {% if servicio.oferta and servicio.oferta.activa %}
-                                <h5 class="card-text text-muted fw-normal">Antes: <del>${{ servicio.precio|intcomma }}</del></h5>
-                                <h4 class="card-text text-danger fw-bold">¡Oferta! ${{ servicio.oferta.precio_oferta|intcomma }} CLP</h4>
-                                {% if servicio.oferta.descripcion_oferta %}
-                                    <p class="text-success small fw-bold mb-0">{{ servicio.oferta.descripcion_oferta }}</p>
-                                {% endif %}
+                                <h5 class="text-muted fw-normal"><del>${{ servicio.precio|intcomma }}</del></h5>
+                                <h4 class="text-danger fw-bold">${{ servicio.oferta.precio_oferta|intcomma }}</h4>
                             {% elif servicio.has_tiered_pricing and servicio.price_tiers.all %}
-                                <ul class="list-unstyled text-start mb-0">
-                                    {% for tier in servicio.price_tiers.all %}
-                                        <li>{{ tier.description }}: <strong class="text-danger">${{ tier.price|intcomma }}</strong></li>
-                                    {% endfor %}
-                                </ul>
+                                <p class="text-muted small mb-1">Desde:</p>
+                                <h4 class="text-danger fw-bold">${{ servicio.price_tiers.first.price|intcomma }}</h4>
                             {% elif servicio.precio > 0 %}
-                                <h4 class="card-text text-danger fw-bold">$ {{ servicio.precio|intcomma }} CLP</h4>
+                                <h4 class="text-danger fw-bold">$ {{ servicio.precio|intcomma }} CLP</h4>
                             {% else %}
-                                <p class="card-text text-muted fw-bold">Precio a consultar</p>
+                                <p class="text-muted fw-bold">Precio a consultar</p>
                             {% endif %}
                         </div>
-
-                        <a href="{% url 'core:servicio_detail' pk=servicio.id %}" class="btn btn-outline-danger mt-auto">
-                            Ver Detalles
+                        {# MEJORA: Texto del botón unificado #}
+                        <a href="{% url 'core:servicio_detail' pk=servicio.id %}" class="btn btn-outline-danger">
+                            Ver Más Detalles
                         </a>
                     </div>
                 </div>
@@ -124,10 +145,19 @@
         {% endfor %}
     </div>
 
-    <div class="text-center mt-5">
+    <div class="cta-general-section text-center">
         <hr>
-        <p class="mt-4">¿No encontraste lo que buscabas o tienes una idea diferente?</p>
-        <a href="{% url 'core:solicitar_cotizacion_general' %}" class="btn btn-secondary">Envíanos una Cotización General</a>
+        <p class="mt-4 fs-5">¿Tienes una idea diferente o necesitas algo a tu medida?</p>
+        <p class="text-muted">¡Conversemos directamente! Haz clic aquí para enviarnos un WhatsApp y cotizar tu idea.</p>
+        
+        {# Este bloque crea el enlace dinámico a WhatsApp con un mensaje predefinido #}
+        {% with "Hola, vengo desde la página web y me gustaría cotizar una idea personalizada para mi evento." as mensaje_wa %}
+            <a href="https://wa.me/56952046511?text={{ mensaje_wa|urlencode }}" 
+               target="_blank" 
+               class="btn btn-success btn-lg mt-2">
+                <i class="fab fa-whatsapp me-2"></i> Cotizar por WhatsApp
+            </a>
+        {% endwith %}
     </div>
-
+</div>
 {% endblock content %}

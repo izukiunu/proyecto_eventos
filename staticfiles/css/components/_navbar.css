@@ -4,45 +4,158 @@
 
 /* --- Base del Navbar (Tamaño y Posición) --- */
 .navbar.fixed-top {
-    height: 135px; /* Altura para escritorio (NO CAMBIA) */
+    height: 135px; /* Altura para escritorio */
     width: 100%;
     display: flex;
     align-items: center;
     top: 0;
-    transition: top 0.3s ease-in-out, background-color 0.4s ease; /* Añadida transición para el color */
+    transition: top 0.3s ease-in-out, background-color 0.4s ease, box-shadow 0.4s ease; /* Smooth transitions */
     z-index: 1030;
+    /* Default to transparent; specific classes will override dynamically */
+    background-color: transparent; 
+    border-bottom: none; 
+    box-shadow: none; 
 }
 
-/* --- Estilo 1: Navbar Transparente (para el Index) --- */
+/* --- Logo (Adjusted size and margin for Navbar) --- */
+.navbar-brand {
+    margin-left: 2rem; /* Moves the brand/logo to the right */
+}
+
+.navbar-brand .logo-responsive { 
+    max-height: 120px; /* Adjusted to 120px for larger size on desktop */
+    height: auto;
+    width: auto;
+}
+@media (max-width: 767.98px) { 
+    .navbar-brand .logo-responsive {
+        max-height: 60px; /* Adjusted to 60px for larger size on mobile */
+    }
+    .navbar-brand {
+        margin-left: 1rem; /* Adjusts the margin for mobile if different */
+    }
+}
+
+
+/* --- Estilo 1: Navbar Transparente (for Index, ONLY over Hero section) --- */
 .navbar.navbar-transparent {
-    background-color: rgba(0, 0, 0, 0) !important; /* Completamente transparente */
-    border-bottom: none;
-    box-shadow: none;
+    background-color: transparent !important;
+    background: transparent !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
 }
 .navbar.navbar-transparent .navbar-nav .nav-link {
-    color: #ffffff;
-    background-color: rgba(30, 30, 30, 0.4); /* Fondo oscuro para legibilidad sobre imágenes */
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff; /* Text color */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.7); /* Text shadow for legibility */
+    
+    background-color: transparent !important; /* Ensure background is truly transparent */
+    border: none !important;                 /* Ensure no border */
+    
     border-radius: 5px;
     font-weight: 500;
-    transition: background-color 0.2s, border-color 0.2s;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s, text-shadow 0.2s;
 }
 .navbar.navbar-transparent .navbar-nav .nav-link:hover,
 .navbar.navbar-transparent .navbar-nav .nav-link.active {
-    background-color: rgba(50, 50, 50, 0.7);
-    border-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(50, 50, 50, 0.2); /* Slightly visible background on hover */
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    text-shadow: none;
+}
+.navbar.navbar-transparent .navbar-brand img {
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.8)); /* Logo shadow for legibility */
+    transition: filter 0.4s ease;
+}
+.navbar.navbar-transparent .navbar-brand,
+.navbar.navbar-transparent .navbar-toggler-icon {
+    color: white; /* Ensure toggler icon and brand text (if any) are white */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    transition: color 0.4s ease, background-image 0.4s ease;
 }
 
-/* --- Estilo 2: Navbar Sólido (para las demás páginas) --- */
-.navbar.navbar-solid {
-    background-color: #212529 !important; /* Color oscuro sólido (Bootstrap 'bg-dark') */
+/* --- PATCH FOR TRANSPARENT NAVBAR: Ensure no background, border, or shadow on brand/toggler in transparent state --- */
+.navbar.navbar-transparent .navbar-brand,
+.navbar.navbar-transparent .navbar-brand img,
+.navbar.navbar-transparent .navbar-toggler,
+.navbar.navbar-transparent .navbar-toggler-icon {
+    background-image: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+/* --- END PATCH TRANSPARENT NAVBAR --- */
+
+
+/* --- Estilo 2: Navbar Sólido Negro (para Index, cuando está sobre secciones de contenido) --- */
+.navbar.navbar-scrolled { /* Class applied by JS for solid state on index.html */
+    background-color: #212529 !important; /* Solid black background */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
-.navbar.navbar-solid .navbar-nav .nav-link {
-    color: #e0e0e0; /* Un blanco no tan intenso */
-    background-color: transparent; /* Sin fondo propio */
-    border: 1px solid transparent; /* Sin borde */
+.navbar.navbar-scrolled .navbar-nav .nav-link {
+    color: #e0e0e0; /* Off-white for links */
+    text-shadow: none;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s, text-shadow 0.2s;
+}
+.navbar.navbar-scrolled .navbar-nav .nav-link:hover,
+.navbar.navbar-scrolled .navbar-nav .nav-link.active {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.navbar.navbar-scrolled .navbar-brand img {
+    filter: none; /* Logo doesn't need filter on solid black */
+    transition: filter 0.4s ease;
+}
+.navbar.navbar-scrolled .navbar-brand,
+.navbar.navbar-scrolled .navbar-toggler-icon {
+    color: white; /* Ensure brand text/icons are white */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    transition: color 0.4s ease, background-image 0.4s ease;
+}
+
+/* --- PATCH PARA SOLID NAVBAR (incluye navbar.scrolled): Asegura limpieza total en estado sólido --- */
+.navbar.navbar-scrolled .navbar-brand,
+.navbar.navbar-solid .navbar-brand, /* Combined with navbar-solid to apply broadly */
+.navbar.navbar-scrolled .navbar-brand img,
+.navbar.navbar-solid .navbar-brand img,
+.navbar.navbar-scrolled .navbar-toggler,
+.navbar.navbar-solid .navbar-toggler,
+.navbar.navbar-scrolled .navbar-toggler-icon,
+.navbar.navbar-solid .navbar-toggler-icon {
+    background-image: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+/* Re-apply the toggler icon image, as the patch removes it */
+.navbar.navbar-scrolled .navbar-toggler-icon,
+.navbar.navbar-solid .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+/* --- END PATCH PARA SOLID NAVBAR --- */
+
+
+/* --- Estilo 3: Navbar Sólido Default (para las demás páginas - NO INDEX) --- */
+.navbar.navbar-solid {
+    background-color: #212529 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+.navbar.navbar-solid .navbar-nav .nav-link { 
+    color: #e0e0e0;
+    text-shadow: none;
+    background-color: transparent;
+    border: 1px solid transparent;
     border-radius: 5px;
     font-weight: 500;
     transition: background-color 0.2s, color 0.2s;
@@ -50,38 +163,35 @@
 .navbar.navbar-solid .navbar-nav .nav-link:hover,
 .navbar.navbar-solid .navbar-nav .nav-link.active {
     color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.1); /* Resaltado sutil al pasar el mouse */
+    background-color: rgba(255, 255, 255, 0.1);
 }
-
-/* --- Clase para Ocultar el Navbar (Scroll) --- */
-.navbar.hidden {
-    top: -135px; /* Mueve el navbar fuera de la vista */
+.navbar.navbar-solid .navbar-brand img {
+    filter: none;
 }
-
-/*
-    [REGLA CLAVE]
-    Esta clase empuja el contenido hacia abajo cuando el navbar es sólido.
-*/
-body.body-with-solid-navbar {
-    padding-top: 135px; /* Altura del navbar en escritorio */
-}
-
-
-/* --- Logo (Sin cambios de tamaño) --- */
-.navbar-brand .logo-responsive { 
-    max-height: 125px;
-    height: auto;
-    width: auto;
-}
-
-/* --- Botón de Menú Móvil (Toggler) --- */
-.navbar-toggler-icon {
+.navbar.navbar-solid .navbar-brand,
+.navbar.navbar-solid .navbar-toggler-icon {
+    color: white;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
-/* --- Media Queries (Adaptación a Móviles) --- */
+
+/* --- Clase para Ocultar el Navbar (en Scroll) --- */
+.navbar.navbar-hidden {
+    top: -135px;
+}
+
+
+/*
+    [KEY RULE]
+    This rule compensates for body padding when the navbar is solid.
+    The `navbar-solid-padding` class is added by JS ONLY on non-index pages.
+*/
+body.navbar-solid-padding {
+    padding-top: 135px;
+}
+
+/* --- Media Queries (Mobile Adaptation) --- */
 @media (max-width: 991.98px) { 
-    /* Fondo del menú desplegable */
     .navbar-collapse {
         background-color: rgba(30, 30, 30, 0.95);
         border-radius: 5px;
@@ -92,20 +202,13 @@ body.body-with-solid-navbar {
 }
 
 @media (max-width: 767.98px) { 
-    /* Ajuste de altura para navbar y logo en móvil */
     .navbar.fixed-top {
         height: 70px;
     }
-    .navbar-brand .logo-responsive {
-        max-height: 50px;
-    }
-    /* Ajuste para ocultar en móvil */
-    .navbar.hidden {
+    .navbar.navbar-hidden {
         top: -70px;
     }
-    
-    /* [REGLA CLAVE] Compensación para el navbar en móvil */
-    body.body-with-solid-navbar {
-        padding-top: 70px; /* Altura del navbar en móvil */
+    body.navbar-solid-padding {
+        padding-top: 70px;
     }
 }

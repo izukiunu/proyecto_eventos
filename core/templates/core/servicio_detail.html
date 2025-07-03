@@ -8,154 +8,102 @@
 <div class="container my-5">
     <div class="row g-5">
         <div class="col-lg-7">
-            <div id="mediaCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
-                <div class="carousel-inner shadow-lg rounded">
+            <div id="mediaCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    {% for media in servicio.media_gallery.all %}
+                        <button type="button" data-bs-target="#mediaCarousel" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="true" aria-label="Slide {{ forloop.counter }}"></button>
+                    {% empty %}
+                        <button type="button" data-bs-target="#mediaCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                    {% endfor %}
+                </div>
+                <div class="carousel-inner">
                     {% for media in servicio.media_gallery.all %}
                     <div class="carousel-item {% if forloop.first %}active{% endif %}">
                         {% if media.media_type == 'VIDEO' %}
-                            <video class="d-block w-100" style="aspect-ratio: 16 / 9; object-fit: cover; border-radius: .375rem;" autoplay loop muted playsinline>
-                                <source src="{{ media.media_file.url }}" type="video/mp4">
-                            </video>
+                            <video class="d-block w-100" autoplay loop muted playsinline><source src="{{ media.media_file.url }}" type="video/mp4"></video>
                         {% else %}
-                            <img src="{{ media.media_file.url }}" class="d-block w-100" style="aspect-ratio: 16 / 9; object-fit: cover; border-radius: .375rem;" alt="{{ servicio.nombre }}">
+                            <img src="{{ media.media_file.url }}" class="d-block w-100" alt="{{ servicio.nombre }}">
                         {% endif %}
                     </div>
                     {% empty %}
-                        <div class="carousel-item active">
-                            <img src="{{ servicio.get_thumbnail_url }}" class="d-block w-100" style="aspect-ratio: 16 / 9; object-fit: cover; border-radius: .375rem;" alt="Servicio sin imagen">
-                        </div>
+                    <div class="carousel-item active">
+                        <img src="{{ servicio.get_thumbnail_url }}" class="d-block w-100" alt="Servicio sin imagen">
+                    </div>
                     {% endfor %}
                 </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#mediaCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Anterior</span></button>
+                <button class="carousel-control-next" type="button" data-bs-target="#mediaCarousel" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Siguiente</span></button>
             </div>
         </div>
 
         <div class="col-lg-5">
-            
-            <h1 class="fw-bold">{{ servicio.nombre }}</h1>
-            
-            {% if servicio.descripcion %}
-                <p class="lead text-muted">{{ servicio.descripcion }}</p>
-            {% endif %}
+            <div class="servicio-info-container">
+                <h1 class="fw-bolder display-5">{{ servicio.nombre }}</h1>
+                {% if servicio.descripcion %}<p class="lead text-muted">{{ servicio.descripcion }}</p>{% endif %}
+                {% if servicio.display_duration %}<p class="text-muted"><i class="fas fa-clock me-2"></i>Duración: <strong>{{ servicio.display_duration }}</strong></p>{% endif %}
+                <hr>
 
-            {% if servicio.display_duration %}
-                <p class="text-muted"><i class="fas fa-clock me-2"></i>Duración: <strong>{{ servicio.display_duration }}</strong></p>
-            {% endif %}
-
-            <hr>
-
-            {# --- LÓGICA DE SELECCIÓN DE PRECIO PARA EL SERVICIO PRINCIPAL --- #}
-            <div id="opciones-de-compra-principal">
-                {% if servicio.has_tiered_pricing and servicio.price_tiers.all %}
-                    <h4 class="mt-4 mb-3">Elige una opción:</h4>
-                    <div class="list-group" id="lista-precios-niveles">
-                        {% for tier in servicio.price_tiers.all %}
-                            <label class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" style="cursor: pointer;">
+                <div class="mb-4">
+                    <h5 class="opcion-title">{% if servicio.has_tiered_pricing %}Elige una Opción{% else %}Precio{% endif %}</h5>
+                    {% if servicio.has_tiered_pricing and servicio.price_tiers.all %}
+                        <div class="list-group">
+                            {% for tier in servicio.price_tiers.all %}
+                            <label class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                                 <div>
-                                    <input class="form-check-input me-2" type="radio" name="price_tier_selection" 
-                                           value="{{ tier.id }}"
-                                           data-id="{{ servicio.id }}-tier-{{ tier.id }}"
-                                           data-nombre="{{ servicio.nombre|escapejs }} ({{ tier.description|escapejs }})" {# EscapeJS para nombre y descripción del tier #}
-                                           data-precio-numerico="{{ tier.price }}"
-                                           {% if forloop.first %}checked{% endif %}>
+                                    <input class="form-check-input me-2" type="radio" name="price_tier_selection" value="{{ tier.id }}" data-id="{{ servicio.id }}-tier-{{ tier.id }}" data-nombre="{{ servicio.nombre|escapejs }} ({{ tier.description|escapejs }})" data-precio-numerico="{{ tier.price }}" {% if forloop.first %}checked{% endif %}>
                                     <span class="fw-bold">{{ tier.description }}</span>
                                 </div>
                                 <span class="badge bg-danger rounded-pill fs-6">$ {{ tier.price|intcomma }}</span>
                             </label>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <h4 class="mt-4 mb-3">Precio:</h4>
-                    {% if servicio.oferta and servicio.oferta.activa %}
-                        <h2 class="text-danger fw-bold display-5 my-3">
-                            <del class="text-muted fs-4 me-2">$ {{ servicio.precio|intcomma }}</del>
-                            $ {{ servicio.oferta.precio_oferta|intcomma }} CLP
-                        </h2>
-                        {% if servicio.oferta.descripcion_oferta %}
-                            <p class="alert alert-success d-inline-block p-2 small fw-bold">{{ servicio.oferta.descripcion_oferta }}</p>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {% if servicio.oferta and servicio.oferta.activa %}
+                            <h2 class="precio-display text-danger"><del class="text-muted small me-2">$ {{ servicio.precio|intcomma }}</del>$ {{ servicio.oferta.precio_oferta|intcomma }}</h2>
+                            {% if servicio.oferta.descripcion_oferta %}<p class="text-success fw-bold">{{ servicio.oferta.descripcion_oferta }}</p>{% endif %}
+                        {% else %}
+                            <h2 class="precio-display text-danger">$ {{ servicio.precio|intcomma }} CLP</h2>
                         {% endif %}
-                    {% else %}
-                        <h2 class="text-danger fw-bold display-5 my-3">$ {{ servicio.precio|intcomma }} CLP</h2>
-                    {% endif %}
-                {% endif %}
-            </div>
-            <hr>
-            
-            {# --- LÓGICA MEJORADA PARA ADICIONALES (CON ALINEACIÓN CORREGIDA) --- #}
-            {% if servicios_adicionales %}
-            <h4 class="mt-4 mb-3">Personaliza tu Servicio (Adicionales):</h4>
-            <div class="list-group" id="lista-adicionales-container">
-                {% for adicional in servicios_adicionales %}
-                <div class="adicional-item-container mb-3"> 
-                    {% if adicional.has_tiered_pricing and adicional.price_tiers.all %}
-                        <div class="list-group-item">
-                            <div class="d-flex align-items-start">
-                                <img src="{{ adicional.get_thumbnail_url }}" class="rounded me-3 flex-shrink-0" alt="{{ adicional.nombre }}" width="50" height="50" style="object-fit: cover;">
-                                <div class="w-100">
-                                    <h6 class="fw-bold mb-0">{{ adicional.nombre }}</h6>
-                                    <small class="text-muted d-block mb-2">Elige una de las siguientes opciones:</small>
-                                    
-                                    {% for tier in adicional.price_tiers.all %}
-                                    <div class="form-check">
-                                        <input class="form-check-input adicional-tier-option" type="radio" 
-                                               name="adicional_options_{{ adicional.id }}"
-                                               id="tier_{{ tier.id }}"
-                                               data-id="adicional-{{ adicional.id }}-tier-{{ tier.id }}"
-                                               data-nombre="{{ adicional.nombre|escapejs }} ({{ tier.description|escapejs }})" {# EscapeJS aquí también #}
-                                               data-precio-numerico="{{ tier.price }}">
-                                        <label class="form-check-label d-flex justify-content-between w-100" for="tier_{{ tier.id }}" style="cursor: pointer;">
-                                            <span>{{ tier.description }}</span>
-                                            <span class="fw-bold text-danger ps-2">$ {{ tier.price|intcomma }}</span>
-                                        </label>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                    {% else %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <img src="{{ adicional.get_thumbnail_url }}" class="rounded me-3 flex-shrink-0" alt="{{ adicional.nombre }}" width="50" height="50" style="object-fit: cover;">
-                                <div>
-                                    <label class="form-check-label fw-bold" for="adicional_simple_{{ adicional.id }}">
-                                        {{ adicional.nombre }}
-                                    </label>
-                                    <small class="text-muted d-block">(+ ${{ adicional.oferta.precio_oferta|default:adicional.precio|intcomma }} c/u)</small>
-                                </div>
-                            </div>
-                            {% if adicional.permite_cantidad %}
-                                <input type="number" id="adicional_simple_{{ adicional.id }}" 
-                                        class="form-control form-control-sm adicional-simple-input" style="width: 70px;" 
-                                        min="0" value="0"
-                                        data-id="{{ adicional.id }}"
-                                        data-nombre="{{ adicional.nombre|escapejs }}" {# EscapeJS #}
-                                        data-precio="{{ adicional.oferta.precio_oferta|default:adicional.precio }}"
-                                        data-permite-cantidad="{{ adicional.permite_cantidad|yesno:'true,false' }}"
-                                        data-max-cantidad="{{ adicional.max_cantidad|default:'null' }}"> {# default:'null' para JS #}
-                            {% else %}
-                                <input class="form-check-input adicional-simple-input" type="checkbox" 
-                                        id="adicional_simple_{{ adicional.id }}"
-                                        data-id="{{ adicional.id }}"
-                                        data-nombre="{{ adicional.nombre|escapejs }}" {# EscapeJS #}
-                                        data-precio="{{ adicional.oferta.precio_oferta|default:adicional.precio }}"
-                                        data-permite-cantidad="{{ adicional.permite_cantidad|yesno:'true,false' }}"
-                                        data-max-cantidad="{{ adicional.max_cantidad|default:'null' }}"> {# default:'null' para JS #}
-                            {% endif %}
-                        </div>
                     {% endif %}
                 </div>
-                {% endfor %}
-            </div>
-            {% endif %}
 
-            <div class="d-grid gap-2 mt-4">
-                <button type="button" id="btn-anadir-a-cotizacion" class="btn btn-danger btn-lg">
-                    <i class="fas fa-shopping-cart me-2"></i> Añadir a la Cotización
-                </button>
-            </div>
-            <div class="text-center mt-3">
-                <a href="{% url 'core:lista_servicios' %}" class="btn btn-link text-secondary">
-                    &larr; Volver a la lista de servicios
-                </a>
+                {% if servicios_adicionales %}
+                <div class="mb-4">
+                    <h5 class="opcion-title">Personaliza <span class="fw-normal text-muted">(Opcional)</span></h5>
+                    <div id="lista-adicionales-container">
+                        {% for adicional in servicios_adicionales %}
+                        {# CORRECCIÓN: Se re-introduce el div .adicional-item-container que el JS necesita para funcionar #}
+                        <div class="adicional-item-container mb-2">
+                            <div class="list-group-item">
+                                <div class="adicional-info-wrapper">
+                                    <img src="{{ adicional.get_thumbnail_url }}" alt="{{ adicional.nombre }}">
+                                    <div class="w-100">
+                                        <label class="form-check-label fw-bold" for="adicional_simple_{{ adicional.id }}">{{ adicional.nombre }}</label>
+                                        <small class="text-muted d-block">(+ ${{ adicional.oferta.precio_oferta|default:adicional.precio|intcomma }} c/u)</small>
+                                    </div>
+                                </div>
+                                <div class="adicional-input-wrapper">
+                                    {% if adicional.permite_cantidad %}
+                                        <input type="number" id="adicional_simple_{{ adicional.id }}" class="form-control form-control-sm adicional-simple-input" style="width: 70px;" min="0" value="0" data-id="{{ adicional.id }}" data-nombre="{{ adicional.nombre|escapejs }}" data-precio="{{ adicional.oferta.precio_oferta|default:adicional.precio }}" data-permite-cantidad="{{ adicional.permite_cantidad|yesno:'true,false' }}" data-max-cantidad="{{ adicional.max_cantidad|default:'null' }}">
+                                    {% else %}
+                                        <input class="form-check-input adicional-simple-input" type="checkbox" id="adicional_simple_{{ adicional.id }}" data-id="{{ adicional.id }}" data-nombre="{{ adicional.nombre|escapejs }}" data-precio="{{ adicional.oferta.precio_oferta|default:adicional.precio }}" data-permite-cantidad="{{ adicional.permite_cantidad|yesno:'true,false' }}" data-max-cantidad="{{ adicional.max_cantidad|default:'null' }}">
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="button" id="btn-anadir-a-cotizacion" class="btn btn-danger btn-lg">
+                        <i class="fas fa-shopping-cart me-2"></i> Añadir a la Cotización
+                    </button>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'core:lista_servicios' %}" class="btn btn-link text-secondary">&larr; Volver a la lista de servicios</a>
+                </div>
             </div>
         </div>
     </div>
@@ -167,122 +115,104 @@
 document.addEventListener('DOMContentLoaded', function() {
     // --- SCRIPT PARA PERMITIR DESELECCIONAR RADIO BUTTONS ---
     function setupRadioDeselection() {
-        // Usamos un objeto para rastrear el último radio seleccionado por cada grupo (name)
         const lastCheckedRadios = {};
-
         document.querySelectorAll('input[type="radio"]').forEach(radio => {
             radio.addEventListener('click', function() {
                 const groupName = this.name;
-                // Si este radio era el que ya estaba seleccionado, lo desmarcamos
                 if (lastCheckedRadios[groupName] === this) {
                     this.checked = false;
                     lastCheckedRadios[groupName] = null;
                 } else {
-                    // Si no, lo marcamos como el último seleccionado de su grupo
                     lastCheckedRadios[groupName] = this;
                 }
             });
         });
     }
-    // Ejecutamos la función al cargar la página
     setupRadioDeselection();
     // --- FIN DEL SCRIPT DE DESELECCIÓN ---
 
 
     // --- SCRIPT PARA AÑADIR A LA COTIZACIÓN ---
     const botonAnadir = document.getElementById('btn-anadir-a-cotizacion');
-    if (botonAnadir) {
-        botonAnadir.addEventListener('click', function() {
-            
-            let itemPrincipalParaCarrito;
-            const tieredPriceInput = document.querySelector('input[name="price_tier_selection"]:checked');
+    console.log('DEBUG: servicio_detail.html - Botón "Añadir a la Cotización" encontrado:', botonAnadir);
 
-            // Recopilar datos del servicio principal
+    if (botonAnadir) {
+        botonAnadir.addEventListener('click', function(e) { // <-- IMPORTANT: Add 'e' (event object) here
+            e.stopPropagation(); // <-- THIS IS THE KEY FIX: Stop click propagation
+            console.log('DEBUG: servicio_detail.html - Click en botón "Añadir a la Cotización". Event propagation stopped.');
+            
+            let itemsToAdd = []; // Array to hold all items for this batch
+
+            // 1. Recopilar datos del servicio principal
+            const tieredPriceInput = document.querySelector('input[name="price_tier_selection"]:checked');
+            let itemPrincipal;
+
             if (tieredPriceInput) {
-                itemPrincipalParaCarrito = {
+                itemPrincipal = {
                     id: tieredPriceInput.dataset.id,
                     nombre: tieredPriceInput.dataset.nombre,
-                    imagenUrl: "{% static '' %}{{ servicio.get_thumbnail_url|slice:'7:' }}", // Asegurar ruta relativa correcta para /media/ o /static/
+                    imagenUrl: "{{ servicio.get_thumbnail_url }}",
                     precioNumerico: parseFloat(tieredPriceInput.dataset.precioNumerico),
-                    precioBaseOriginal: parseFloat(tieredPriceInput.dataset.precioNumerico), // Para Tiered, base es el precio del tier
-                    precioOferta: 0, // No hay oferta específica en tiers
+                    precioBaseOriginal: parseFloat(tieredPriceInput.dataset.precioNumerico),
+                    precioOferta: 0,
                     cantidad: 1,
                     permite_cantidad: {{ servicio.permite_cantidad|yesno:"true,false" }},
-                    max_cantidad: {{ servicio.max_cantidad|default:"null" }}, // Asegurar que sea 'null' si no hay valor
+                    max_cantidad: {{ servicio.max_cantidad|default:"null" }},
                     parentId: null,
-                    tipo_servicio: "{{ servicio.tipo_servicio|escapejs }}", // Añadido tipo_servicio
-                    descripcion: "{{ servicio.descripcion|escapejs }}", // escapejs para descripciones
-                    max_guests: {{ servicio.max_guests|default:"null" }}, // default:'null'
-                    duration_hours: {{ servicio.duration|default:"null" }}, // default:'null'
+                    tipo_servicio: "{{ servicio.tipo_servicio|escapejs }}",
+                    descripcion: "{{ servicio.descripcion|escapejs }}",
+                    max_guests: {{ servicio.max_guests|default:"null" }},
+                    duration_hours: {{ servicio.duration|default:"null" }},
                 };
             } else {
-                // Caso de servicio con precio único (sin tiers)
-                itemPrincipalParaCarrito = {
+                itemPrincipal = {
                     id: "{{ servicio.id }}",
-                    nombre: "{{ servicio.nombre|escapejs }}", // escapejs
-                    imagenUrl: "{% static '' %}{{ servicio.get_thumbnail_url|slice:'7:' }}", // Asegurar ruta relativa
+                    nombre: "{{ servicio.nombre|escapejs }}",
+                    imagenUrl: "{{ servicio.get_thumbnail_url }}",
                     precioNumerico: parseFloat('{% if servicio.oferta and servicio.oferta.activa %}{{ servicio.oferta.precio_oferta }}{% else %}{{ servicio.precio }}{% endif %}'),
                     precioBaseOriginal: parseFloat("{{ servicio.precio }}"),
                     precioOferta: parseFloat('{% if servicio.oferta and servicio.oferta.activa %}{{ servicio.oferta.precio_oferta }}{% else %}0{% endif %}'),
                     cantidad: 1,
                     permite_cantidad: {{ servicio.permite_cantidad|yesno:"true,false" }},
-                    max_cantidad: {{ servicio.max_cantidad|default:"null" }}, // default:'null'
+                    max_cantidad: {{ servicio.max_cantidad|default:"null" }},
                     parentId: null,
-                    descripcionOferta: "{% if servicio.oferta and servicio.oferta.activa %}{{ servicio.oferta.descripcion_oferta|escapejs }}{% else %}{% endif %}", // escapejs
-                    tipo_servicio: "{{ servicio.tipo_servicio|escapejs }}", // escapejs
-                    descripcion: "{{ servicio.descripcion|escapejs }}", // escapejs
-                    max_guests: {{ servicio.max_guests|default:"null" }}, // default:'null'
-                    duration_hours: {{ servicio.duration|default:"null" }}, // default:'null'
+                    descripcionOferta: "{% if servicio.oferta and servicio.oferta.activa %}{{ servicio.oferta.descripcion_oferta|escapejs }}{% else %}{% endif %}",
+                    tipo_servicio: "{{ servicio.tipo_servicio|escapejs }}",
+                    descripcion: "{{ servicio.descripcion|escapejs }}",
+                    max_guests: {{ servicio.max_guests|default:"null" }},
+                    duration_hours: {{ servicio.duration|default:"null" }},
                 };
             }
             
-            // Validar si es un adicional de pack y no se ha seleccionado un pack principal
-            if (itemPrincipalParaCarrito.tipo_servicio === 'ADICIONAL_PACK' && itemPrincipalParaCarrito.parentId === null) {
-                // Esta validación debe ocurrir en la página de lista de servicios
-                // o en el backend. En la página de detalle, un "ADICIONAL_PACK"
-                // se muestra si es compatible con el servicio principal actual (que es un pack).
-                // Por lo tanto, aquí no deberíamos tener un adicional como servicio principal
-                // a menos que se haya accedido directamente a su URL sin un pack.
-                // Si el servicio actual es ADICIONAL_PACK, se debe verificar que sea un adicional compatible.
-                // Sin embargo, si se llega a esta página, es porque se hizo clic en un servicio.
-                // El campo parentId en itemPrincipalParaCarrito es null porque es el *servicio principal* de esta página.
-                // Esta alerta se dispararía para un adicional si se accediera a su detalle directamente.
-                // Podemos ajustarla o moverla si la lógica es diferente.
-                 alert('Este servicio es un adicional y requiere ser parte de un pack. Por favor, añádelo desde la página de un pack compatible o verifica tu selección.');
-                 return; // Detener la ejecución
-            }
-
-            // Añadir el servicio principal al carrito
-            if (typeof window.agregarAlCarrito === 'function') {
-                window.agregarAlCarrito(itemPrincipalParaCarrito);
+            if (itemPrincipal) {
+                itemsToAdd.push(itemPrincipal);
+                console.log('DEBUG: servicio_detail.html - Servicio principal preparado:', itemPrincipal.nombre, itemPrincipal.id);
             } else {
-                console.error("Error: La función 'agregarAlCarrito' no está definida. Asegúrate de que carrito.js se carga antes.");
-                alert("Hubo un error al añadir al carrito. Por favor, recarga la página.");
-                return;
+                 console.error("Error: servicio_detail.html - itemPrincipal no se pudo construir.");
+                 alert("Error al preparar el servicio principal.");
+                 return;
             }
 
-
-            // Recopilar datos de los adicionales con precios por niveles (radio buttons)
             const opcionesTierAdicionales = document.querySelectorAll('.adicional-tier-option:checked');
             opcionesTierAdicionales.forEach(input => {
                 const adicionalParaCarrito = {
                     id: input.dataset.id,
-                    nombre: input.dataset.nombre, // Ya escapado en el data-nombre del template
-                    imagenUrl: input.closest('.adicional-item-container').querySelector('img')?.src || 'https://via.placeholder.com/100x100.png?text=Opci%C3%B3n',
+                    nombre: input.dataset.nombre,
+                    imagenUrl: input.closest('.adicional-item-container').querySelector('img')?.src || '',
                     precioNumerico: parseFloat(input.dataset.precioNumerico),
                     precioBaseOriginal: parseFloat(input.dataset.precioNumerico),
                     precioOferta: 0,
                     cantidad: 1,
                     permite_cantidad: false, 
                     max_cantidad: null,
-                    parentId: itemPrincipalParaCarrito.id, // Se vincula al servicio principal seleccionado
+                    parentId: itemPrincipal.id, 
                     tipo_servicio: "ADICIONAL_PACK", 
                     descripcion: "", 
                 };
-                window.agregarAlCarrito(adicionalParaCarrito);
+                itemsToAdd.push(adicionalParaCarrito);
+                console.log('DEBUG: servicio_detail.html - Adicional de tier preparado:', adicionalParaCarrito.nombre);
             });
 
-            // Recopilar datos de los adicionales simples (checkbox o number input)
             const inputsAdicionalesSimples = document.querySelectorAll('.adicional-simple-input');
             inputsAdicionalesSimples.forEach(input => {
                 let cantidad = 0;
@@ -295,27 +225,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (cantidad > 0) {
                     const adicionalParaCarrito = {
                         id: input.dataset.id,
-                        nombre: input.dataset.nombre, // Ya escapado en el data-nombre del template
-                        imagenUrl: input.closest('.adicional-item-container').querySelector('img')?.src || 'https://via.placeholder.com/100x100.png?text=Adicional',
+                        nombre: input.dataset.nombre,
+                        imagenUrl: input.closest('.adicional-item-container').querySelector('img')?.src || '',
                         precioNumerico: parseFloat(input.dataset.precio),
                         precioBaseOriginal: parseFloat(input.dataset.precio), 
                         precioOferta: 0, 
                         cantidad: cantidad,
-                        permite_cantidad: input.dataset.permiteCantidad === 'true', // Es un string 'true' o 'false'
-                        max_cantidad: input.dataset.maxCantidad !== 'null' ? parseInt(input.dataset.maxCantidad) : null, // Manejar 'null' como string
-                        parentId: itemPrincipalParaCarrito.id,
+                        permite_cantidad: input.dataset.permiteCantidad === 'true',
+                        max_cantidad: input.dataset.maxCantidad !== 'null' ? parseInt(input.dataset.maxCantidad) : null,
+                        parentId: itemPrincipal.id, 
                         tipo_servicio: "ADICIONAL_PACK", 
                         descripcion: "", 
                     };
-                    window.agregarAlCarrito(adicionalParaCarrito);
+                    itemsToAdd.push(adicionalParaCarrito);
+                    console.log('DEBUG: servicio_detail.html - Adicional simple preparado:', adicionalParaCarrito.nombre, 'Cantidad:', cantidad);
                 }
             });
 
-            alert('¡Servicios añadidos a tu cotización!');
-            if (typeof window.abrirPanelCarrito === 'function') {
-                window.abrirPanelCarrito();
+            console.log('DEBUG: servicio_detail.html - Ítems a añadir:', itemsToAdd);
+
+            if (typeof window.agregarAlCarrito === 'function') {
+                console.log('DEBUG: servicio_detail.html - Función window.agregarAlCarrito() encontrada. Iniciando procesamiento de ítems.');
+                
+                // Process all items
+                for (const itemData of itemsToAdd) {
+                    const result = window.agregarAlCarrito(itemData);
+                    console.log(`DEBUG: servicio_detail.html - Resultado agregarAlCarrito para ${itemData.nombre}:`, result);
+                }
+                
+                // FINAL ACTION: Directly open the cart panel.
+                if (typeof window.abrirPanelCarrito === 'function') {
+                    console.log('DEBUG: servicio_detail.html - Llamando a window.abrirPanelCarrito().');
+                    window.abrirPanelCarrito();
+                } else {
+                    console.error("Error: servicio_detail.html - La función 'abrirPanelCarrito' no está definida. No se pudo abrir el carrito.");
+                    alert("¡Servicios añadidos a tu cotización! (No se pudo abrir el carrito)");
+                }
+
             } else {
-                console.warn("La función 'abrirPanelCarrito' no está definida.");
+                console.error("Error: servicio_detail.html - La función 'agregarAlCarrito' no está definida en window. No se pueden procesar los ítems.");
+                alert("Hubo un error crítico al añadir al carrito. Por favor, recarga la página.");
             }
         });
     }

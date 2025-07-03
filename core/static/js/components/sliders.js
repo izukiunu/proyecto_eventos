@@ -35,43 +35,98 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- INICIALIZACIÓN DE TODOS LOS SLIDERS DEL SITIO ---
 
     // 1. Slider de Servicios (con lógica condicional)
+    // --- INICIALIZACIÓN DEL SLIDER DE SERVICIOS DESTACADOS ---
     const serviciosSliderElement = document.querySelector('.servicios-slider');
     if (serviciosSliderElement) {
         const swiperWrapper = serviciosSliderElement.querySelector('.swiper-wrapper');
         const totalSlides = swiperWrapper ? swiperWrapper.children.length : 0;
-        let swiperOptions;
+        
+        // Solo activa la navegación y el bucle si hay suficientes tarjetas para deslizar
+        const loopIsActive = totalSlides > 3; 
 
-        if (totalSlides <= 3) {
-            swiperOptions = {
-                slidesPerView: 'auto',
-                spaceBetween: 30,
-                centeredSlides: true,
-                loop: false,
-                autoplay: false,
-            };
-            // Ocultamos la navegación si hay pocos slides
-            const navNext = document.querySelector('.slider-contenedor .swiper-button-next');
-            const navPrev = document.querySelector('.slider-contenedor .swiper-button-prev');
-            const pagination = document.querySelector('.slider-contenedor .swiper-pagination');
-            if(navNext) navNext.style.display = 'none';
-            if(navPrev) navPrev.style.display = 'none';
-            if(pagination) pagination.style.display = 'none';
-        } else {
-            swiperOptions = {
-                loop: true,
-                slidesPerView: 1,
-                spaceBetween: 30,
-                autoplay: { delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true },
-                pagination: { el: '.swiper-pagination', clickable: true },
-                navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-                breakpoints: {
-                    768: { slidesPerView: 2 },
-                    992: { slidesPerView: 3 }
+        const serviciosSlider = new Swiper(serviciosSliderElement, {
+            // Opciones del slider
+            loop: loopIsActive,
+            slidesPerView: 1,
+            spaceBetween: 30,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            // Puntos de quiebre para diferentes tamaños de pantalla
+            breakpoints: {
+                768: {
+                    slidesPerView: 2,
+                    spaceBetween: 30
+                },
+                992: {
+                    slidesPerView: 3,
+                    spaceBetween: 30
                 }
-            };
+            }
+        });
+
+        // Oculta los botones de navegación si el bucle no está activo
+        if (!loopIsActive) {
+            const navContainer = serviciosSliderElement.closest('.slider-contenedor');
+            if (navContainer) {
+                const nextBtn = navContainer.querySelector('.swiper-button-next');
+                const prevBtn = navContainer.querySelector('.swiper-button-prev');
+                if(nextBtn) nextBtn.style.display = 'none';
+                if(prevBtn) prevBtn.style.display = 'none';
+            }
         }
-        new Swiper(serviciosSliderElement, swiperOptions);
     }
+
+    // ==========================================================
+    // NUEVO CÓDIGO PARA LA ANIMACIÓN DEL TEXTO DEL HERO CAROUSEL
+    // ==========================================================
+    const heroCarouselElement = document.getElementById('heroCarousel');
+
+    if (heroCarouselElement) {
+        
+        // Función para actualizar la visibilidad del contenido
+        const updateHeroContentVisibility = () => {
+            // Busca el slide que está activo AHORA MISMO
+            const activeSlide = heroCarouselElement.querySelector('.carousel-item.active');
+            
+            // Busca TODOS los contenedores de texto
+            const allContentWrappers = heroCarouselElement.querySelectorAll('.hero-content-wrapper');
+
+            // 1. Oculta el texto de TODOS los slides
+            allContentWrappers.forEach(wrapper => {
+                wrapper.classList.remove('content-visible');
+            });
+
+            // 2. Muestra SOLAMENTE el texto del slide que está activo
+            if (activeSlide) {
+                const activeContent = activeSlide.querySelector('.hero-content-wrapper');
+                if (activeContent) {
+                    // Le añade la clase para que el CSS lo haga visible con una transición suave
+                    activeContent.classList.add('content-visible');
+                }
+            }
+        };
+
+        // Escucha el evento 'slid.bs.carousel'. 
+        // Este evento se dispara DESPUÉS de que la transición del slide ha terminado.
+        heroCarouselElement.addEventListener('slid.bs.carousel', function () {
+            updateHeroContentVisibility();
+        });
+
+        // Llama a la función una vez al cargar la página para mostrar el texto del primer slide.
+        updateHeroContentVisibility();
+    }
+    // --- FIN DEL NUEVO CÓDIGO ---
 
     // 2. Sliders con efecto 'fade'
     initFadeSlider('.sobre-nosotros-slider', 4000);
@@ -116,5 +171,13 @@ document.addEventListener('DOMContentLoaded', function() {
             1200: { slidesPerView: 3 }
         }
     });
+    // Oculta los botones de navegación si el bucle no está activo
+        if (!loopIsActiveTestimonios) {
+            // Find the buttons within this specific slider's context
+            const nextBtn = testimoniosSliderElement.querySelector('.swiper-button-next');
+            const prevBtn = testimoniosSliderElement.querySelector('.swiper-button-prev');
+            if(nextBtn) nextBtn.style.display = 'none';
+            if(prevBtn) prevBtn.style.display = 'none';
+        }
 
 });

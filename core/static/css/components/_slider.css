@@ -17,7 +17,8 @@
 }
 
 .servicios-slider .swiper-slide {
-    height: auto; /* Permite que las tarjetas se estiren uniformemente */
+    height: auto; /* Permite que las tarjetas usen flexbox para estirarse a la misma altura */
+    display: flex; /* Asegura que la tarjeta hija llene el slide */
 }
 .slider-contenedor {
   position: relative;

@@ -16,6 +16,7 @@ from django.urls import reverse
 from django.contrib.admin.views.decorators import staff_member_required # Para vistas de administración
 from django.contrib.auth.mixins import UserPassesTestMixin # Para Mixins de autorización en clases basadas en vistas
 import re
+import json
 # Importa todos tus modelos
 from .models import (
     Servicio, SolicitudCotizacion, MensajeContacto, ConfiguracionSitio, 
@@ -29,7 +30,6 @@ from .forms import (
 # =================================================================================
 # --- FUNCIONES AUXILIARES GLOBALES ---
 # =================================================================================
-
 def _send_emails_async(subject, html_message, plain_message, from_email, recipient_list):
     # ... (esta función se mantiene sin cambios) ...
     print(f"DEBUG EMAIL ASYNC: Intentando enviar email a {recipient_list} - Asunto: {subject}")
@@ -63,36 +63,51 @@ def _format_tipo_servicio(tipo_servicio_raw):
 # =================================================================================
 
 def home_carousel_view(request):
-    """
-    Vista principal para la página de inicio con contenido dinámico.
-    """
     hero_slides = HeroSlide.objects.filter(is_active=True).order_by('order')
     servicios_destacados = Servicio.objects.filter(destacado=True).select_related('oferta').prefetch_related('media_gallery')
-
-    proyectos = Proyecto.objects.filter(activo=True).prefetch_related('imagenes')
     testimonios = Testimonio.objects.filter(activo=True).prefetch_related('imagenes')
-    
     try:
         sobre_nosotros = SeccionSobreNosotros.objects.prefetch_related('puntos_clave', 'imagenes').first()
     except SeccionSobreNosotros.DoesNotExist:
         sobre_nosotros = None
 
+    # ================== CÓDIGO FINAL Y CORRECTO ==================
+    # Usamos _base_manager para ignorar cualquier filtro oculto del modelo
+    # y asegurar que .filter(activo=True) funcione como esperamos.
+    # Luego, ordenamos por el campo 'orden' que definiste en el admin.
+    
+    proyectos_qs = Proyecto._base_manager.filter(activo=True).order_by('orden')[:5]
+    
+    # =============================================================
+
+    proyectos_data = []
+    # El resto de la función se mantiene igual
+    for p in proyectos_qs:
+        imagenes_urls = [img.imagen.url for img in p.imagenes.all()]
+        proyectos_data.append({
+            "title": p.titulo,
+            "date": p.fecha_realizacion.strftime("%B de %Y") if p.fecha_realizacion else "",
+            "description": p.descripcion,
+            "images": imagenes_urls
+        })
+
     context = {
         'hero_slides': hero_slides,
         'servicios_destacados': servicios_destacados,
-        'proyectos': proyectos,
         'testimonios': testimonios,
         'sobre_nosotros': sobre_nosotros,
+        'proyectos': proyectos_qs,
+        'proyectos_json': proyectos_data,
         'navbar_class': 'navbar-transparent'
     }
-    print("DEBUG: home_carousel_view renderizando index.html") # DEBUG
+    
     return render(request, 'core/index.html', context)
-
 
 def index_view(request):
     servicios_destacados = Servicio.objects.filter(destacado=True).select_related('oferta').prefetch_related('media_gallery')
     context = {
         'servicios_destacados': servicios_destacados,
+        'proyectos_json': json.dumps(proyectos_data),
     }
     print("DEBUG: index_view renderizando index.html") # DEBUG
     return render(request, 'core/index.html', context)

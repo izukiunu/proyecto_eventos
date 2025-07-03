@@ -1,0 +1,44 @@
+{% load static %}
+<section id="proyectos" class="homepage-section">
+    <div class="container">
+        <div class="row section-header">
+            <div class="col-12 text-center">
+                <h2 class="section-title">Galería de Inspiración</h2>
+                <p class="lead text-muted">Nuestro trabajo en acción. La galería rota automáticamente.</p>
+            </div>
+        </div>
+
+        <div class="project-collage-grid-5" id="project-collage-container">
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="projectModal" tabindex="-1" aria-labelledby="projectModalLabel">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="projectModalCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner" id="modal-carousel-inner">
+                        <!-- Aquí JS inyecta las imágenes -->
+                    </div>
+
+                    <button class="carousel-control-prev" type="button" data-bs-target="#projectModalCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+
+                    <button class="carousel-control-next" type="button" data-bs-target="#projectModalCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- El script de datos sigue siendo fundamental -->
+{{ proyectos_json|json_script:"projects-data" }}

@@ -18,25 +18,23 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="icon" type="image/png" href="{% static 'img/Logo_mejia_eventos_hd_con_ia.png' %}">
 
-    {% block extra_head %}{% endblock extra_head %}
+    {# MEJORA: Renombrado de 'extra_head' a 'extra_styles' para mayor claridad y consistencia #}
+    {% block extra_styles %}{% endblock extra_styles %}
 </head>
 <body>
 
-    <!-- Botón flotante del carrito (fuera del panel) -->
-<div id="icono-carrito-contenedor" title="Ver mi cotización">
-    <i class="bi bi-cart-fill" style="font-size: 2rem;"></i>
-    <span id="contador-carrito">0</span>
-</div>
-
-<!-- Panel lateral del carrito -->
-<div id="panel-carrito">
-    <div class="panel-carrito-header">
-        <h2>Mi Cotización</h2>
-        <button id="cerrar-panel" type="button" class="btn-close" aria-label="Cerrar"></button>
+    <div id="icono-carrito-contenedor" title="Ver mi cotización">
+        <i class="bi bi-cart-fill" style="font-size: 2rem;"></i>
+        <span id="contador-carrito">0</span>
     </div>
-    <div id="panel-carrito-items"></div>
-    <div class="panel-carrito-footer" id="panel-carrito-footer"></div>
-</div>
+
+    <div id="panel-carrito">
+        <div class="panel-carrito-header">
+            <h2>Mi Cotización</h2>
+            <button id="cerrar-panel" type="button" class="btn-close" aria-label="Cerrar"></button>
+        </div>
+        <div id="panel-carrito-items"></div>
+        <div class="panel-carrito-footer" id="panel-carrito-footer"></div>
     </div>
     
     <div id="chatbot-button" onclick="toggleChat()" title="Chatea con nosotros">
@@ -58,23 +56,26 @@
         </div>
     </div>
 
-
     <div class="page-wrapper">
 
         {% include 'core/partials/_navbar.html' %}
 
+        {# ==================================================================== #}
+        {# MEJORA ESTRUCTURAL: Se divide el contenido en dos bloques          #}
+        {# ==================================================================== #}
+
+        {# 1. NUEVO BLOQUE: Para contenido de ANCHO COMPLETO (como el Hero Slider). #}
+        {# Este bloque está FUERA de cualquier .container para ocupar toda la pantalla. #}
+        {% block hero_content %}
+        {% endblock hero_content %}
+
+        {# 2. BLOQUE PRINCIPAL: Para contenido CENTRADO y estándar. #}
         <main role="main" class="site-content {% block main_classes %}{% endblock main_classes %}">
-            
-            {% block main_content %}
-                <div class="container py-3">
-                    {% block content %}
-                        {# El contenido específico de cada página irá aquí #}
-                    {% endblock content %}
-                </div>
-            {% endblock main_content %}
-
+            {% block content %}
+                {# El contenido de cada página (incluyendo sus propios .container) irá aquí #}
+            {% endblock content %}
         </main>
-
+        
         {% include 'core/partials/_footer.html' %}
     
     </div>
@@ -90,6 +91,8 @@
     <script src="{% static 'js/components/carrito.js' %}"></script>
     <script src="{% static 'js/components/sliders.js' %}"></script>
     <script src="{% static 'js/components/utilities.js' %}"></script>
+    <script src="{% static 'js/components/animations.js' %}"></script>
+    <script src="{% static 'js/components/portfolio.js' %}"></script>
     
     {% block extra_scripts %}
         {# Bloque para scripts específicos de cada página #}

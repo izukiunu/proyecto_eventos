@@ -1,0 +1,62 @@
+{% load static %}
+<section id="testimonios" class="homepage-section">
+    <div class="container">
+        <div class="row section-header">
+            <div class="col-12 text-center">
+                <h2 class="section-title">Lo que Nuestros Clientes Dicen</h2>
+            </div>
+        </div>
+        
+        {# BEGIN ADDED WRAPPER #}
+        <div class="slider-contenedor"> {# This wrapper will apply the button styles from _slider.css #}
+        {# Swiper Container #}
+            <div class="swiper testimonios-slider"> {# This is the selector your JS targets #}
+                <div class="swiper-wrapper">
+                    {% for testimonio in testimonios %}
+                    {# Each testimonio-card becomes a swiper-slide #}
+                    <div class="swiper-slide h-auto d-flex"> {# h-auto and d-flex help maintain card height #}
+                        <div class="testimonio-card card h-100">
+                            <div class="card-body text-center d-flex flex-column">
+                                
+                                <div class="testimonio-img-container mb-3">
+                                    {% if testimonio.imagenes.first %}
+                                        <img src="{{ testimonio.imagenes.first.imagen.url }}" 
+                                             alt="Foto de {{ testimonio.autor }}" 
+                                             class="testimonio-img">
+                                    {% else %}
+                                        <div class="testimonio-img-placeholder">
+                                            <i class="fas fa-user fa-3x text-light"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <i class="fas fa-quote-left fa-2x text-danger mb-3" aria-hidden="true"></i>
+                                <blockquote class="blockquote flex-grow-1">
+                                    <p>"{{ testimonio.cita }}"</p>
+                                </blockquote>
+                                <footer class="blockquote-footer mt-auto">
+                                    <strong>{{ testimonio.autor }}</strong><br>
+                                    <cite title="Source Title">{{ testimonio.descripcion_autor }}</cite>
+                                </footer>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    {# If no testimonios, this placeholder also needs to be a swiper-slide #}
+                    <div class="col-12 swiper-slide">
+                        <p class="text-center text-muted">Estamos recopilando las opiniones de nuestros clientes.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {# Add Pagination (dots) #}
+                <div class="swiper-pagination"></div>
+
+                {# Add Navigation (arrows) #}
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </div>
+        {# END ADDED WRAPPER #}
+    </div>
+</section>

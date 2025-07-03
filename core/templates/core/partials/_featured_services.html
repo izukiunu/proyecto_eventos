@@ -1,0 +1,62 @@
+{% load static %}
+{% load humanize %}
+
+<section id="servicios-destacados" class="homepage-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center section-header">
+                <h2 class="section-title">Nuestros Servicios Destacados</h2>
+                <p class="lead text-muted">Soluciones a medida para cada ocasión especial.</p>
+            </div>
+        </div>
+
+        {# MEJORA: Contenedor principal para el slider y sus botones de navegación #}
+        <div class="slider-contenedor">
+            <div class="swiper servicios-slider">
+                <div class="swiper-wrapper pb-5">
+                    {# El bucle de Django ahora crea 'swiper-slide' en lugar de columnas #}
+                    {% for servicio in servicios_destacados %}
+                        <div class="swiper-slide h-auto">
+                            {# La tarjeta de servicio es la misma que ya diseñamos #}
+                            <div class="card h-100 servicio-card-v2">
+                                <div class="card-img-container">
+                                    {% if servicio.oferta and servicio.oferta.activa %}
+                                        <span class="offer-badge">¡Oferta!</span>
+                                    {% endif %}
+                                    <img src="{{ servicio.get_thumbnail_url }}" class="card-img-top" alt="{{ servicio.nombre }}">
+                                </div>
+                                <div class="card-body">
+                                    <div class="card-content-wrapper">
+                                        <h5 class="card-title">{{ servicio.nombre }}</h5>
+                                        <p class="card-text">{{ servicio.descripcion|truncatewords:20 }}</p>
+                                    </div>
+                                    <div class="precio-container">
+                                        {% if servicio.oferta and servicio.oferta.activa %}
+                                            <h5 class="text-muted fw-normal"><del>${{ servicio.precio|intcomma }}</del></h5> {# Changed to h5 to match lista_servicios.html #}
+                                            <h4 class="text-danger fw-bold">${{ servicio.oferta.precio_oferta|intcomma }}</h4>
+                                        {% elif servicio.has_tiered_pricing and servicio.price_tiers.all %}
+                                            <p class="text-muted small mb-1">Desde:</p>
+                                            <h4 class="text-danger fw-bold">${{ servicio.price_tiers.first.price|intcomma }}</h4>
+                                        {% else %}
+                                            {# Removed the invisible placeholder to match lista_servicios.html's direct h4 output #}
+                                            <h4 class="card-text text-danger fw-bold">$ {{ servicio.precio|intcomma }} CLP</h4>
+                                        {% endif %}
+                                    </div>
+                                    <a href="{% url 'core:servicio_detail' pk=servicio.id %}" class="btn btn-outline-danger">Ver Más Detalles</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+            
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'core:lista_servicios' %}" class="btn btn-danger btn-lg">Ver Todos los Servicios</a>
+        </div>
+    </div>
+</section>

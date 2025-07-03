@@ -1,86 +1,138 @@
-/* =============================================
-   Estilos para el Hero Section con Carrusel
-   ============================================= */
+/* static/css/components/_hero.css (Versión Final con Animación de Texto) */
 
-/* * Contenedor principal del Hero Section.
- * Define la altura para que ocupe toda la pantalla y sirve como
- * referencia para elementos posicionados de forma absoluta en su interior.
- * Se eliminó 'display: flex' para no interferir con el JavaScript del carrusel.
-*/
-.hero-full-height {
-  height: 100vh; /* Ocupa el 100% de la altura visible del viewport */
-  width: 100%;
-  overflow: hidden; /* Asegura que la imagen no se desborde */
-  position: relative; /* Necesario para posicionar el contenido y el carrusel */
-  /* La siguiente línea compensa la altura de un navbar fijo.
-     Ajusta el valor (135px) si la altura de tu navbar cambia. */
-  margin-top: -135px;
+/* Contenedor principal del Hero. */
+.hero-section-container {
+    height: 100vh;
+    width: 100%;
+    position: relative;
 }
 
-/* * Estilos para cada slide individual del carrusel.
- * Aquí es donde se aplica la imagen de fondo y se utiliza Flexbox
- * para centrar el contenido del slide.
-*/
+#heroCarousel {
+    height: 100%;
+}
+
+/* Estilos base para CADA slide */
 .hero-slide-item {
-  height: 100vh; /* Cada slide también ocupa el 100% de la altura */
-  width: 100%;
-  background-size: cover; /* Cubre todo el área sin distorsionar la imagen */
-  background-position: center center; /* Centra la imagen */
-  background-repeat: no-repeat;
-  
-  /* Flexbox para centrar el contenido del slide (el div .hero-content-wrapper) */
-  display: flex !important; /* !important puede ser necesario para sobreescribir estilos de Bootstrap */
-  align-items: center; /* Centra verticalmente */
-  justify-content: center; /* Centra horizontalmente */
-  
-  /* Necesario para posicionar el overlay oscuro ::before */
-  position: relative;
+    height: 100vh;
+    width: 100%;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    position: relative;
 }
 
-/* * Overlay oscuro.
- * Se muestra encima de la imagen de fondo y debajo del texto para asegurar
- * que el texto blanco siempre sea legible.
-*/
+/* Estilos de visualización ÚNICAMENTE al slide que está activo */
+.hero-slide-item.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Overlay con gradiente para legibilidad del texto */
 .hero-slide-item::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6); /* Overlay oscuro semitransparente */
-  z-index: 1; /* Se asegura que el overlay esté debajo del contenido */
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.1) 60%, rgba(0, 0, 0, 0) 100%);
+    z-index: 1;
 }
 
-/* * Contenedor para el texto (título, subtítulo) y el botón.
-*/
+/* Contenedor para el texto y el botón */
+/* Contenedor para el texto y el botón */
 .hero-content-wrapper {
-  position: relative; /* Asegura que el contenido esté por encima del overlay */
-  z-index: 2;
-  padding: 2rem 1rem; /* Padding para el contenido del slide */
-  max-width: 800px; /* Limita el ancho del texto para mejor legibilidad */
-  /* La clase 'text-center' de Bootstrap en el HTML se encarga de alinear el texto */
+    position: relative;
+    z-index: 2;
+    padding: 2rem;
+    max-width: 850px;
+    text-align: center;
+    color: #fff;
+
+    /* MEJORA: El texto empieza invisible y preparamos la transición */
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
 }
 
-/* * Estilos responsivos para los textos del Hero.
-*/
+/* MEJORA: Nueva clase que el JavaScript añadirá para hacer visible el texto */
+.hero-content-wrapper.content-visible {
+    opacity: 1;
+}
+/* MEJORA: Definición de la animación */
+@keyframes fadeIn-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Estilos del texto con sombra para que resalte */
 .hero-content-wrapper h1 {
-  font-size: calc(2rem + 1.5vw); /* Tamaño de fuente que se adapta al ancho de la pantalla */
-  margin-bottom: 1rem;
-  line-height: 1.2;
+    font-size: calc(2.2rem + 2vw);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
 }
 
-.hero-content-wrapper p {
-  font-size: calc(1rem + 0.5vw); /* Tamaño de fuente que se adapta al ancho de la pantalla */
-  margin-bottom: 2rem;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
+.hero-content-wrapper p.lead {
+    font-size: calc(1rem + 0.5vw);
+    margin-bottom: 2rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8);
 }
 
-/* * Ajustes para el botón dentro del carrusel.
-*/
-.hero-content-wrapper .btn-lg {
-  padding: 0.8rem 2rem;
-  font-size: 1.2rem;
+/* Estilos del botón con animación de pulso */
+.hero-content-wrapper .btn {
+    padding: 0.8rem 2.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 50px;
+    animation: pulse 2s infinite 1s; /* Añadimos un delay de 1s */
+    transition: all 0.3s ease;
+}
+
+.hero-content-wrapper .btn:hover {
+    animation: none;
+    transform: scale(1.05);
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(220, 53, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+
+/* Indicador de scroll */
+.scroll-down-indicator {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    color: #fff;
+    font-size: 2.5rem;
+    animation: bounce 2s infinite;
+    text-decoration: none;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    40% {
+        transform: translateX(-50%) translateY(-20px);
+    }
+    60% {
+        transform: translateX(-50%) translateY(-10px);
+    }
 }

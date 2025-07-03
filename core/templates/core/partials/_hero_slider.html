@@ -1,0 +1,47 @@
+{% load static %}
+<section id="hero-section" class="hero-section-container">
+    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            {% for slide in hero_slides %}
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="true" aria-label="Ir al slide {{ forloop.counter }}"></button>
+            {% endfor %}
+        </div>
+        <div class="carousel-inner">
+            {% for slide in hero_slides %}
+                <div class="carousel-item hero-slide-item {% if forloop.first %}active{% endif %}" data-bs-interval="5000"
+                    {% if slide.background_image %}
+                        style="background-image: url('{{ slide.background_image.url }}');"
+                    {% endif %}>
+                    
+                    <div class="hero-content-wrapper">
+                        <h1 class="display-4 fw-bold">{{ slide.title }}</h1>
+                        <p class="lead">{{ slide.subtitle }}</p>
+                        {% if slide.button_link and slide.button_text %}
+                            <a href="{{ slide.button_link }}" class="btn btn-danger btn-lg mt-3">{{ slide.button_text }}</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {# CORRECCIÓN: El bloque 'empty' ahora crea un slide válido y completo #}
+            {% empty %}
+                <div class="carousel-item hero-slide-item active" style="background-image: url('{% static 'img/placeholder_evento.jpg' %}');">
+                    <div class="hero-content-wrapper">
+                        <h1 class="display-4 fw-bold">MejíaEventos</h1>
+                        <p class="lead">Transformamos tu visión en un evento inolvidable.</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+        </button>
+    </div>
+    <a href="#servicios-destacados" class="scroll-down-indicator" aria-label="Ir a la sección de servicios">
+        <i class="fas fa-chevron-down"></i>
+    </a>
+</section>

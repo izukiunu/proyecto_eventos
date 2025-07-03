@@ -1,0 +1,134 @@
+/* --- ESTILOS PARA LA GALERÍA GRID DINÁMICA --- */
+
+.project-collage-grid-5 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 20vh); 
+    gap: 1rem;}
+
+
+.collage-item {
+    position: relative; /* Necesario para posicionar el overlay y la imagen */
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: opacity 0.5s ease-in-out; /* Para el efecto de rotación */
+    background-color: #e0e0e0; /* Color mientras carga la imagen */
+}
+
+/* La imagen dentro de la celda */
+.collage-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+/* El overlay que contiene el texto */
+.collage-item .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1rem;
+    opacity: 0; /* Oculto por defecto */
+    transition: opacity 0.4s ease;
+}
+
+.collage-item:hover .overlay {
+    opacity: 1; /* Se muestra al pasar el mouse */
+}
+.collage-item:hover img {
+    transform: scale(1.05); /* Sutil efecto de zoom en la imagen */
+}
+
+.overlay .title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0;
+}
+.overlay .date {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* Posicionamiento de las celdas (se mantiene igual) */
+.pos-1 { grid-column: 1 / span 2; grid-row: 1 / span 2; }
+.pos-2 { grid-column: 3 / span 1; grid-row: 1 / span 1; }
+.pos-3 { grid-column: 3 / span 1; grid-row: 2 / span 1; }
+.pos-4 { grid-column: 1 / span 1; grid-row: 3 / span 1; }
+.pos-5 { grid-column: 2 / span 2; grid-row: 3 / span 1; }
+
+
+/* --- ESTILOS PARA EL CARRUSEL DEL MODAL CON TEXTO SUPERPUESTO --- */
+
+#projectModal .modal-content {
+    background-color: #1a1a1a; /* Fondo oscuro para el carrusel */
+}
+
+#projectModalCarousel .carousel-item img {
+    max-width: 100%;
+    max-height: 85vh; /* Un poco más de altura */
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Estilos para el caption de Bootstrap */
+#projectModalCarousel .carousel-caption {
+    /* Reposicionamos el caption para que no esté pegado abajo */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+    text-align: left;
+}
+
+#projectModalCarousel .carousel-caption h5 {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+/* -------- Animación suave del carrusel -------- */
+
+#projectModalCarousel .carousel-item {
+    transition: opacity 0.3s ease-in-out; /* Reduced for faster transition */
+    opacity: 0;
+}
+
+#projectModalCarousel .carousel-item.active {
+    opacity: 1;
+}
+
+/* Custom styles for carousel controls to make them more noticeable */
+#projectModalCarousel .carousel-control-prev-icon,
+#projectModalCarousel .carousel-control-next-icon {
+    filter: invert(1) grayscale(100%) brightness(200%); /* Makes them white and brighter */
+}
+
+#projectModalCarousel .carousel-control-prev,
+#projectModalCarousel .carousel-control-next {
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+    width: 3rem; /* Increase width */
+    height: 3rem; /* Increase height */
+    border-radius: 50%; /* Make them circular */
+    opacity: 0.7; /* Make them slightly more opaque */
+    transition: opacity 0.3s ease; /* Smooth transition on hover */
+
+    /* ADD THESE LINES TO VERTICALLY CENTER THE BUTTONS */
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0; /* Ensure no external margins interfere */
+}
+
+#projectModalCarousel .carousel-control-prev:hover,
+#projectModalCarousel .carousel-control-next:hover {
+    opacity: 1; /* Fully opaque on hover */
+}
